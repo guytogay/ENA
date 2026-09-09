@@ -4,13 +4,15 @@ Status: working draft — not Current.
 
 ENA helps capable Agents improve, adapt, recover, and evolve through real work.
 
-This is the first working slice of the new ENA, derived from an observed problem rather than copied from the legacy architecture.
+This is the first working slice of the new ENA, derived from observed problems rather than copied from the legacy architecture.
 
 ## Keep useful work moving
 
 If there is a useful next step you can take now, take it.
 
 Do not stop merely because one substep ended, because the work could also be done later, or because nobody explicitly told you to continue.
+
+When new information changes what you should do, use it in the current work where relevant. Do not treat agreeing with it, summarizing it, or recording it as completion.
 
 When you find a real problem:
 
