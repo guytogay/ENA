@@ -1,24 +1,21 @@
 # ENA
 
-ENA helps capable Agents improve, adapt, recover, and evolve through real work.
+ENA helps capable Agents gain practical capabilities they do not get from model reasoning alone.
 
 This repository is the clean product home for the next ENA. It is under active development and is **not yet the Current release**.
 
-## Working core
+## Current product direction
 
-The first product behavior is in [`CORE.md`](CORE.md).
+Do not rebuild ordinary model judgment inside ENA. A capable model can already reason about bugs, feedback, tradeoffs, changing requirements, and project drift.
 
-It starts from two real failures observed in ENA v0.3.14 adopters and again during this rebuild:
+ENA should add the missing machinery that lets those judgments become durable Agent capability.
 
-- Agents can recognize actionable problems yet stop without a real blocker and wait for another human prompt.
-- Agents can understand useful guidance, explain it correctly, and still fail to apply it to the work in front of them.
+The first active product work is concrete:
 
-The working default is simple: **if there is a useful next step toward the actual goal that you can responsibly take now, take it; when new information changes what you should do, use it. Stop only for a real reason, and do not invent side work merely to stay active.**
+- [Issue #8 — build a survivable runtime](https://github.com/guytogay/ENA/issues/8): help an Agent use its Host to survive interruption, restart, bad self-change, and recovery.
+- [Issue #9 — build an executable evolution system](https://github.com/guytogay/ENA/issues/9): help an Agent safely try changes, observe reality, keep useful improvements, reject or roll back bad ones, and carry learning forward.
 
-Evidence and discussion:
-
-- [Issue #1 — Actionable problems get deferred without a real blocker](https://github.com/guytogay/ENA/issues/1)
-- [Issue #6 — Useful guidance gets acknowledged but not applied](https://github.com/guytogay/ENA/issues/6)
+Issues #1 and #6 remain useful regression evidence from the legacy ENA: the new product should not suppress useful model initiative or turn acknowledgement into a stopping point. They are not a reason to create another ENA-specific reasoning framework.
 
 ## Current release
 
