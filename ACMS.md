@@ -8,20 +8,22 @@ Use ACMS for changes that can affect the Agent's ability to keep operating, comm
 
 Create one independent package for each change before applying it.
 
-Use a UTC timestamp precise to the second in the folder name so packages sort naturally and remain unambiguous across Hosts and Agents.
+Choose one timezone for ACMS timestamps and use it consistently across change folders, records, rollback deadlines, and A2A recovery information. The default is `Asia/Shanghai`; adopters may change it to another timezone during setup.
 
-Example:
+Use a timestamp precise to the second in the folder name and include the UTC offset.
+
+Example with the default `Asia/Shanghai` timezone:
 
 ```text
 changes/
-  20260909T170637Z__fix-agent-channel/
+  20260910T010637+0800__fix-agent-channel/
 ```
 
 If more than one package may be created in the same second, append a short unique ID:
 
 ```text
 changes/
-  20260909T170637Z__a4f2__fix-agent-channel/
+  20260910T010637+0800__a4f2__fix-agent-channel/
 ```
 
 ## Package contents
@@ -39,7 +41,7 @@ status
 
 `change.md` should record:
 
-- package creation time, including timezone;
+- package creation time and configured timezone;
 - what will change;
 - why the change is being made;
 - the exact components or paths affected;
