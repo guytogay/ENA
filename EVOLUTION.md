@@ -88,11 +88,17 @@ A trial should end in one of four practical outcomes:
 - **retain** — the change is useful enough to remain the working state;
 - **revise** — the candidate remains worth pursuing, but a different bounded change is needed;
 - **reject** — the candidate did not justify another trial on current evidence;
-- **restore** — return to the previous known-good state because the change caused regression or failed.
+- **restore** — return to the previous known-good behavior because the change caused regression or failed.
 
 Record the evidence and outcome in the canonical timezone and language.
 
-If evolution concludes that an already-survivable change should be undone, perform that restoration through the relevant ACMS recovery path rather than editing history by hand.
+### Restore safely
+
+If the original ACMS package is still active in `applied`/recovery state, use that package's prepared rollback.
+
+If the original change has already reached ACMS `retained`, do **not** blindly execute its old rollback later. Other valid changes may have accumulated on top of it. Instead, create a new ACMS-protected reversal change that references the original package and reverses only the intended parts against the current live state.
+
+This preserves intervening work and makes the reversal itself recoverable.
 
 ## Retained changes become the new starting point
 
@@ -131,7 +137,9 @@ A simple layout under the ENA home can be:
     rejected/
 ```
 
-A candidate folder may move or be indexed into `retained/` or `rejected/` after adjudication. Keep links to corresponding ACMS packages rather than duplicating backups and rollback material.
+Keep each candidate's durable record at a stable path. `retained/` and `rejected/` may be indexes/references rather than moving the original record, so links from ACMS and other history do not break.
+
+Keep links to corresponding ACMS packages rather than duplicating backups and rollback material.
 
 A minimal machine-readable candidate record is shown in [`examples/evolution/CANDIDATE.example.yaml`](examples/evolution/CANDIDATE.example.yaml).
 
