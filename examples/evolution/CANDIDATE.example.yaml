@@ -1,0 +1,37 @@
+schema_version: '0.1'
+
+candidate:
+  id: 20260910T022500+0800__improve-a2a-reconnect
+  created_at: 2026-09-10T02:25:00+08:00
+  timezone: Asia/Shanghai
+  language: zh-CN
+  state: candidate
+
+  intended_improvement:
+    capability: REPLACE_WITH_TARGET_CAPABILITY
+    current_problem: REPLACE_WITH_OBSERVED_REAL_PROBLEM
+    proposed_change: REPLACE_WITH_BOUNDED_CHANGE
+
+  baseline:
+    captured_at: 2026-09-10T02:25:10+08:00
+    evidence:
+      - REPLACE_WITH_REAL_BASELINE_REFERENCE
+
+  success_signal:
+    - REPLACE_WITH_OBSERVABLE_IMPROVEMENT
+
+  protected_regressions:
+    - REPLACE_WITH_IMPORTANT_REGRESSION_TO_WATCH
+
+  affected_components: []
+
+  trial:
+    acms_package: null
+    started_at: null
+    completed_at: null
+
+  result:
+    post_change_evidence: []
+    outcome: null
+    reason: null
+    revisit_when: null
