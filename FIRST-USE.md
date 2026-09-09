@@ -109,16 +109,22 @@ Locate the components required to start, communicate, act, and recover, for exam
 - working directories or mounted volumes required to function;
 - schedulers, supervisors, containers, VMs, service managers, or other Host mechanisms that start and keep the Agent running.
 
-## 6. Verify communication paths
+## 6. Verify communication and A2A identity
 
 Verify, rather than merely list:
 
 - how humans can reach you;
 - which other Agents you can reach;
 - whether real bidirectional A2A communication works;
-- what transport, authentication, and permissions those channels depend on.
+- what transport, authentication, and permissions those channels depend on;
+- whether the Agent already exposes or is associated with an A2A Agent Card;
+- where that Agent Card can be retrieved and whether its advertised endpoint and capabilities match reality.
 
-If no A2A path exists and the Host provides enough capability to create one, establish a practical A2A path.
+Reuse the A2A Agent Card as the Agent's external A2A identity and discovery record. Do not create a parallel ENA identity system for the same purpose.
+
+If no A2A path exists and the Host provides enough capability to create one, establish a practical A2A path and create or expose the corresponding Agent Card using the A2A mechanism in use.
+
+Store the Agent Card location or stable reference in `ENA.yaml` so later ENA capabilities can reuse it without rediscovery.
 
 ## 7. Find existing protection and recovery mechanisms
 
@@ -165,7 +171,7 @@ The same configuration may also record stable pointers discovered during First U
 - runtime / Host identity;
 - startup / restart path;
 - human communication path;
-- A2A path;
+- A2A Agent Card location or reference;
 - ACMS location;
 - available backup / snapshot / versioning mechanisms;
 - available independent timer / scheduler for automatic rollback;
@@ -178,7 +184,7 @@ Record how important facts were verified when that will help them be checked aga
 
 Once the Agent has inspected and normalized its operating environment:
 
-1. establish or verify A2A;
+1. establish or verify A2A and its Agent Card;
 2. build a change/recovery mechanism appropriate to the Host;
 3. before a body-changing operation, preserve the previous state, record the intended change and rollback method, arm an independent timed rollback, and send the recovery information to another Agent;
 4. apply the change;
@@ -186,4 +192,4 @@ Once the Agent has inspected and normalized its operating environment:
 6. if communication is normal, cancel the pending automatic rollback;
 7. if the Agent becomes unreachable, allow the independent timer to restore the previous state or let another Agent use the recovery information already supplied.
 
-Use the confirmed ENA home, canonical timezone, and canonical language throughout these operations.
+Use the confirmed ENA home, canonical timezone, canonical language, and A2A identity/discovery information throughout these operations.
