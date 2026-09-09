@@ -5,19 +5,28 @@ ena_home: ~/.ena
 canonical_timezone: Asia/Shanghai
 canonical_language: zh-CN
 
-# Stable pointers discovered during First Use may be added here as they become known.
+# ENA-owned text records use UTF-8.
+text_encoding: UTF-8
+
+# Stable pointers discovered or created during First Use.
 runtime:
   host: null
   agent: null
   startup: null
   restart: null
+  clock_sync: null
 
 communication:
   human: null
   a2a:
     agent_card: null
+    rescue_peers: []
 
 recovery:
-  acms: null
+  acms: ~/.ena/acms
+  changes: ~/.ena/changes
   rollback_scheduler: null
   backup_or_snapshot: null
+
+evolution:
+  records: ~/.ena/evolution
