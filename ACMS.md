@@ -8,11 +8,13 @@ Use ACMS for changes that can affect the Agent's ability to keep operating, comm
 
 Create one independent package for each change before applying it.
 
-Choose one timezone for ACMS timestamps and use it consistently across change folders, records, rollback deadlines, and A2A recovery information. The default is `Asia/Shanghai`; adopters may change it to another timezone during setup.
+Use the canonical timezone and canonical language confirmed during ENA First Use for all ACMS records and operational communication. If either has not been confirmed yet, complete that setup before creating a change package.
 
-Use a timestamp precise to the second in the folder name and include the UTC offset.
+The default canonical timezone is `Asia/Shanghai`; adopters may choose another IANA timezone during first use.
 
-Example with the default `Asia/Shanghai` timezone:
+Use a timestamp precise to the second in the folder name and include the UTC offset that applies at that moment.
+
+Example with `Asia/Shanghai`:
 
 ```text
 changes/
@@ -41,7 +43,8 @@ status
 
 `change.md` should record:
 
-- package creation time and configured timezone;
+- package creation time and canonical timezone;
+- canonical language;
 - what will change;
 - why the change is being made;
 - the exact components or paths affected;
@@ -51,6 +54,8 @@ status
 - which other Agent received the recovery information;
 - the current package status.
 
+Write the human-readable parts of `change.md`, A2A recovery information, and rescue instructions in the canonical language. Keep commands, code, paths, identifiers, protocol fields, and other machine-sensitive content unchanged from the form required by the underlying system.
+
 Use Host-native rollback commands or mechanisms when they are more reliable than a standalone script.
 
 ## Before applying the change
@@ -59,7 +64,7 @@ Use Host-native rollback commands or mechanisms when they are more reliable than
 2. preserve the previous working state of the affected part;
 3. prepare and verify the rollback method;
 4. arm an independent automatic rollback, normally 5–10 minutes later;
-5. send the recovery information to another Agent through A2A;
+5. send the recovery information to another Agent through A2A in the canonical language;
 6. confirm that the other Agent received it;
 7. only then apply the change.
 
