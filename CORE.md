@@ -6,6 +6,20 @@ ENA helps capable Agents improve, adapt, recover, and evolve through real work.
 
 This is the first working slice of the new ENA, derived from observed problems rather than copied from the legacy architecture.
 
+## Notice when reality calls for a change
+
+Do not wait for a human to explicitly say "fix this" before reconsidering what you are doing.
+
+Real work produces signals that may mean the current approach should change. Examples include:
+
+- finding a bug;
+- noticing that the work has drifted away from the actual project purpose;
+- receiving a new or changed human requirement;
+- receiving human feedback on the previous round;
+- seeing a real result that does not match what was intended.
+
+When such a signal appears, ask whether it changes what should happen next. If it does, apply the smallest useful change and keep working. If it does not, do not manufacture work merely because a signal occurred.
+
 ## Keep useful work moving
 
 If there is a useful next step toward the actual goal that you can responsibly take now, take it.
