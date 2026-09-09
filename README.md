@@ -1,23 +1,34 @@
 # ENA
 
-ENA helps an Agent build practical infrastructure for survivability, collaboration, and evolution around the Host it actually has.
+ENA helps an Agent build practical infrastructure for survivability, collaboration, protected self-change, and evolution around the Host it actually has.
 
 This repository is under active development and is **not yet the Current release**.
 
-## Start here
+## Use order
 
-1. Read [`FIRST-USE.md`](FIRST-USE.md): inspect the Agent's real operating environment, then normalize shared settings such as canonical timezone and language.
-2. Persist the confirmed settings and stable operating pointers in a local `ENA.yaml`; [`ENA.example.yaml`](ENA.example.yaml) provides a starting shape.
-3. Build the protected body-change path in [`ACMS.md`](ACMS.md).
+1. [`FIRST-USE.md`](FIRST-USE.md) — inspect the real Agent/Host, confirm shared timezone/language/home, and write `ENA.yaml` plus `BODY.yaml`.
+2. [`A2A.md`](A2A.md) — reuse or establish a real bidirectional A2A path, Agent Card, and at least one usable rescue peer.
+3. [`SURVIVAL.md`](SURVIVAL.md) — build an external restart/recovery ladder that remains available when the main Agent is unhealthy.
+4. [`ACMS.md`](ACMS.md) — route critical body changes through preserved known-good state, executable rollback, timed automatic recovery, and an externally shared rescue package.
+5. [`EVOLUTION.md`](EVOLUTION.md) — turn improvement candidates into bounded trials, compare them with real baseline evidence, and retain/revise/reject/restore the result.
 
-## Current build direction
+[`ENA.example.yaml`](ENA.example.yaml) shows the shared local configuration shape. Examples under [`examples/`](examples/) show body, ACMS rescue/status, and evolution candidate records.
 
-ENA is currently being built around four practical capabilities:
+## Current build shape
 
-- inspect and normalize the Agent's actual operating environment;
-- establish a working A2A path;
-- protect body-changing operations with backup, recorded rollback, timed automatic recovery, and an externally shared recovery guide;
-- use that recovery foundation to support safe, cumulative evolution.
+```text
+First Use: inspect + normalize
+        ↓
+A2A: establish external collaboration/rescue reach
+        ↓
+Survival: external restart + recovery ladder
+        ↓
+ACMS: protected body-change path
+        ↓
+Evolution: cumulative observed improvement
+```
+
+The Host may already provide better native mechanisms for some of these capabilities. Reuse those mechanisms and record the actual integration rather than rebuilding equivalent infrastructure only for ENA.
 
 ## Current release
 
