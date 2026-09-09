@@ -1,0 +1,44 @@
+schema_version: '0.1'
+inspected_at: 2026-09-10T02:20:00+08:00
+canonical_timezone: Asia/Shanghai
+
+runtime:
+  host: REPLACE_WITH_VERIFIED_HOST
+  agent_runtime: REPLACE_WITH_VERIFIED_RUNTIME
+  model_service: null
+  startup: null
+  restart: null
+  supervision: null
+  clock_sync: null
+
+capabilities:
+  confirmed: []
+  unknown: []
+
+critical_components:
+  # Add only components needed to operate, communicate, act, or recover.
+  # - name: agent-service
+  #   kind: service
+  #   location: /etc/systemd/system/agent.service
+  #   verified_by: systemctl cat agent.service
+  #   recovery: restart_or_restore_service_definition
+  []
+
+communication:
+  human:
+    path: null
+    verified: false
+  a2a:
+    agent_card: null
+    verified_bidirectional: false
+
+host_recovery:
+  version_control: null
+  backup_or_snapshot: null
+  scheduler_or_timer: null
+  watchdog_or_health_check: null
+  logs: null
+
+body_change_surfaces: []
+
+unknowns: []
