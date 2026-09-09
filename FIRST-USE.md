@@ -1,8 +1,13 @@
-# ENA First Use: Inspect Your Agent
+# ENA First Use: Inspect and Normalize
 
 Status: working draft — not Current.
 
-Before changing or evolving yourself, inspect the environment you actually run in. Verify facts from the Host, tools, files, runtime metadata, documentation, APIs, or other available evidence rather than relying on assumptions.
+First Use has two jobs:
+
+1. **Inspect** the environment the Agent actually runs in.
+2. **Normalize** the shared operating conventions that later ENA capabilities will rely on.
+
+Verify facts from the Host, tools, files, runtime metadata, documentation, APIs, or other available evidence rather than relying on assumptions.
 
 ## 1. Identify your runtime and capabilities
 
@@ -111,20 +116,26 @@ For each important surface, determine:
 - how that specific change can be reversed;
 - what independent mechanism can still execute the reversal if the main Agent becomes unresponsive.
 
-## 8. Keep a grounded body record
+## 8. Write the durable ENA configuration
 
-Keep one durable record containing the information needed for protection and recovery:
+Persist the confirmed shared settings in one local ENA configuration so later capabilities do not have to ask or infer them again.
 
-- runtime / Host;
-- confirmed capabilities;
-- canonical timezone;
-- known timezone exceptions or conversion boundaries;
-- canonical language;
-- known language or translation boundaries;
-- critical components and locations;
+At minimum, record:
+
+```yaml
+canonical_timezone: Asia/Shanghai
+canonical_language: zh-CN
+```
+
+Replace the example values with the values confirmed by the user.
+
+The same configuration may also record stable pointers discovered during First Use, such as:
+
+- runtime / Host identity;
 - startup / restart path;
 - human communication path;
 - A2A path;
+- ACMS location;
 - available backup / snapshot / versioning mechanisms;
 - available independent timer / scheduler for automatic rollback;
 - known way to restore each critical change surface;
@@ -134,7 +145,7 @@ Record how important facts were verified when that will help them be checked aga
 
 ## What happens next
 
-Once the environment is understood well enough:
+Once the Agent has inspected and normalized its operating environment:
 
 1. establish or verify A2A;
 2. build a change/recovery mechanism appropriate to the Host;
