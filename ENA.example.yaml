@@ -1,0 +1,21 @@
+schema_version: '0.1'
+
+# Replace these values with the user's confirmed choices during First Use.
+canonical_timezone: Asia/Shanghai
+canonical_language: zh-CN
+
+# Stable pointers discovered during First Use may be added here as they become known.
+runtime:
+  host: null
+  agent: null
+  startup: null
+  restart: null
+
+communication:
+  human: null
+  a2a: null
+
+recovery:
+  acms: null
+  rollback_scheduler: null
+  backup_or_snapshot: null
