@@ -36,6 +36,28 @@ A protected change package should be self-contained enough that recovery does no
 
 `rescue.yaml` is the short machine-readable rescue card. `change.md` keeps the fuller rationale and change history. `status.yaml` is the current lifecycle state shared by the changing Agent, the automatic rollback path, and any rescue Agent.
 
+Store the package somewhere that survives failure of the component being changed. If the change can destroy or replace the filesystem/container/volume that normally holds `~/.ena/changes`, keep the recovery package or an independently reachable copy outside that failure surface.
+
+## Make ACMS the protected mutation path
+
+ACMS should be an actual change mechanism, not only a reminder to be careful.
+
+For each body-changing surface identified in `BODY.yaml`, use the strongest practical Host mechanism that routes normal self-change through ACMS while leaving external recovery possible.
+
+Depending on the Host, this may mean:
+
+- exposing one ACMS change command/tool that creates the package before granting the mutation step;
+- putting critical code/configuration under version control and requiring ACMS to create the protected revision/deployment path;
+- using file ownership or narrowly scoped privileges so the Agent cannot normally overwrite a critical file directly but an ACMS helper can;
+- wrapping package, service, deployment, container, or configuration mutation commands in the protected ACMS path;
+- using Host-native deployment or rollback controls instead of direct live edits.
+
+Do not add permission complexity merely for appearance. The objective is concrete: ordinary self-change of critical surfaces should naturally pass through backup, rollback, timer, and rescue preparation rather than depending on the Agent remembering a checklist.
+
+Record any critical surface that can still bypass ACMS. Treat that as an explicit survivability limitation in `BODY.yaml` until a practical enforcement path exists.
+
+Emergency external recovery must remain possible even if the normal ACMS mutation path is unavailable.
+
 ## Rescue card
 
 The rescue Agent should be able to understand and begin recovery within seconds.
