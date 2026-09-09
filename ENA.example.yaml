@@ -14,7 +14,8 @@ runtime:
 
 communication:
   human: null
-  a2a: null
+  a2a:
+    agent_card: null
 
 recovery:
   acms: null
