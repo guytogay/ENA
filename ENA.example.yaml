@@ -1,6 +1,7 @@
 schema_version: '0.1'
 
 # Replace these values with the user's confirmed choices during First Use.
+ena_home: ~/.ena
 canonical_timezone: Asia/Shanghai
 canonical_language: zh-CN
 
