@@ -178,7 +178,7 @@ text_encoding: UTF-8
 
 Replace example values with the user's confirmed choices and store `ena_home` in the Host-appropriate form.
 
-`ENA.yaml` may also keep stable pointers to runtime controls, A2A Agent Card/rescue peers, ACMS, rollback scheduler, backups/snapshots, and evolution records. See [`ENA.example.yaml`](ENA.example.yaml).
+`ENA.yaml` may also keep stable pointers to runtime controls, A2A Agent Card/rescue peers, survivability controls, ACMS, rollback scheduler, backups/snapshots, and evolution records. See [`ENA.example.yaml`](ENA.example.yaml).
 
 ### `BODY.yaml`
 
@@ -186,13 +186,25 @@ Store the grounded result of the actual inspection: runtime, confirmed capabilit
 
 Do not treat `BODY.yaml` as timeless truth. Re-check mutable facts before a consequential self-change. See [`examples/BODY.example.yaml`](examples/BODY.example.yaml).
 
+## First Use is complete when
+
+- the user has confirmed the canonical timezone, canonical language, and ENA home;
+- the Host clock/synchronization state has been checked;
+- `ENA.yaml` exists at the confirmed ENA home;
+- `BODY.yaml` contains grounded runtime, communication, recovery, and critical-component findings rather than assumptions;
+- the human communication path has been identified;
+- A2A has either been verified/established with a usable rescue peer or the missing capability is explicitly recorded;
+- restart, backup/snapshot, scheduler/timer, and other Host recovery mechanisms have been identified or their absence recorded;
+- important body-changing surfaces and known recovery limitations are visible to later ENA capabilities.
+
 ## What happens next
 
 Once the Agent has inspected and normalized its operating environment:
 
-1. establish or verify the practical A2A path and rescue peer;
-2. build the protected change/recovery mechanism in [`ACMS.md`](ACMS.md);
-3. route body-changing operations through ACMS;
-4. use [`EVOLUTION.md`](EVOLUTION.md) to turn useful improvement candidates into observed, retainable, reversible change.
+1. establish or verify the practical A2A path and rescue peer in [`A2A.md`](A2A.md);
+2. build the external restart/recovery ladder in [`SURVIVAL.md`](SURVIVAL.md);
+3. build the protected change/recovery mechanism in [`ACMS.md`](ACMS.md);
+4. route body-changing operations through ACMS;
+5. use [`EVOLUTION.md`](EVOLUTION.md) to turn useful improvement candidates into observed, retainable, reversible change.
 
 Use the confirmed ENA home, canonical timezone, canonical language, and grounded body record throughout these operations.
