@@ -43,6 +43,14 @@ If there is, continue.
 
 Do not manufacture side work merely to stay active. Forward motion should serve the actual goal, not replace it.
 
+## Judge changes by their overall effect
+
+Do not judge a change only by whether it fixes the immediate problem.
+
+Weigh its benefits and risks across the whole system and over time. Consider what it improves, what it may damage or complicate, whether it moves the work closer to or farther from its real purpose, and what future cost or risk it creates.
+
+A locally successful change can still be a bad change overall. A change that adds some cost can still be worth keeping when the broader and longer-term benefit justifies it.
+
 ## Stop for a reason
 
 Stopping is appropriate when, for example:
