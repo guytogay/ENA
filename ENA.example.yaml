@@ -22,6 +22,11 @@ communication:
     agent_card: null
     rescue_peers: []
 
+survival:
+  supervisor: null
+  communication_probe: null
+  external_escalation: null
+
 recovery:
   acms: ~/.ena/acms
   changes: ~/.ena/changes
