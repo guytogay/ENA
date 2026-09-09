@@ -12,7 +12,7 @@ It starts from a real failure observed in ENA v0.3.14 adopters and again during 
 
 The working default is simple: **if there is a useful next step you can responsibly take now, take it; stop only for a real reason.**
 
-The evidence and discussion are tracked in [Issue #1](../../issues/1).
+The evidence and discussion are tracked in [Issue #1](https://github.com/guytogay/ENA/issues/1).
 
 ## Current release
 
