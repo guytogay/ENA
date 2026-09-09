@@ -67,7 +67,37 @@ Keep code, commands, file paths, identifiers, API field names, protocol payloads
 
 Record any interface or collaborator that requires another language and handle that as an explicit translation boundary rather than silently mixing languages in the Agent's durable records.
 
-## 4. Find the components required to keep operating
+## 4. Establish one ENA home directory
+
+Ask the user to confirm where ENA's own durable files should live on this Host. If the user has no preference, use a stable directory under the Agent user's home, for example:
+
+```text
+~/.ena/
+```
+
+Use the Host-equivalent user-home path where `~` is not appropriate.
+
+After confirmation:
+
+- create the ENA home if it does not already exist;
+- keep `ENA.yaml` at the root of this directory;
+- use this location as the stable entry point for ENA-owned ACMS, change, A2A, recovery, and evolution records;
+- record any ENA data that must live elsewhere as an explicit path from `ENA.yaml` rather than relying on rediscovery.
+
+A typical layout may begin as:
+
+```text
+~/.ena/
+  ENA.yaml
+  acms/
+  changes/
+  a2a/
+  evolution/
+```
+
+Create only the directories that are actually needed on the current Host.
+
+## 5. Find the components required to keep operating
 
 Locate the components required to start, communicate, act, and recover, for example:
 
@@ -79,7 +109,7 @@ Locate the components required to start, communicate, act, and recover, for exam
 - working directories or mounted volumes required to function;
 - schedulers, supervisors, containers, VMs, service managers, or other Host mechanisms that start and keep the Agent running.
 
-## 5. Verify communication paths
+## 6. Verify communication paths
 
 Verify, rather than merely list:
 
@@ -90,7 +120,7 @@ Verify, rather than merely list:
 
 If no A2A path exists and the Host provides enough capability to create one, establish a practical A2A path.
 
-## 6. Find existing protection and recovery mechanisms
+## 7. Find existing protection and recovery mechanisms
 
 Inspect what the Host already provides:
 
@@ -105,7 +135,7 @@ Inspect what the Host already provides:
 
 Reuse reliable Host-native mechanisms where possible.
 
-## 7. Identify body-changing surfaces
+## 8. Identify body-changing surfaces
 
 Record the places where a self-change could affect your ability to keep operating or repair yourself.
 
@@ -116,18 +146,19 @@ For each important surface, determine:
 - how that specific change can be reversed;
 - what independent mechanism can still execute the reversal if the main Agent becomes unresponsive.
 
-## 8. Write the durable ENA configuration
+## 9. Write the durable ENA configuration
 
-Persist the confirmed shared settings in one local ENA configuration so later capabilities do not have to ask or infer them again.
+Persist the confirmed shared settings in `ENA.yaml` at the ENA home so later capabilities do not have to ask or infer them again.
 
 At minimum, record:
 
 ```yaml
+ena_home: ~/.ena
 canonical_timezone: Asia/Shanghai
 canonical_language: zh-CN
 ```
 
-Replace the example values with the values confirmed by the user.
+Replace the example values with the values confirmed by the user and store `ena_home` in the Host-appropriate form.
 
 The same configuration may also record stable pointers discovered during First Use, such as:
 
@@ -155,4 +186,4 @@ Once the Agent has inspected and normalized its operating environment:
 6. if communication is normal, cancel the pending automatic rollback;
 7. if the Agent becomes unreachable, allow the independent timer to restore the previous state or let another Agent use the recovery information already supplied.
 
-Use the confirmed canonical timezone and canonical language throughout these operations.
+Use the confirmed ENA home, canonical timezone, and canonical language throughout these operations.
