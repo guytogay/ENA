@@ -11,7 +11,8 @@ rescue:
     package: 20260910T020900+0800__fix-a2a-channel
     created_at: 2026-09-10T02:09:00+08:00
     timezone: Asia/Shanghai
-    status: applied_waiting_confirmation
+    status_file: /home/agent-a/.ena/changes/20260910T020900+0800__fix-a2a-channel/status.yaml
+    expected_active_state: applied
     affected:
       - /etc/agent-a/a2a.yaml
 
@@ -22,8 +23,9 @@ rescue:
       - human_authorized_recovery
     do_not_act_when_any:
       - target_has_already_confirmed_normal_bidirectional_communication
-      - package_status_is_retained
-      - package_status_is_restored
+      - package_state_is_retained
+      - package_state_is_restored
+      - package_state_is_cancelled
 
   scope:
     restore_only:
