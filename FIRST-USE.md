@@ -38,7 +38,31 @@ After confirmation:
 
 Do not mix timezones silently inside the Agent's operating records.
 
-## 3. Find the components required to keep operating
+## 3. Establish one canonical language
+
+Ask the user to confirm the working language the Agent should use for ENA records and Agent-to-Agent operational communication. The language currently used with the user may be offered as the initial suggestion, but the user should confirm it.
+
+Store the choice as a standard language tag where practical, for example:
+
+```text
+zh-CN
+en-US
+it-IT
+```
+
+After confirmation, use the canonical language consistently for:
+
+- ENA operating records;
+- ACMS change descriptions and recovery guides;
+- A2A operational messages and rescue instructions;
+- evolution records, findings, and retained lessons;
+- user-facing ENA status and recovery information.
+
+Keep code, commands, file paths, identifiers, API field names, protocol payloads, and other machine-defined content in the form required by the underlying system. Translate or explain surrounding text when needed, but do not alter machine-sensitive content merely to match the canonical language.
+
+Record any interface or collaborator that requires another language and handle that as an explicit translation boundary rather than silently mixing languages in the Agent's durable records.
+
+## 4. Find the components required to keep operating
 
 Locate the components required to start, communicate, act, and recover, for example:
 
@@ -50,7 +74,7 @@ Locate the components required to start, communicate, act, and recover, for exam
 - working directories or mounted volumes required to function;
 - schedulers, supervisors, containers, VMs, service managers, or other Host mechanisms that start and keep the Agent running.
 
-## 4. Verify communication paths
+## 5. Verify communication paths
 
 Verify, rather than merely list:
 
@@ -61,7 +85,7 @@ Verify, rather than merely list:
 
 If no A2A path exists and the Host provides enough capability to create one, establish a practical A2A path.
 
-## 5. Find existing protection and recovery mechanisms
+## 6. Find existing protection and recovery mechanisms
 
 Inspect what the Host already provides:
 
@@ -76,7 +100,7 @@ Inspect what the Host already provides:
 
 Reuse reliable Host-native mechanisms where possible.
 
-## 6. Identify body-changing surfaces
+## 7. Identify body-changing surfaces
 
 Record the places where a self-change could affect your ability to keep operating or repair yourself.
 
@@ -87,7 +111,7 @@ For each important surface, determine:
 - how that specific change can be reversed;
 - what independent mechanism can still execute the reversal if the main Agent becomes unresponsive.
 
-## 7. Keep a grounded body record
+## 8. Keep a grounded body record
 
 Keep one durable record containing the information needed for protection and recovery:
 
@@ -95,6 +119,8 @@ Keep one durable record containing the information needed for protection and rec
 - confirmed capabilities;
 - canonical timezone;
 - known timezone exceptions or conversion boundaries;
+- canonical language;
+- known language or translation boundaries;
 - critical components and locations;
 - startup / restart path;
 - human communication path;
@@ -118,4 +144,4 @@ Once the environment is understood well enough:
 6. if communication is normal, cancel the pending automatic rollback;
 7. if the Agent becomes unreachable, allow the independent timer to restore the previous state or let another Agent use the recovery information already supplied.
 
-Use the confirmed canonical timezone throughout these operations.
+Use the confirmed canonical timezone and canonical language throughout these operations.
