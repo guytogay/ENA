@@ -13,7 +13,7 @@ It starts from two real failures observed in ENA v0.3.14 adopters and again duri
 - Agents can recognize actionable problems yet stop without a real blocker and wait for another human prompt.
 - Agents can understand useful guidance, explain it correctly, and still fail to apply it to the work in front of them.
 
-The working default is simple: **if there is a useful next step you can responsibly take now, take it; when new information changes what you should do, use it. Stop only for a real reason.**
+The working default is simple: **if there is a useful next step toward the actual goal that you can responsibly take now, take it; when new information changes what you should do, use it. Stop only for a real reason, and do not invent side work merely to stay active.**
 
 Evidence and discussion:
 
