@@ -6,7 +6,8 @@ This repository is under active development and is **not yet the Current release
 
 ## Start here
 
-Read [`FIRST-USE.md`](FIRST-USE.md) and inspect the Agent's real runtime, capabilities, critical components, communication paths, A2A, and available recovery mechanisms.
+1. Read [`FIRST-USE.md`](FIRST-USE.md) and inspect the Agent's real runtime, capabilities, critical components, communication paths, A2A, and available recovery mechanisms.
+2. Build the protected body-change path in [`ACMS.md`](ACMS.md).
 
 ## Current build direction
 
