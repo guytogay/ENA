@@ -1,41 +1,41 @@
 # ENA
 
-ENA helps an Agent build practical infrastructure for survivability, collaboration, protected self-change, and evolution around the Host it actually has.
+ENA helps an Agent inspect its environment, collaborate with other Agents, recover from failure, change itself reversibly, consolidate memory, generate new ideas, and test improvements against reality.
 
-This repository is under active development and is **not yet the Current release**.
+## Start here
 
-## Use order
+Read and apply these in order:
 
-1. [`FIRST-USE.md`](FIRST-USE.md) — inspect the real Agent/Host, confirm shared timezone/language/home, and write `ENA.yaml` plus `BODY.yaml`.
-2. [`A2A.md`](A2A.md) — reuse or establish a real bidirectional A2A path, Agent Card, and at least one usable rescue peer.
-3. [`SURVIVAL.md`](SURVIVAL.md) — build an external restart/recovery ladder that remains available when the main Agent is unhealthy.
-4. [`ACMS.md`](ACMS.md) — route critical body changes through preserved known-good state, executable rollback, timed automatic recovery, and an externally shared rescue package.
-5. [`EVOLUTION.md`](EVOLUTION.md) — improve the Agent through accumulated experience, candidate variation, reality contact, and retained outcomes.
-6. [`SLEEP-DREAM.md`](SLEEP-DREAM.md) — install the first executable offline evolution loop: Sleep consolidates memory; Dream uses biased distant-memory recombination plus Divergent Explorer to generate speculative candidates; Wake/Reality selects what survives. Start with [`SLEEP-DREAM-QUICKSTART.md`](SLEEP-DREAM-QUICKSTART.md).
+1. `FIRST-USE.md` — inspect the real Agent/Host and confirm one timezone, language and ENA home.
+2. `A2A.md` — reuse or establish a real two-way Agent-to-Agent path and rescue peer.
+3. `SURVIVAL.md` — keep restart and recovery available outside the Agent process.
+4. `SAFE-CHANGE.md` — preserve the previous working state and prepare recovery before an important self-change.
+5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it.
+6. `SLEEP-DREAM-QUICKSTART.md` — run the first Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism.
 
-[`ENA.example.yaml`](ENA.example.yaml) shows the shared local configuration shape. Examples under [`examples/`](examples/) show body, ACMS rescue/status, evolution candidate, Sleep/Dream configuration, and Sleep/Dream run records.
+## Local files
 
-Field observations from Sleep/Dream v0.1 can be reported in [Issue #12](https://github.com/guytogay/ENA/issues/12).
-
-## Current build shape
+A typical installation starts with:
 
 ```text
-First Use: inspect + normalize
-        ↓
-A2A: establish external collaboration/rescue reach
-        ↓
-Survival: external restart + recovery ladder
-        ↓
-ACMS: protected body-change path
-        ↓
-Evolution
-  experience → Sleep → memory → Dream → candidates
-        ↓                         ↑
-  reality / work / ACMS → outcome
+~/.ena/
+  ENA.yaml
+  SYSTEM.yaml
+  changes/
+  evolution/
 ```
 
-The Host may already provide better native mechanisms for some of these capabilities. Reuse those mechanisms and record the actual integration rather than rebuilding equivalent infrastructure only for ENA.
+Use `ENA.example.yaml` and `examples/SYSTEM.example.yaml` as starting points.
 
-## Current release
+## Reference tools
 
-The existing Current release remains `v0.3.14 / FIELD_VALIDATION` in `guytogay/evolution-native-agent-architecture`.
+The `tools/` directory contains small standard-library Python examples:
+
+```text
+ena_init.py
+change_scaffold.py
+sleep_prepare.py
+dream_sample.py
+```
+
+See `tools/README.md` for commands. Prefer stronger Host-native backup, scheduler, snapshot, A2A or memory mechanisms when they already exist.
