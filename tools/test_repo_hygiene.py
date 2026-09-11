@@ -40,6 +40,32 @@ def violation_reason(path: Path) -> str | None:
 
 
 class RepositoryHygieneTests(unittest.TestCase):
+    def test_known_bad_signatures_are_detected(self):
+        cases = [
+            "LICENSE-README-TEMP",
+            "scratch.tmp",
+            "backup.bak",
+            "module/__pycache__/x.pyc",
+            ".DS_Store",
+            ".env",
+            ".env.local",
+        ]
+        for raw in cases:
+            with self.subTest(path=raw):
+                self.assertIsNotNone(violation_reason(Path(raw)))
+
+    def test_legitimate_near_matches_are_not_rejected(self):
+        cases = [
+            "TEMPLATE.md",
+            "docs/SESSION-TEMPLATE.md",
+            ".env.example",
+            ".env.sample",
+            ".env.template",
+        ]
+        for raw in cases:
+            with self.subTest(path=raw):
+                self.assertIsNone(violation_reason(Path(raw)))
+
     def test_tracked_files_do_not_match_known_local_or_temp_signatures(self):
         repo = Path(__file__).resolve().parents[1]
         violations = []
