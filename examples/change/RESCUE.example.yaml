@@ -1,58 +1,14 @@
-schema_version: '0.2'
-
-rescue:
-  host_profile: session   # resident | session
-
-  target:
-    agent_card: UNKNOWN
-    host_or_workspace: REPLACE_WITH_REAL_HOST_OR_WORKSPACE
-    service_or_session: REPLACE_WITH_REAL_SERVICE_OR_SESSION
-
-  recovery_actor:
-    type: human   # human | agent | host
-    reference: REPLACE_WITH_REAL_RESCUER_OR_MECHANISM
-    acknowledged: true
-
-  package:
-    id: 20260912T011530+0800__example
-    status_file: REPLACE_WITH_REAL_STATUS_PATH
-
-  changed:
-    - REPLACE_WITH_EXACT_CHANGED_COMPONENT
-
-  known_good:
-    kind: git_commit
-    reference: REPLACE_WITH_REAL_COMMIT_BACKUP_OR_SNAPSHOT
-    integrity: REPLACE_WITH_HASH_OR_VERSION_WHEN_USEFUL
-
-  automatic_rollback:
-    mechanism: null
-    job_id: null
-    deadline: null
-
-  rollback:
-    command_or_action: REPLACE_WITH_EXACT_ROLLBACK
-
-  restart_or_new_session:
-    command_or_action: REPLACE_WITH_RESTART_RELOAD_OR_NEW_SESSION_PATH
-
-  verify:
-    operation_check: REPLACE_WITH_REAL_CHECK
-    communication_check: normal_two_way_human_or_A2A_exchange
-
-  act_when_any:
-    - target_unreachable_or_current_session_unusable
-    - human_or_agent_authorized_recovery
-    - automatic_rollback_failed_if_present
-
-  do_not_act_when_any:
-    - package_state_is_retained
-    - package_state_is_restored
-    - package_state_is_cancelled
-
-  restore_only:
-    - REPLACE_WITH_EXACT_RECOVERY_SCOPE
-
-  fallback:
-    next_restore_point: REPLACE_WITH_REAL_FALLBACK
-    escalation: REPLACE_WITH_REAL_HUMAN_AGENT_OR_EXTERNAL_PATH
+schema_version: '0.3'
+host_profile: session
+target: REPLACE_WITH_REAL_AGENT_SESSION_OR_REPOSITORY
+recovery_actor: REPLACE_WITH_REAL_HUMAN_AGENT_OR_HOST_RESCUER
+where_to_act: REPLACE_WITH_REAL_HOST_WORKSPACE_OR_REPOSITORY
+changed: REPLACE_WITH_EXACT_CHANGED_COMPONENTS
+known_good: REPLACE_WITH_REAL_COMMIT_BACKUP_SNAPSHOT_OR_VERSION
+rollback_action: REPLACE_WITH_EXACT_VERIFIED_ROLLBACK_ACTION
+automatic_rollback: null
+restart_or_new_session: REPLACE_WITH_RESTART_RELOAD_OR_NEW_SESSION_PATH
+verify_operation: REPLACE_WITH_REAL_OPERATION_CHECK
+verify_communication: REPLACE_WITH_REAL_TWO_WAY_CHECK_OR_NOT_NEEDED
+restore_only: REPLACE_WITH_EXACT_RECOVERY_SCOPE
+fallback: REPLACE_WITH_REAL_FALLBACK_OR_ESCALATION
