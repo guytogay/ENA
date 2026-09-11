@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
 def parse_time(value: str | None) -> datetime | None:
@@ -43,11 +46,20 @@ def main() -> int:
     results = []
     counts = {"fresh": 0, "stale": 0, "unknown": 0}
 
-    for path in args.input:
-        for line_no, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            if not raw.strip():
-                continue
-            record = json.loads(raw)
+    try:
+        sources = [(path, load_jsonl_source(path)) for path in args.input]
+    except JsonlSourceError as exc:
+        print(f"ENA freshness scan: ERROR: {exc}", file=sys.stderr)
+        return 2
+
+    for path, source in sources:
+        for line_no, record in zip(source.line_numbers, source.records):
+            if not isinstance(record, dict):
+                print(
+                    f"ENA freshness scan: ERROR: record at line {line_no} in {path} must be a JSON object",
+                    file=sys.stderr,
+                )
+                return 2
             checked_at = parse_time(record.get("checked_at"))
             valid_until = parse_time(record.get("valid_until"))
 

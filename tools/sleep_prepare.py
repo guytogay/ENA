@@ -4,29 +4,22 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-
-def read_jsonl(path: str) -> tuple[list[object], str | None]:
-    p = Path(path)
-    if not p.exists():
-        return [], None
-    text = p.read_text(encoding="utf-8")
-    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
-    records = [json.loads(line) for line in text.splitlines() if line.strip()]
-    return records, digest
+from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
 def bounded_source(reference: str, role: str, max_records: int) -> tuple[list[object], dict[str, object]]:
-    records, digest = read_jsonl(reference)
+    source = load_jsonl_source(reference)
+    records = source.records
     selected = records[-max_records:] if max_records > 0 else []
     meta = {
         "role": role,
-        "reference": reference,
-        "sha256": digest,
+        "reference": source.reference,
+        "sha256": source.sha256,
         "source_record_count": len(records),
         "selected_record_count": len(selected),
         "selection": {
@@ -38,7 +31,12 @@ def bounded_source(reference: str, role: str, max_records: int) -> tuple[list[ob
 
 
 def main() -> int:
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(
+        description=(
+            "Build a bounded Sleep transport bundle. The reference tail selection is conservative; "
+            "it is not a complete Sleep retrieval policy for older relevant memory/knowledge."
+        )
+    )
     p.add_argument("--experience", required=True)
     p.add_argument("--memory", required=True)
     p.add_argument("--output", required=True)
@@ -49,8 +47,12 @@ def main() -> int:
     if args.max_experience < 0 or args.max_memory < 0:
         raise SystemExit("--max-experience and --max-memory must be >= 0")
 
-    experience, experience_meta = bounded_source(args.experience, "experience", args.max_experience)
-    memory, memory_meta = bounded_source(args.memory, "memory", args.max_memory)
+    try:
+        experience, experience_meta = bounded_source(args.experience, "experience", args.max_experience)
+        memory, memory_meta = bounded_source(args.memory, "memory", args.max_memory)
+    except JsonlSourceError as exc:
+        print(f"ENA Sleep input: ERROR: {exc}", file=sys.stderr)
+        return 2
 
     bundle = {
         "task": "sleep_consolidation",

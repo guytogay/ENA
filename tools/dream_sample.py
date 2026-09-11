@@ -4,13 +4,15 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import math
 import random
 import secrets
+import sys
 from datetime import datetime
 from pathlib import Path
+
+from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
 def parse_time(value: str | None) -> float:
@@ -85,10 +87,16 @@ def main() -> int:
     )
     args = p.parse_args()
 
-    memory_path = Path(args.memory)
-    memory_text = memory_path.read_text(encoding="utf-8")
-    input_sha256 = hashlib.sha256(memory_text.encode("utf-8")).hexdigest()
-    records = [json.loads(line) for line in memory_text.splitlines() if line.strip()]
+    try:
+        source = load_jsonl_source(args.memory)
+    except JsonlSourceError as exc:
+        print(f"ENA Dream sampler: ERROR: {exc}", file=sys.stderr)
+        return 2
+
+    records = source.records
+    if any(not isinstance(item, dict) for item in records):
+        print("ENA Dream sampler: ERROR: every input record must be a JSON object", file=sys.stderr)
+        return 2
     if len(records) < 2:
         raise SystemExit("Need at least two memory records")
 
@@ -147,8 +155,8 @@ def main() -> int:
         "mode": args.mode,
         "seed": seed,
         "input": {
-            "reference": args.memory,
-            "sha256": input_sha256,
+            "reference": source.reference,
+            "sha256": source.sha256,
             "record_count": len(records),
         },
         "anchor_id": anchor.get("id") if args.mode == "problem-guided" else None,
