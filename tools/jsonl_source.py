@@ -18,6 +18,7 @@ class JsonlSource:
     reference: str
     text: str
     records: list[object]
+    line_numbers: list[int]
     sha256: str
 
 
@@ -34,11 +35,13 @@ def load_jsonl_source(path: str | Path) -> JsonlSource:
         raise JsonlSourceError(f"cannot read input source {p}: {exc}") from exc
 
     records: list[object] = []
+    line_numbers: list[int] = []
     for line_no, raw in enumerate(text.splitlines(), start=1):
         if not raw.strip():
             continue
         try:
             records.append(json.loads(raw))
+            line_numbers.append(line_no)
         except json.JSONDecodeError as exc:
             raise JsonlSourceError(
                 f"invalid JSONL in {p} at line {line_no}: {exc.msg}"
@@ -48,5 +51,6 @@ def load_jsonl_source(path: str | Path) -> JsonlSource:
         reference=str(p),
         text=text,
         records=records,
+        line_numbers=line_numbers,
         sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
     )
