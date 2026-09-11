@@ -7,7 +7,8 @@ import argparse
 import re
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
+
+from timezone_utils import TimezoneUnavailable, load_timezone
 
 
 def clean(value: str) -> str:
@@ -23,7 +24,12 @@ def main() -> int:
     p.add_argument("--profile", choices=("resident", "session"), required=True)
     args = p.parse_args()
 
-    now = datetime.now(ZoneInfo(args.timezone))
+    try:
+        tz = load_timezone(args.timezone)
+    except TimezoneUnavailable as exc:
+        raise SystemExit(str(exc)) from exc
+
+    now = datetime.now(tz)
     stamp = now.strftime("%Y%m%dT%H%M%S%z")
     package = Path(args.home).expanduser().resolve() / "changes" / f"{stamp}__{clean(args.name)}"
     (package / "backup").mkdir(parents=True, exist_ok=False)

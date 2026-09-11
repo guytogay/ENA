@@ -9,15 +9,15 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
+from timezone_utils import TimezoneUnavailable, load_timezone
 
 
 ALLOWED = {
     "preparing": {"armed", "cancelled"},
     "armed": {"applied", "cancelled"},
-    "applied": {"retained", "restoring", "failed"},
+    "applied": {"retained", "restoring"},
     "restoring": {"restored", "failed"},
     "retained": set(),
     "restored": set(),
@@ -55,8 +55,10 @@ def configured_timezone(package: Path):
     try:
         data = read_control(ena)
         name = scalar(data, "canonical_timezone")
-        return ZoneInfo(name) if name else timezone.utc
-    except Exception:
+        if not name:
+            return timezone.utc
+        return load_timezone(name)
+    except (ValueError, TimezoneUnavailable):
         return timezone.utc
 
 

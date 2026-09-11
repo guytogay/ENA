@@ -150,7 +150,45 @@ def main() -> int:
         dream = json.loads(dream_out.read_text(encoding="utf-8"))
         assert dream["truth_status"] == "speculative_input"
         assert dream["experimental_parameters"] is True
+        assert dream["seed"] == 42
+        assert dream["anchor_id"] is None
+        assert dream["sampled_anchor_id"] is not None
+        assert len(dream["input"]["sha256"]) == 64
+        assert dream["input"]["record_count"] >= 2
         assert len(dream["fragments"]) >= 2
+
+        replay_out = tmp / "dream-replay.json"
+        run(
+            tools / "dream_sample.py",
+            "--memory", dream_material,
+            "--output", replay_out,
+            "--seed", str(dream["seed"]),
+        )
+        replay = json.loads(replay_out.read_text(encoding="utf-8"))
+        assert replay == dream
+
+        guided_out = tmp / "dream-guided.json"
+        guided_anchor = dream["fragments"][0]["memory"]["id"]
+        run(
+            tools / "dream_sample.py",
+            "--memory", dream_material,
+            "--output", guided_out,
+            "--mode", "problem-guided",
+            "--anchor-id", guided_anchor,
+            "--seed", "43",
+        )
+        guided = json.loads(guided_out.read_text(encoding="utf-8"))
+        assert guided["anchor_id"] == guided_anchor
+        assert guided["sampled_anchor_id"] is None
+
+        auto_seed_out = tmp / "dream-auto-seed.json"
+        run(
+            tools / "dream_sample.py",
+            "--memory", dream_material,
+            "--output", auto_seed_out,
+        )
+        auto_seed = json.loads(auto_seed_out.read_text(encoding="utf-8"))["seed"]
+        assert isinstance(auto_seed, int)
 
         candidate_path = Path(run(
             tools / "candidate_record.py",

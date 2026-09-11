@@ -12,9 +12,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 from control_yaml import ControlYamlError, parse_control_yaml, scalar
+from timezone_utils import TimezoneUnavailable, load_timezone
 
 
 def configured_timezone(home: Path) -> tuple[object, str]:
@@ -29,9 +29,9 @@ def configured_timezone(home: Path) -> tuple[object, str]:
     if not name:
         raise ValueError("ENA.yaml has no canonical_timezone")
     try:
-        return ZoneInfo(name), name
-    except Exception as exc:
-        raise ValueError(f"invalid canonical_timezone {name!r}") from exc
+        return load_timezone(name), name
+    except TimezoneUnavailable as exc:
+        raise ValueError(str(exc)) from exc
 
 
 def digest(text: str) -> str:

@@ -18,10 +18,13 @@ self_test.py                verify the reference tools against included sample d
 
 `control_yaml.py` is a shared strict reader used by the control-file tools. It intentionally supports only ENA's mapping/scalar control subset and fails closed on unsupported YAML features such as sequences and multiline scalars.
 
+`timezone_utils.py` keeps UTC usable without an external timezone database and gives an actionable error when another IANA timezone is unavailable. Some Windows Python installations need the optional `tzdata` package before zones such as `Asia/Shanghai` can be resolved.
+
 ## Verify the tools
 
 ```bash
 python tools/test_control_yaml.py
+python tools/test_timezone_utils.py
 python tools/self_test.py
 ```
 
@@ -30,6 +33,8 @@ Expected final output:
 ```text
 ENA reference tools: OK
 ```
+
+The repository CI runs these checks on both Linux and Windows.
 
 ## Initialize interactively or from policy
 
@@ -40,6 +45,8 @@ python tools/ena_init.py --timezone CONFIRMED_IANA_TIMEZONE --language CONFIRMED
 ```
 
 This creates `SYSTEM.yaml` with `minimum_ready: false`. Verify a real recovery path and rescuer before marking it ready.
+
+If the Host lacks timezone data for the confirmed IANA zone, the tool stops with a direct instruction to install `tzdata` or provide another confirmed zone available to that Host. It does not silently substitute a different timezone.
 
 For a trusted deployment/workspace policy that already verified the minimum, the same tool can initialize non-interactively:
 
@@ -170,6 +177,10 @@ python tools/dream_sample.py \
   --seed 42
 ```
 
+The output records the effective seed, input reference + SHA-256 digest, and record count. If `--seed` is omitted, the sampler generates a seed and writes it into the output so the exact sampling decision can be replayed later.
+
+In `free` mode, `anchor_id` is `null` and the internally selected starting fragment is reported as `sampled_anchor_id`. This avoids making a sampled anchor look like a user-supplied problem anchor.
+
 ## Sample a problem-guided Dream
 
 ```bash
@@ -180,6 +191,8 @@ python tools/dream_sample.py \
   --output dream-set.json \
   --seed 42
 ```
+
+In `problem-guided` mode, `anchor_id` is the explicitly supplied anchor and `sampled_anchor_id` is `null`.
 
 The reference sampler's counts/weights are experimental field defaults, not ENA requirements.
 
