@@ -123,8 +123,9 @@ Use the Host scheduler when available. Respect per-run limits rather than replay
 
 ```text
 python tools/ena_init.py --timezone Asia/Shanghai --language zh-CN
+python tools/change_scaffold.py --name fix-config --timezone Asia/Shanghai
+python tools/sleep_prepare.py --experience experience.jsonl --memory memory.jsonl --output sleep-input.json
 python tools/dream_sample.py --memory memories.jsonl --output dream-set.json
-python tools/new_change.py --name fix-config --target /path/to/config
 ```
 
 These are reference implementations. Replace them with stronger Host-native mechanisms when available.
