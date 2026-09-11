@@ -152,6 +152,8 @@ python tools/sleep_prepare.py \
   --output sleep-input.json
 ```
 
+The bundle records when it was prepared plus, for each input source, its reference, SHA-256 digest, total source record count, selected record count, and the bounded tail-selection policy. This lets a later Agent tell which exact source state a Sleep run was based on even if the source files have since changed.
+
 Validation/repair events are also useful Sleep material. `examples/evolution/VALIDATION-TRAJECTORY.example.jsonl` shows the minimal shape.
 
 ## Combine Dream material from multiple sources
