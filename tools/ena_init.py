@@ -9,11 +9,24 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 
+def known(value: str | None) -> bool:
+    return bool(value and value.strip() and value.strip().upper() != "UNKNOWN")
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--home", default="~/.ena")
-    p.add_argument("--timezone", required=True, help="Confirmed IANA timezone, e.g. Europe/Rome")
-    p.add_argument("--language", required=True, help="Confirmed language tag, e.g. en-US")
+    p.add_argument("--timezone", required=True, help="Confirmed/pre-provisioned IANA timezone")
+    p.add_argument("--language", required=True, help="Confirmed/pre-provisioned language tag")
+    p.add_argument("--host-profile", choices=("resident", "session"), default="UNKNOWN")
+    p.add_argument("--recovery", default="UNKNOWN", help="Verified external recovery path/reference")
+    p.add_argument("--rescuer", default="UNKNOWN", help="Verified human/Agent/Host recovery actor")
+    p.add_argument("--rescuer-type", choices=("human", "agent", "host", "UNKNOWN"), default="UNKNOWN")
+    p.add_argument(
+        "--verified-minimum",
+        action="store_true",
+        help="Mark minimum_ready only when the supplied recovery/rescuer values were already verified by the caller",
+    )
     p.add_argument(
         "--system-valid-hours",
         type=int,
@@ -24,6 +37,13 @@ def main() -> int:
 
     if args.system_valid_hours <= 0:
         raise SystemExit("--system-valid-hours must be > 0")
+
+    if args.verified_minimum and not (
+        known(args.recovery) and known(args.rescuer) and args.rescuer_type != "UNKNOWN"
+    ):
+        raise SystemExit(
+            "--verified-minimum requires non-UNKNOWN --recovery, --rescuer and --rescuer-type"
+        )
 
     tz = ZoneInfo(args.timezone)
     home = Path(args.home).expanduser().resolve()
@@ -55,6 +75,9 @@ def main() -> int:
         "  a2a:\n"
         "    agent_card: UNKNOWN\n"
         "    rescue_peers: []\n"
+        "\nsurvival:\n"
+        f"  host_profile: {args.host_profile}\n"
+        f"  external_escalation: {args.rescuer}\n"
         "\nrecovery:\n"
         f"  changes: {home / 'changes'}\n"
         "  rollback_scheduler: UNKNOWN\n"
@@ -69,15 +92,17 @@ def main() -> int:
 
     checked = datetime.now(tz)
     valid_until = checked + timedelta(hours=args.system_valid_hours)
+    ready = "true" if args.verified_minimum else "false"
     system.write_text(
         "schema_version: '0.2'\n"
         f"checked_at: {checked.isoformat()}\n"
         f"valid_until: {valid_until.isoformat()}\n"
-        "minimum_ready: false\n"
+        f"minimum_ready: {ready}\n"
         f"canonical_timezone: {args.timezone}\n"
         "runtime:\n"
         "  host: UNKNOWN\n"
         "  agent_runtime: UNKNOWN\n"
+        f"  host_profile: {args.host_profile}\n"
         "  startup: UNKNOWN\n"
         "  restart: UNKNOWN\n"
         "  supervision: UNKNOWN\n"
@@ -85,12 +110,12 @@ def main() -> int:
         "  human: UNKNOWN\n"
         "  a2a_agent_card: UNKNOWN\n"
         "recovery:\n"
-        "  primary: UNKNOWN\n"
+        f"  primary: {args.recovery}\n"
         "  backup_or_snapshot: UNKNOWN\n"
         "  scheduler_or_timer: UNKNOWN\n"
         "rescue:\n"
-        "  primary: UNKNOWN\n"
-        "  type: UNKNOWN\n"
+        f"  primary: {args.rescuer}\n"
+        f"  type: {args.rescuer_type}\n"
         "memory:\n"
         "  sources: []\n"
         "  durable_store: UNKNOWN\n"
@@ -103,7 +128,10 @@ def main() -> int:
 
     print(config)
     print(system)
-    print("First Use is not complete yet: fill recovery/rescue facts and set minimum_ready: true.")
+    if args.verified_minimum:
+        print("Minimum First Use recorded from caller-verified preset values.")
+    else:
+        print("First Use is not complete yet: verify recovery/rescue facts and set minimum_ready: true.")
     return 0
 
 
