@@ -15,6 +15,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python tools/test_repo_hygiene.py
       - run: python tools/test_control_yaml.py
       - run: python tools/test_timezone_utils.py
       - run: python tools/test_jsonl_source.py
