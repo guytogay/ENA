@@ -5,15 +5,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
 def read_jsonl(path: str, material_type: str):
+    source = load_jsonl_source(path)
     records = []
-    for raw in Path(path).read_text(encoding="utf-8").splitlines():
-        if not raw.strip():
-            continue
-        item = json.loads(raw)
+    for item in source.records:
+        if not isinstance(item, dict):
+            raise JsonlSourceError(f"Dream material record in {source.reference} must be a JSON object")
+        item = dict(item)
         item.setdefault("material_type", material_type)
         records.append(item)
     return records
@@ -27,11 +31,15 @@ def main() -> int:
     p.add_argument("--output", required=True)
     args = p.parse_args()
 
-    records = read_jsonl(args.memory, "memory")
-    if args.knowledge:
-        records.extend(read_jsonl(args.knowledge, "knowledge"))
-    if args.capabilities:
-        records.extend(read_jsonl(args.capabilities, "capability"))
+    try:
+        records = read_jsonl(args.memory, "memory")
+        if args.knowledge:
+            records.extend(read_jsonl(args.knowledge, "knowledge"))
+        if args.capabilities:
+            records.extend(read_jsonl(args.capabilities, "capability"))
+    except JsonlSourceError as exc:
+        print(f"ENA Dream material: ERROR: {exc}", file=sys.stderr)
+        return 2
 
     seen = set()
     for item in records:
