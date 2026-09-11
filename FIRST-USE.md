@@ -1,192 +1,130 @@
-# ENA First Use: Inspect and Normalize
-
-Status: working draft — not Current.
+# First Use
 
 First Use has two jobs:
 
-1. **Inspect** the environment the Agent actually runs in.
-2. **Normalize** the shared operating conventions that later ENA capabilities will rely on.
+1. inspect the Agent and Host as they actually exist;
+2. normalize the settings later ENA functions will share.
 
-Verify facts from the Host, tools, files, runtime metadata, documentation, APIs, or other available evidence rather than relying on assumptions.
+Verify facts from the Host, runtime, files, tools, APIs, documentation or other available evidence. Do not guess when the environment can be inspected.
 
-## 1. Identify your runtime and capabilities
+## 1. Inspect the runtime
 
-Find out, as concretely as the Host allows:
+Identify:
 
-- what Agent/runtime/Host you are operating in;
-- what model or model service is providing reasoning, if exposed;
-- what tools, plugins, APIs, shells, browsers, code execution, schedulers, or other capabilities are available;
-- which capabilities are native to the Host and which were added by the current Agent or project.
+- Agent runtime and Host;
+- model/model service when exposed;
+- available tools, plugins, APIs, shell/code execution, browser and schedulers;
+- startup, stop, restart and supervision mechanisms;
+- important working directories, mounts, configuration and dependencies.
 
-If the Host provides capability discovery, inspect it directly.
+Record how important facts were verified.
 
-## 2. Establish one canonical timezone and verify the clock
+## 2. Confirm one timezone
 
-Inspect the time settings used by the Host and the components the Agent depends on, including the operating system, runtime, schedulers, logs, databases, and relevant applications where exposed.
+Inspect the timezone used by the operating system, runtime, scheduler, logs, databases and relevant applications when exposed.
 
-Ask the user to confirm the canonical timezone to use. Default to `Asia/Shanghai` unless the user chooses another timezone.
+Ask the user to confirm the canonical timezone. Suggest `Asia/Shanghai` by default unless the user chooses another IANA timezone such as `America/Los_Angeles`.
 
-Store the choice as an IANA timezone name, for example:
-
-```text
-Asia/Shanghai
-America/Los_Angeles
-Europe/Rome
-```
-
-Also verify that the Host clock is reasonably synchronized using the time service available on that Host. Timed rollback depends on trustworthy time, not only a timezone label.
+Also check whether the Host clock is reasonably synchronized.
 
 After confirmation:
 
-- use the canonical timezone for all ENA timestamps, records, schedules, deadlines, change packages, recovery information, and evolution history;
-- align Agent-controlled components to the same timezone where this can be done safely;
-- record any component that must remain on another timezone and the conversion boundary;
-- include the actual UTC offset in individual timestamps when it helps make the time unambiguous;
-- record the Host clock synchronization mechanism or any known clock-reliability limitation.
+- use this timezone for ENA timestamps, schedules, deadlines, recovery records and evolution records;
+- use the actual UTC offset in event timestamps where useful;
+- align Agent-controlled components when safe;
+- record explicit conversion boundaries for components that must use another timezone.
 
-Do not mix timezones silently inside the Agent's operating records.
+## 3. Confirm one working language
 
-## 3. Establish one canonical language
+Ask the user to confirm the language used for ENA records and operational Agent-to-Agent messages. Store a normal language tag such as `zh-CN` or `en-US`.
 
-Ask the user to confirm the working language the Agent should use for ENA records and Agent-to-Agent operational communication. The language currently used with the user may be offered as the initial suggestion, but the user should confirm it.
+Keep commands, paths, identifiers, API fields and protocol payloads in the exact form required by the underlying system.
 
-Store the choice as a standard language tag where practical, for example:
+Use UTF-8 for ENA-owned text files unless an external interface requires another encoding.
 
-```text
-zh-CN
-en-US
-it-IT
-```
+## 4. Confirm the ENA home
 
-After confirmation, use the canonical language consistently for:
-
-- ENA operating records;
-- ACMS change descriptions and recovery guides;
-- A2A operational messages and rescue instructions;
-- evolution records, findings, and retained lessons;
-- user-facing ENA status and recovery information.
-
-Keep code, commands, file paths, identifiers, API field names, protocol payloads, and other machine-defined content in the form required by the underlying system. Translate or explain surrounding text when needed, but do not alter machine-sensitive content merely to match the canonical language.
-
-Use UTF-8 for ENA-owned YAML, Markdown, and other text records unless the Host requires another encoding for a specific external interface.
-
-Record any interface or collaborator that requires another language and handle that as an explicit translation boundary rather than silently mixing languages in the Agent's durable records.
-
-## 4. Establish one ENA home directory
-
-Ask the user to confirm where ENA's own durable files should live on this Host. If the user has no preference, use a stable directory under the Agent user's home, for example:
+Ask where ENA-owned files should live. If there is no preference, use a stable directory under the Agent user's home, for example:
 
 ```text
 ~/.ena/
 ```
 
-Use the Host-equivalent user-home path where `~` is not appropriate.
-
-After confirmation:
-
-- create the ENA home if it does not already exist;
-- keep `ENA.yaml` at the root of this directory;
-- keep the grounded body record at `BODY.yaml` unless the Host requires another explicit location;
-- use this location as the stable entry point for ENA-owned ACMS, change, A2A, recovery, and evolution records;
-- record any ENA data that must live elsewhere as an explicit path from `ENA.yaml` rather than relying on rediscovery.
-
-A typical layout may begin as:
+Create only what is needed. A typical installation may become:
 
 ```text
 ~/.ena/
   ENA.yaml
-  BODY.yaml
-  acms/
+  SYSTEM.yaml
   changes/
-  a2a/
   evolution/
 ```
 
-Create only the directories that are actually needed on the current Host.
+## 5. Verify communication
 
-## 5. Find the components required to keep operating
+Identify and test:
 
-Locate the components required to start, communicate, act, and recover, for example:
+- how humans reach the Agent;
+- whether A2A already exists;
+- the Agent Card or other discovery record used by the A2A implementation;
+- at least one real two-way A2A exchange;
+- transport, authentication and permissions;
+- at least one reachable rescue peer when the Host can support it.
 
-- startup or service definitions;
-- executable code or runtime package;
-- critical configuration;
-- credentials or connection configuration needed for essential services;
-- tool and plugin configuration;
-- working directories or mounted volumes required to function;
-- schedulers, supervisors, containers, VMs, service managers, or other Host mechanisms that start and keep the Agent running.
+Reuse the existing A2A identity/discovery mechanism. Do not create a second ENA identity system.
 
-For important findings, record how they were verified so a later Agent can re-check them without guessing.
+See `A2A.md`.
 
-## 6. Verify communication and A2A
+## 6. Inspect memory
 
-Verify, rather than merely list:
+Identify how the Agent actually retains and retrieves information across sessions/restarts:
 
-- how humans can reach you;
-- whether a standards-based or Host-native A2A path already exists;
-- which other Agents can be reached;
-- whether a real bidirectional A2A exchange works;
-- what transport, authentication, and permissions those channels depend on;
-- where the Agent's A2A Agent Card or equivalent discovery record can be retrieved, when applicable.
+- durable memory sources;
+- conversation/task/episodic history that can supply experience;
+- semantic/vector/indexed retrieval;
+- persistent procedures, skills or preferences;
+- how durable memory is written or updated;
+- how a mistaken update can be versioned, reversed, restored or superseded;
+- schedulers, idle hooks or event triggers that can run maintenance;
+- memory sources that must be excluded from consolidation or recombination.
 
-If A2A already exists, reuse its identity/discovery mechanism rather than creating a parallel ENA identity.
+Do not create a separate ENA memory database when the Host already has a suitable memory system.
 
-If no A2A path exists and the Host provides enough capability to create one, establish a practical A2A path and at least one reachable rescue peer. See [`A2A.md`](A2A.md).
+## 7. Inspect backup and recovery
 
-## 7. Inspect the memory and evolution substrate
-
-Find out how this Agent actually retains and retrieves experience across sessions or restarts.
-
-Identify, where available:
-
-- durable memory stores;
-- episodic/conversation/task history that can supply experience;
-- semantic/vector/indexed retrieval mechanisms;
-- procedures, skills, preferences, or other persistent adaptive records;
-- how durable memory can be written or updated;
-- how a mistaken memory update can be versioned, reversed, restored, or superseded;
-- schedulers, idle hooks, event triggers, or other wake mechanisms that can run offline maintenance;
-- memory sources that must not be included in consolidation or recombination.
-
-Do not invent a separate ENA memory database when the Host already has a suitable memory substrate. Record stable pointers and the actual update/recovery mechanisms in `BODY.yaml` and `ENA.yaml` as appropriate.
-
-If no durable experience path exists, record the gap. [`SLEEP-DREAM.md`](SLEEP-DREAM.md) may use an ENA-owned experience inbox for evolution-relevant occurrences, but that inbox is not a replacement for every Host memory function.
-
-## 8. Find existing protection and recovery mechanisms
-
-Inspect what the Host already provides:
+Find the Host mechanisms already available:
 
 - Git or other version control;
-- filesystem, VM, container, or volume snapshots;
-- backups and restore tools;
+- file, volume, container, VM or database snapshots;
+- backup/restore tools;
 - service restart mechanisms;
-- task schedulers or timers;
-- watchdogs or health checks;
-- rollback, deployment, or release mechanisms;
-- logs that can confirm what changed and whether recovery succeeded.
+- task schedulers/timers;
+- watchdogs and health checks;
+- deployment/release rollback;
+- logs.
 
-Reuse reliable Host-native mechanisms where possible.
+Prefer reliable Host-native mechanisms.
 
-## 9. Identify body-changing surfaces
+## 8. Identify risky self-change surfaces
 
-Record the places where a self-change could affect the Agent's ability to keep operating or repair itself.
+List the parts whose modification could stop the Agent from starting, communicating, using required tools or repairing itself.
 
-For each important surface, determine:
+For each important surface, identify:
 
-- what can be changed;
+- what can change;
 - where the previous working state can be preserved;
-- how that specific change can be reversed;
-- what independent mechanism can still execute the reversal if the main Agent becomes unresponsive.
+- how the change can be reversed;
+- what independent mechanism can still execute recovery if the Agent becomes unreachable.
 
-## 10. Write the durable First Use outputs
+See `SAFE-CHANGE.md`.
 
-First Use should leave two durable entry records.
+## 9. Write two durable records
 
 ### `ENA.yaml`
 
-Store confirmed operating conventions and stable pointers used by later ENA capabilities.
+Keep user-confirmed shared settings and stable pointers.
 
-At minimum:
+Minimum:
 
 ```yaml
 ena_home: ~/.ena
@@ -195,36 +133,32 @@ canonical_language: zh-CN
 text_encoding: UTF-8
 ```
 
-Replace example values with the user's confirmed choices and store `ena_home` in the Host-appropriate form.
+Use `ENA.example.yaml` as a starting point.
 
-`ENA.yaml` may also keep stable pointers to runtime controls, A2A Agent Card/rescue peers, survivability controls, ACMS, rollback scheduler, backups/snapshots, memory/evolution configuration, and evolution records. See [`ENA.example.yaml`](ENA.example.yaml).
+### `SYSTEM.yaml`
 
-### `BODY.yaml`
+Record the verified runtime, capabilities, communication, memory, recovery mechanisms, risky change surfaces and important unknowns.
 
-Store the grounded result of the actual inspection: runtime, confirmed capabilities, critical components and locations, communication paths, memory/evolution substrate, Host recovery mechanisms, body-changing surfaces, clock synchronization, verification evidence, and important unknowns.
+This is a current system map, not timeless truth. Recheck mutable facts before consequential changes.
 
-Do not treat `BODY.yaml` as timeless truth. Re-check mutable facts before a consequential self-change. See [`examples/BODY.example.yaml`](examples/BODY.example.yaml).
+Use `examples/SYSTEM.example.yaml` as a starting point.
 
 ## First Use is complete when
 
-- the user has confirmed the canonical timezone, canonical language, and ENA home;
-- the Host clock/synchronization state has been checked;
-- `ENA.yaml` exists at the confirmed ENA home;
-- `BODY.yaml` contains grounded runtime, communication, memory, recovery, and critical-component findings rather than assumptions;
-- the human communication path has been identified;
-- A2A has either been verified/established with a usable rescue peer or the missing capability is explicitly recorded;
-- durable memory sources, write/update path, recovery/versioning path, and available offline scheduler/wake mechanisms have been identified or their absence recorded;
-- restart, backup/snapshot, scheduler/timer, and other Host recovery mechanisms have been identified or their absence recorded;
-- important body-changing surfaces and known recovery limitations are visible to later ENA capabilities.
+- the user has confirmed timezone, language and ENA home;
+- `ENA.yaml` exists;
+- `SYSTEM.yaml` describes verified runtime, communication, memory and recovery facts;
+- human communication is known;
+- A2A is verified/established or its absence is recorded;
+- restart, backup/snapshot and scheduler/timer mechanisms are known or their absence is recorded;
+- risky self-change surfaces and recovery limits are visible.
 
-## What happens next
+Then continue with:
 
-Once the Agent has inspected and normalized its operating environment:
-
-1. establish or verify the practical A2A path and rescue peer in [`A2A.md`](A2A.md);
-2. build the external restart/recovery ladder in [`SURVIVAL.md`](SURVIVAL.md);
-3. build the protected change/recovery mechanism in [`ACMS.md`](ACMS.md);
-4. route body-changing operations through ACMS;
-5. use [`EVOLUTION.md`](EVOLUTION.md) for cumulative improvement and install the offline consolidation/recombination workflow in [`SLEEP-DREAM.md`](SLEEP-DREAM.md).
-
-Use the confirmed ENA home, canonical timezone, canonical language, and grounded body record throughout these operations.
+```text
+A2A.md
+→ SURVIVAL.md
+→ SAFE-CHANGE.md
+→ EVOLUTION.md
+→ SLEEP-DREAM-QUICKSTART.md
+```
