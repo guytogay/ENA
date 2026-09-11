@@ -45,7 +45,13 @@ def main() -> int:
         system.write_text(text, encoding="utf-8")
         run(tools / "ena_preflight.py", "--home", home)
 
-        package = run(tools / "change_scaffold.py", "--home", home, "--timezone", "Etc/UTC", "--name", "self-test")
+        package = run(
+            tools / "change_scaffold.py",
+            "--home", home,
+            "--timezone", "Etc/UTC",
+            "--profile", "session",
+            "--name", "self-test",
+        )
         assert Path(package).is_dir()
 
         sleep_out = tmp / "sleep-input.json"
@@ -66,6 +72,7 @@ def main() -> int:
         )
         dream = json.loads(dream_out.read_text(encoding="utf-8"))
         assert dream["truth_status"] == "speculative_input"
+        assert dream["experimental_parameters"] is True
         assert len(dream["fragments"]) >= 2
 
         candidate_path = Path(run(
