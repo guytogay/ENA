@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Strict reader for ENA-owned control YAML.
 
-This is intentionally not a general YAML parser. It accepts only the small
-mapping subset emitted by ENA reference tools: root scalars and one level of
-nested scalar mappings. Unsupported YAML fails closed instead of being
-silently misread.
+This is intentionally not a general YAML parser. It accepts mappings and
+scalar values using two-space indentation, including nested mappings emitted
+by ENA reference tools. Sequence syntax and multiline/block scalars fail
+closed instead of being silently misread.
 """
 
 from __future__ import annotations
@@ -30,18 +30,23 @@ def _clean_scalar(raw: str) -> str:
 
 
 def parse_control_yaml(text: str) -> dict[str, Any]:
-    result: dict[str, Any] = {}
-    current_section: str | None = None
+    root: dict[str, Any] = {}
+    containers: dict[int, dict[str, Any]] = {0: root}
 
     for lineno, raw in enumerate(text.splitlines(), start=1):
         if not raw.strip() or raw.lstrip().startswith("#"):
             continue
-        if "\t" in raw[: len(raw) - len(raw.lstrip(" \t"))]:
+        prefix = raw[: len(raw) - len(raw.lstrip(" \t"))]
+        if "\t" in prefix:
             raise ControlYamlError(f"line {lineno}: tabs are not allowed for indentation")
 
         indent = len(raw) - len(raw.lstrip(" "))
-        if indent not in {0, 2}:
-            raise ControlYamlError(f"line {lineno}: only 0 or 2-space indentation is supported")
+        if indent % 2:
+            raise ControlYamlError(f"line {lineno}: indentation must use multiples of two spaces")
+        depth = indent // 2
+        parent = containers.get(depth)
+        if parent is None:
+            raise ControlYamlError(f"line {lineno}: indentation jumps over a missing parent mapping")
 
         line = raw[indent:]
         if line.startswith("- ") or line == "-":
@@ -53,31 +58,21 @@ def parse_control_yaml(text: str) -> dict[str, Any]:
         key = key.strip()
         if not _KEY.fullmatch(key):
             raise ControlYamlError(f"line {lineno}: unsupported key {key!r}")
+        if key in parent:
+            raise ControlYamlError(f"line {lineno}: duplicate key {key!r}")
+
         value = _clean_scalar(raw_value)
+        for stale_depth in [item for item in containers if item > depth]:
+            del containers[stale_depth]
 
-        if indent == 0:
-            current_section = None
-            if key in result:
-                raise ControlYamlError(f"line {lineno}: duplicate root key {key!r}")
-            if value == "":
-                result[key] = {}
-                current_section = key
-            else:
-                result[key] = value
-            continue
-
-        if current_section is None:
-            raise ControlYamlError(f"line {lineno}: nested key without a root section")
-        section = result[current_section]
-        if not isinstance(section, dict):
-            raise ControlYamlError(f"line {lineno}: parent {current_section!r} is not a mapping")
-        if key in section:
-            raise ControlYamlError(f"line {lineno}: duplicate key {current_section}.{key}")
         if value == "":
-            raise ControlYamlError(f"line {lineno}: nesting deeper than one level is not supported")
-        section[key] = value
+            child: dict[str, Any] = {}
+            parent[key] = child
+            containers[depth + 1] = child
+        else:
+            parent[key] = value
 
-    return result
+    return root
 
 
 def scalar(data: dict[str, Any], key: str, *, section: str | None = None) -> str | None:
