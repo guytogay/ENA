@@ -9,6 +9,7 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
 
@@ -44,8 +45,23 @@ def read_control(path: Path) -> dict[str, object]:
         raise ValueError(f"{path.name}: {exc}") from exc
 
 
-def write_status(path: Path, state: str, profile: str, previous: str, evidence: str | None) -> str:
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+def configured_timezone(package: Path):
+    try:
+        ena = package.parents[1] / "ENA.yaml"
+    except IndexError:
+        return timezone.utc
+    if not ena.is_file():
+        return timezone.utc
+    try:
+        data = read_control(ena)
+        name = scalar(data, "canonical_timezone")
+        return ZoneInfo(name) if name else timezone.utc
+    except Exception:
+        return timezone.utc
+
+
+def write_status(path: Path, state: str, profile: str, previous: str, evidence: str | None, tz) -> str:
+    now = datetime.now(tz).isoformat(timespec="seconds")
     text = (
         "schema_version: '0.3'\n"
         f"host_profile: {profile}\n"
@@ -100,6 +116,15 @@ def main() -> int:
             if missing(scalar(rescue, key)):
                 problems.append(f"rescue.yaml {key} is unresolved")
 
+        rollback_action = scalar(rescue, "rollback_action") or ""
+        placeholder = package / "rollback.py"
+        if "rollback.py" in rollback_action and placeholder.is_file():
+            try:
+                if "UNCONFIGURED_ROLLBACK" in placeholder.read_text(encoding="utf-8"):
+                    problems.append("rollback.py is still the unconfigured placeholder")
+            except OSError as exc:
+                problems.append(f"cannot inspect rollback.py: {exc}")
+
     if args.to_state in {"retained", "restored", "failed"} and not args.evidence:
         problems.append(f"{args.to_state} requires --evidence")
 
@@ -109,7 +134,14 @@ def main() -> int:
             print(f"- {item}", file=sys.stderr)
         return 2
 
-    now = write_status(status_path, args.to_state, profile or "UNKNOWN", current, args.evidence)
+    now = write_status(
+        status_path,
+        args.to_state,
+        profile or "UNKNOWN",
+        current,
+        args.evidence,
+        configured_timezone(package),
+    )
     with (package / "transitions.jsonl").open("a", encoding="utf-8") as fh:
         fh.write(json.dumps({"at": now, "from": current, "to": args.to_state, "evidence": args.evidence}) + "\n")
 
