@@ -1,51 +1,58 @@
-schema_version: '0.1'
+schema_version: '0.2'
 
 rescue:
+  host_profile: session   # resident | session
+
   target:
-    agent_card: https://agent-a.example/.well-known/agent-card.json
-    host: agent-a-host.example
-    service: agent-a
+    agent_card: UNKNOWN
+    host_or_workspace: REPLACE_WITH_REAL_HOST_OR_WORKSPACE
+    service_or_session: REPLACE_WITH_REAL_SERVICE_OR_SESSION
+
+  recovery_actor:
+    type: human   # human | agent | host
+    reference: REPLACE_WITH_REAL_RESCUER_OR_MECHANISM
+    acknowledged: true
 
   package:
-    id: 20260912T011530+0800__fix-a2a-channel
-    status_file: /home/agent-a/.ena/changes/20260912T011530+0800__fix-a2a-channel/status.yaml
+    id: 20260912T011530+0800__example
+    status_file: REPLACE_WITH_REAL_STATUS_PATH
 
   changed:
-    - /etc/agent-a/a2a.yaml
+    - REPLACE_WITH_EXACT_CHANGED_COMPONENT
 
   known_good:
-    backup: /home/agent-a/.ena/changes/20260912T011530+0800__fix-a2a-channel/backup/etc/agent-a/a2a.yaml
-    sha256: REPLACE_WITH_REAL_SHA256
+    kind: git_commit
+    reference: REPLACE_WITH_REAL_COMMIT_BACKUP_OR_SNAPSHOT
+    integrity: REPLACE_WITH_HASH_OR_VERSION_WHEN_USEFUL
 
   automatic_rollback:
-    mechanism: systemd-run
-    job_id: rollback-20260912T011530+0800
-    deadline: 2026-09-12T01:25:30+08:00
+    mechanism: null
+    job_id: null
+    deadline: null
 
   rollback:
-    command: python /home/agent-a/.ena/changes/20260912T011530+0800__fix-a2a-channel/rollback.py --apply
+    command_or_action: REPLACE_WITH_EXACT_ROLLBACK
 
-  restart:
-    command: systemctl restart agent-a
+  restart_or_new_session:
+    command_or_action: REPLACE_WITH_RESTART_RELOAD_OR_NEW_SESSION_PATH
 
   verify:
-    service: systemctl is-active agent-a
-    communication: establish_normal_bidirectional_A2A_or_human_conversation
+    operation_check: REPLACE_WITH_REAL_CHECK
+    communication_check: normal_two_way_human_or_A2A_exchange
 
   act_when_any:
-    - automatic_rollback_deadline_passed_and_target_is_unreachable
-    - automatic_rollback_failed
-    - human_authorized_recovery
+    - target_unreachable_or_current_session_unusable
+    - human_or_agent_authorized_recovery
+    - automatic_rollback_failed_if_present
 
   do_not_act_when_any:
-    - target_has_confirmed_normal_bidirectional_communication
     - package_state_is_retained
     - package_state_is_restored
     - package_state_is_cancelled
 
   restore_only:
-    - /etc/agent-a/a2a.yaml
+    - REPLACE_WITH_EXACT_RECOVERY_SCOPE
 
   fallback:
-    next_restore_point: REPLACE_WITH_REAL_SNAPSHOT_OR_VERSION
-    escalation: REPLACE_WITH_REAL_HUMAN_OR_EXTERNAL_RECOVERY_PATH
+    next_restore_point: REPLACE_WITH_REAL_FALLBACK
+    escalation: REPLACE_WITH_REAL_HUMAN_AGENT_OR_EXTERNAL_PATH
