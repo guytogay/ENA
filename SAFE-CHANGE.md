@@ -109,4 +109,4 @@ After completion, keep the package as change history. Archive old packages only 
 
 ## Reference tool
 
-`tools/new_change.py` creates a conservative file-based change package and backup that another Agent can inspect or adapt. Use Host-native snapshots/deployment rollback when they are stronger than a file copy.
+`tools/change_scaffold.py` creates the timestamped package structure and starter files. It intentionally does not pretend to know the correct backup/rollback mechanism for every Host. Fill the package with the real Host-native backup, rollback and timer before changing live state.
