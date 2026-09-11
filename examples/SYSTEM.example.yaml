@@ -1,23 +1,34 @@
-schema_version: '0.1'
-inspected_at: 2026-09-12T01:00:00+08:00
-canonical_timezone: Asia/Shanghai
+schema_version: '0.2'
+checked_at: 2026-09-12T02:00:00+08:00
+valid_until: 2026-09-19T02:00:00+08:00
+minimum_ready: false
+canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+
 runtime:
-  host: null
-  agent_runtime: null
-  startup: null
-  restart: null
-  supervision: null
+  host: UNKNOWN
+  agent_runtime: UNKNOWN
+  startup: UNKNOWN
+  restart: UNKNOWN
+  supervision: UNKNOWN
+
 communication:
-  human: null
-  a2a_agent_card: null
+  human: UNKNOWN
+  a2a_agent_card: UNKNOWN
+
+recovery:
+  primary: UNKNOWN
+  backup_or_snapshot: UNKNOWN
+  scheduler_or_timer: UNKNOWN
+
+rescue:
+  primary: UNKNOWN
+  type: UNKNOWN   # human | agent | host mechanism
+
 memory:
   sources: []
-  durable_store: null
-  retrieval_or_index: null
-  write_method: null
-recovery:
-  backup_or_snapshot: null
-  scheduler_or_timer: null
-  logs: null
+  durable_store: UNKNOWN
+  retrieval_or_index: UNKNOWN
+  write_method: UNKNOWN
+
 change_surfaces: []
 unknowns: []
