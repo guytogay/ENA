@@ -1,6 +1,6 @@
 # Sleep and Dream
 
-Sleep and Dream are offline evolution jobs for a long-lived Agent.
+Sleep and Dream are experimental offline evolution jobs for a long-lived Agent.
 
 - **Sleep** consolidates accumulated experience into cleaner, better-connected durable memory.
 - **Dream** recombines memories that normal task retrieval would not usually place together and creates speculative candidates.
@@ -8,9 +8,24 @@ Sleep and Dream are offline evolution jobs for a long-lived Agent.
 
 Use `SLEEP-DREAM-QUICKSTART.md` for the first run.
 
+## Experimental boundary
+
+The current fragment counts, sampling weights, distance bands and cadence in examples/reference tools are **field parameters, not ENA requirements**. Change them when evidence from the actual Host suggests a better setting.
+
+Useful evidence includes:
+
+- later retrieval/behavior improves after Sleep;
+- a Dream candidate survives reality contact;
+- Sleep overcompresses nuance or damages useful boundaries;
+- Dream is repetitive or mostly noise;
+- a run produces no useful candidate;
+- speculative Dream material leaks toward factual memory.
+
+Negative and null results are evidence. Do not expand Dream modes or sampling complexity merely because an additional mechanism sounds plausible.
+
 ## 1. Required inputs
 
-Before enabling these jobs, First Use should have identified:
+Before enabling these jobs, identify:
 
 - durable memory sources;
 - experience/history sources;
@@ -26,6 +41,8 @@ A typical local work area is:
 ~/.ena/evolution/
   experience/
   candidates/
+    speculative/
+    selected/
   runs/
     sleep/
     dream/
@@ -49,65 +66,36 @@ If the Host does not already preserve an equivalent durable record, add concise 
 - outcomes from evolution or safe self-change;
 - ideas worth revisiting.
 
-Do not dump full conversations by default. Keep enough context and provenance to recover why the occurrence matters.
-
-Example:
-
-```yaml
-occurred_at: 2026-09-12T00:30:00+08:00
-source_type: user_correction
-source_ref: conversation-or-host-reference
-summary: "The previous assumption about X was wrong under condition Y."
-unresolved: false
-```
+Do not dump full conversations by default. Keep enough provenance to recover why an occurrence matters.
 
 ## 3. Sleep
 
 Sleep is memory maintenance, not a daily summary.
 
-### Step 1 — lock the memory scope
+### Select material
 
-Allow only one writer to maintain the same durable memory scope at a time. If another maintenance/migration/restore job owns the scope, skip or defer this run.
+Read new experience, the active memories those experiences touch, older memories needed to resolve contradiction/merge/preserve boundaries, and explicitly unresolved material. Do not load the whole lifetime archive by default.
 
-Create a run record under:
-
-```text
-~/.ena/evolution/runs/sleep/<timestamp>__<short-id>/
-```
-
-### Step 2 — select material
-
-Read:
-
-1. new experience since the previous successful Sleep run;
-2. active memories touched by those experiences;
-3. older memories needed to resolve a contradiction, merge a cluster or preserve a boundary;
-4. unresolved material explicitly scheduled for reconsideration.
-
-Do not load the entire lifetime archive by default.
-
-### Step 3 — find useful memory changes
+### Find useful memory changes
 
 Look for:
 
 ```text
-repetition      independent experience supports the same pattern
-duplication     multiple records say the same thing
-fragmentation   useful knowledge is split across isolated records
-conflict        memories disagree
-staleness       environment/evidence has changed
-overreach       a lesson is broader than its evidence
-procedure       repeated successful behavior can become reusable
-boundary        a counterexample limits an existing rule
-unresolved      evidence still does not settle the question
-missing link    related memories should become mutually reachable
+repetition
+duplication
+fragmentation
+conflict
+staleness
+overreach
+reusable procedure
+counterexample/boundary
+unresolved question
+missing association
 ```
 
-### Step 4 — plan before writing
+### Plan before writing
 
-Produce a consolidation plan first. Do not edit durable memory while still exploring what should change.
-
-Useful operations are ordinary actions, not permanent memory classes:
+Produce a consolidation plan before changing durable memory. Useful operations include:
 
 ```text
 add
@@ -124,42 +112,19 @@ leave unchanged
 create an evolution candidate
 ```
 
-For each planned change keep source references, intended result and important uncertainty/counterevidence.
+Keep source references, intended result and important uncertainty/counterevidence. When evidence is ambiguous, prefer a narrower memory, an unresolved record or no change over manufactured certainty.
 
-When evidence is ambiguous, prefer a narrower memory, an unresolved record or no change over manufactured certainty.
+### Preserve and apply
 
-### Step 5 — preserve the previous state
+Before durable writes, preserve a reversible previous state using the memory system's version/history/snapshot mechanism. If the memory controls startup, communication, tool access or recovery, use `SAFE-CHANGE.md` as well.
 
-Before durable writes, create a reversible previous state using the memory system's own version/history/snapshot mechanism.
+Apply only the planned operations. When supported, update mechanisms that actually influence future retrieval/behavior rather than only rewriting prose.
 
-If the memory being changed controls startup, communication, tool access or recovery, use `SAFE-CHANGE.md` as well.
+### Verify
 
-### Step 6 — apply the plan
+Confirm memory remains readable, changed records resolve, useful provenance/counterexamples remain reachable, and the new revision/version is recorded. Restore the pre-Sleep state if verification fails.
 
-Apply only the planned operations.
-
-When the Host supports it, update mechanisms that actually influence future retrieval/behavior, not just prose, for example:
-
-- retrieval priority;
-- links/associations;
-- cue-to-procedure mappings;
-- active/dormant/superseded status;
-- indexes used by later retrieval.
-
-A prettier summary is not a successful Sleep run if the Agent still routes around it.
-
-### Step 7 — verify
-
-Confirm that:
-
-- memory remains readable;
-- changed records resolve;
-- useful provenance and counterexamples remain reachable;
-- the new revision/version is recorded.
-
-If verification fails, restore the pre-Sleep state.
-
-See `examples/evolution/SLEEP-RUN.example.yaml`.
+A prettier summary is not a successful Sleep run if later retrieval/behavior is unchanged.
 
 ## 4. Dream
 
@@ -167,16 +132,18 @@ Dream is a variation generator. It should defeat ordinary nearest-neighbor retri
 
 Dream does not directly write generated claims into factual memory and does not directly modify the live Agent.
 
-### Step 1 — choose a mode
+### Choose a mode
 
 ```text
 free             explore without a required problem anchor
 problem-guided   start from one unresolved problem, then draw most additional material from distant memory
 ```
 
-### Step 2 — build memory pools
+These are the current field modes, not a claim that all useful Dream modes have been discovered.
 
-Eligible pools can include:
+### Build memory pools
+
+Eligible pools may include:
 
 ```text
 recent       recent experience/memory
@@ -189,56 +156,23 @@ distant      non-nearest material by meaning/domain/source/time
 random       unrestricted eligible memory
 ```
 
-Remove/redact secrets, credentials, private payloads and other material local policy excludes from recombination.
+Remove/redact secrets, credentials, private payloads and material excluded by local policy.
 
-### Step 3 — sample with biased randomness
+### Sample with biased randomness
 
-A useful starting Dream set contains 5–7 fragments:
+Use a **small mixed set** that deliberately includes some recent grounding plus older/underused/external-or-unresolved/distant material and an occasional random jump.
 
-```text
-1 recent
-1 old
-1 underused
-1 external or unresolved
-1 distant
-0–1 salient
-0–1 random jump
-```
+Choose probabilistically inside pools instead of always selecting the highest-scoring record. Reduce repeated use of near-duplicates and memories that already dominate normal retrieval.
 
-Choose probabilistically inside each pool instead of always selecting the highest-scoring record.
-
-Increase probability for old/underused/unresolved/cross-domain material. Decrease probability for near-duplicates, material used in very recent Dream runs and memories that already dominate normal retrieval.
-
-Keep a small unrestricted random-jump probability so some combinations can occur that ordinary retrieval would never propose.
-
-### Step 4 — use associative distance when available
-
-If vector similarity exists, do not select only nearest neighbors.
-
-Relative to an anchor:
-
-1. remove exact/near duplicates;
-2. use a small amount of close material for grounding;
-3. draw most associative jumps from a middle-distance band;
-4. occasionally use the far tail/random sampling.
-
-Do not hard-code one cosine-similarity threshold across embedding models. Derive close/middle/far bands from the local similarity distribution.
-
-A starting proportion can be:
-
-```text
-close grounding     20%
-middle distance     65%
-far/random           15%
-```
+If vector similarity exists, derive close/middle/far bands from the local similarity distribution rather than hard-coding a universal cosine threshold. Prefer middle-distance material for many associative jumps while retaining some grounding and occasional far/random material.
 
 If vectors are unavailable, approximate distance with time, domain/project, source, tags/entities, task type and retrieval history.
 
-### Step 5 — perform divergent exploration
+Concrete proportions in `examples/evolution/SLEEP-DREAM.example.yaml` and `tools/dream_sample.py` are experimental defaults for field use, not normative values.
 
-Freeze the sampled set for the round, then deliberately delay convergence.
+### Perform divergent exploration
 
-Do several of these before judging the ideas:
+Freeze the sampled set for the round, then deliberately delay convergence. Do several of these before judging the ideas:
 
 ```text
 seek remote structural similarities
@@ -250,56 +184,33 @@ follow a strange connection longer than normal retrieval would
 produce multiple variants instead of stopping at the first coherent one
 ```
 
-During this stage, do not browse/act merely to make the imagined story consistent. Keep generated content speculative.
+Keep generated content speculative during this stage.
 
-### Step 6 — extract candidates
+### Extract candidates into the speculative path
 
-Return to normal reasoning and discard most dream prose.
+Return to normal reasoning and discard most dream prose. Keep only potentially useful hypotheses, mechanisms, questions, procedures, experiments, alternative explanations or possible self-improvements.
 
-Keep only potentially useful outputs such as:
+Dream-generated candidates must be recorded under:
 
-- hypothesis;
-- design/mechanism;
-- new question;
-- possible procedure;
-- experiment;
-- suspected connection worth checking;
-- alternative explanation;
-- possible self-improvement.
+```text
+~/.ena/evolution/candidates/speculative/
+```
 
-Example candidate fields:
+with:
 
 ```yaml
 origin: dream
-mode: problem-guided
-source_fragments:
-  - stable-memory-reference
-  - stable-memory-reference
-candidate: "..."
-why_it_might_matter: "..."
-reality_check: "What can be observed or tried next?"
 truth_status: speculative
+source_fragments: []
+candidate: "..."
+reality_check: "..."
 ```
 
-Store useful candidates in the normal evolution candidate directory. Deduplicate when practical.
+Use `tools/candidate_record.py --origin dream ...` when using the reference tools. That helper always writes Dream candidates into the speculative directory and sets `truth_status: speculative`.
 
-See `examples/evolution/DREAM-RUN.example.yaml`.
+Do not write Dream output into factual memory. A candidate that later survives reality contact may be recorded under `candidates/selected/`, but factual/adaptive memory changes still happen through normal reality evidence and later Sleep consolidation.
 
-## 5. Dream intensity
-
-Use descriptive profiles rather than pretending one numeric value works across all Hosts:
-
-```text
-low      more grounding, fewer far jumps
-medium   default; mostly middle-distance recombination
-high     more old/underused/far/random material when normal reasoning is repeatedly stuck
-```
-
-The Host may implement this through model temperature, retrieval sampling, distance bands, random-jump probability or a combination.
-
-Higher intensity means more variation, not more truth.
-
-## 6. Return to reality
+## 5. Return to reality
 
 Candidates from Sleep or Dream follow `EVOLUTION.md`:
 
@@ -315,22 +226,14 @@ candidate
 
 Do not invent a separate selection system for Dream output.
 
-## 7. Scheduling
+## 6. Scheduling and limits
 
-Sleep and Dream do not need human biological timing.
+Sleep and Dream do not need human biological timing. Ask the user to confirm a cadence/cost envelope and use the Host's existing scheduler when possible.
 
-Ask the user to confirm a cadence/cost envelope and use the Host's existing scheduler when possible.
+Sleep will often be more frequent than Dream; problem-guided Dream is useful when ordinary reasoning repeatedly converges without resolving a durable problem. Treat that as a field starting point, not a universal law.
 
-A reasonable first deployment:
+Respect explicit per-run limits for source material, generated candidates, wall-clock time and model/tool cost. Do not replay an unlimited backlog after missed runs.
 
-```text
-Sleep: more frequent, or after enough new experience accumulates
-Dream: less frequent
-problem-guided Dream: explicitly invoke when a durable problem remains stuck
-```
+## 7. Reference tools
 
-Respect explicit per-run limits such as maximum fragments, generated candidates, wall-clock time and model/tool cost. Do not replay an unlimited backlog after missed runs.
-
-## 8. Reference tools
-
-The `tools/` directory contains small reference implementations for initialization, protected file changes and Dream sampling. They are intentionally conservative and can be replaced by stronger Host-native mechanisms.
+The `tools/` directory contains conservative reference helpers for initialization, preflight, safe-change scaffolding, Sleep input preparation, Dream sampling and speculative candidate recording. Replace them with stronger Host-native mechanisms when available.
