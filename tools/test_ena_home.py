@@ -223,7 +223,8 @@ class HomeBoundaryTests(unittest.TestCase):
             tmp = Path(tmpdir)
             home = self.init_home(tmp / "home")
             package = self.scaffold(home)
-            self.assertEqual(home_of_package(package), home)
+            # compare against the resolved home: a Windows temp path can carry an 8.3 short name
+            self.assertEqual(home_of_package(package), home.resolve())
             with self.assertRaisesRegex(EnaHomeError, "is not a SAFE-CHANGE package"):
                 home_of_package(tmp / "elsewhere" / package.name)
 
