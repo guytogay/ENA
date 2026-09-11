@@ -69,6 +69,28 @@ def main() -> int:
         )
         assert Path(package).is_dir()
 
+        validation = raw(
+            tools / "validate_change.py",
+            "--home", preset_home,
+            "--name", "preflight-check",
+            "--target", "SYSTEM.yaml",
+            "--", sys.executable, tools / "ena_preflight.py", "--home", preset_home,
+        )
+        assert validation.returncode == 0
+        validation_log = preset_home / "evolution" / "experience" / "validation-events.jsonl"
+        events = [json.loads(line) for line in validation_log.read_text(encoding="utf-8").splitlines() if line.strip()]
+        assert events[-1]["status"] == "pass"
+
+        freshness_out = tmp / "freshness.json"
+        run(
+            tools / "freshness_scan.py",
+            "--input", examples / "FRESHNESS.example.jsonl",
+            "--output", freshness_out,
+            "--now", "2026-09-12T03:00:00+08:00",
+        )
+        freshness = json.loads(freshness_out.read_text(encoding="utf-8"))
+        assert freshness["counts"] == {"fresh": 1, "stale": 1, "unknown": 1}
+
         sleep_out = tmp / "sleep-input.json"
         run(
             tools / "sleep_prepare.py",

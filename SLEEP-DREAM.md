@@ -23,6 +23,7 @@ Before enabling these jobs, identify:
 - authorized knowledge sources such as project documentation, note/knowledge systems, repositories, connected files or other long-lived knowledge bases;
 - how memory/knowledge is retrieved or indexed;
 - how durable memory can be changed and how a mistaken change can be reversed;
+- how volatile knowledge/capability records can be rechecked or refreshed;
 - a scheduler/idle/event mechanism when available;
 - sources that must be excluded;
 - the current capability inventory when available: tools, skills, connectors/plugins, APIs and other callable mechanisms;
@@ -34,7 +35,7 @@ Keep long-term memory and knowledge in the systems that already own them. Do not
 
 Sleep and Dream are not limited to the current conversation.
 
-Past sessions, task history, conversation history, project records, knowledge-base material and future sessions may all become material when the Host or an authorized integration makes them accessible. This includes systems such as note/knowledge stores, connected document systems, code repositories and other durable sources the Agent is permitted to use.
+Past sessions, task history, conversation history, project records, knowledge-base material and future sessions may all become material when the Host or an authorized integration makes them accessible. This includes note/knowledge stores, connected document systems, code repositories and other durable sources the Agent is permitted to use.
 
 Preserve provenance so later reasoning can distinguish direct experience from user-reported, document-derived, knowledge-base-derived, Agent-derived or inferred material.
 
@@ -46,15 +47,31 @@ Full transcripts or full knowledge-base dumps are not required. Stable reference
 
 ## 3. Capture useful experience while awake
 
-If the Host does not already preserve an equivalent durable record, keep concise experience records for things likely to matter later, such as user corrections, repeated failures/successes, surprising outcomes, useful procedures, unresolved problems, important exceptions, lessons from another Agent, and evolution/safe-change outcomes.
+If the Host does not already preserve an equivalent durable record, keep concise experience records for things likely to matter later, such as:
 
-Do not dump full conversations by default. Keep enough provenance to recover why an occurrence matters.
+- user corrections;
+- repeated failures/successes;
+- surprising outcomes;
+- useful procedures;
+- unresolved problems and important exceptions;
+- lessons from another Agent;
+- evolution/safe-change outcomes;
+- deterministic validation failures and passes;
+- repair trajectories such as `failed check -> bounded repair -> passing check`.
+
+The repair path often contains more reusable learning signal than the final successful state alone. Preserve stable references between a failed validation and the later check that repaired it.
+
+Do not dump full conversations or tool logs by default. Keep enough provenance to recover why an occurrence matters; avoid persisting secrets merely because a validator emitted them.
+
+`tools/validate_change.py` provides a reference way to append compact validation events from Host hooks or manual checks.
 
 ## 4. Sleep
 
 Sleep is memory maintenance, not a daily summary.
 
 Read new experience plus only the older memory/knowledge needed to resolve duplication, contradiction, stale knowledge, overreach, reusable procedure, boundaries, unresolved questions or missing links.
+
+Treat repeated validation/repair trajectories as possible procedural evidence. For example, several independent instances of the same check failing for the same structural reason and being repaired in the same way may justify a narrower reusable procedure or earlier retrieval cue. One isolated failure is not enough to manufacture a general rule.
 
 Produce a consolidation plan before changing durable memory. Useful operations include:
 
@@ -78,6 +95,22 @@ Before durable writes, preserve a reversible previous state using the memory sys
 After writing, verify that memory remains readable, changed records resolve, useful provenance/counterexamples remain reachable, and a new revision/version is recorded. Restore the previous state if verification fails.
 
 A prettier summary is not a successful Sleep run if later retrieval/behavior is unchanged.
+
+### Freshness and drift
+
+Long-lived knowledge, capability inventories, Agent Cards, connector catalogs and system maps can become stale.
+
+For volatile records, preserve an authoritative source reference plus `checked_at` / `valid_until` or another Host-native freshness signal when available.
+
+During Sleep:
+
+1. identify records whose explicit freshness window expired or is unknown;
+2. refresh them from the authoritative source when the Agent is authorized and a practical refresh path exists;
+3. if refresh is not possible, keep the record but mark current validity as stale/unknown rather than strengthening it as current truth;
+4. preserve the historical value when it is still useful as past experience;
+5. let a changed capability/document become new experience instead of silently overwriting the fact that drift occurred.
+
+`SYSTEM.yaml` has its own expiry/preflight path. `tools/freshness_scan.py` is a reference reporter for JSONL knowledge/capability records; it does not invent a universal TTL.
 
 ## 5. Dream
 
@@ -124,7 +157,7 @@ An Agent Card is useful material because it expresses the Agent's advertised ski
 
 Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has.
 
-A Dream may propose combining a problem with a currently unavailable capability. Reality contact must verify that the capability still exists, can actually be installed/enabled, has the required authorization, and behaves as expected before selection.
+Stale or unknown-freshness material may still participate in Dream as historical/speculative input when useful, but its current validity must remain explicit. Reality contact must refresh/verify it before selection depends on it.
 
 ### Sampling
 
@@ -172,12 +205,13 @@ Candidates from Sleep or Dream follow `EVOLUTION.md`:
 ```text
 candidate
 → normal reasoning
-→ verify current capability/install/authorization state when relevant
+→ refresh/verify current knowledge or capability state when relevant
 → research / observation / real task / bounded trial
 → SAFE-CHANGE.md when critical runtime state changes
+→ deterministic checks as close to changed state as practical
 → retain / revise / reject / restore
 → production application if selected but not yet live
-→ outcome becomes new experience
+→ outcome + validation/repair trajectory become new experience
 → later Sleep consolidates what reality established
 ```
 
@@ -191,4 +225,4 @@ Respect explicit per-run limits for source material, generated candidates, wall-
 
 ## 8. Reference tools
 
-The `tools/` directory contains conservative reference helpers for initialization, preflight, safe-change scaffolding, Sleep input preparation, Dream sampling and speculative candidate recording. Replace them with stronger Host-native mechanisms when available.
+The `tools/` directory contains conservative reference helpers for initialization, preflight, safe-change scaffolding, incremental validation recording, freshness reporting, Sleep input preparation, Dream sampling and speculative candidate recording. Replace them with stronger Host-native mechanisms when available.
