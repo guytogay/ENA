@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an empty timestamped safe-change package using only the standard library."""
+"""Create a timestamped SAFE-CHANGE package using only the standard library."""
 
 from __future__ import annotations
 
@@ -29,7 +29,12 @@ def main() -> int:
     (package / "backup").mkdir(parents=True, exist_ok=False)
 
     (package / "status.yaml").write_text(
-        f"state: preparing\nhost_profile: {args.profile}\nupdated_at: {now.isoformat()}\n",
+        "schema_version: '0.3'\n"
+        f"host_profile: {args.profile}\n"
+        "state: preparing\n"
+        f"updated_at: {now.isoformat()}\n"
+        "previous_state: null\n"
+        "last_evidence: null\n",
         encoding="utf-8",
     )
     (package / "change.md").write_text(
@@ -46,18 +51,25 @@ def main() -> int:
         encoding="utf-8",
     )
     (package / "rescue.yaml").write_text(
+        "schema_version: '0.3'\n"
         f"host_profile: {args.profile}\n"
         "target: UNKNOWN\n"
         "recovery_actor: UNKNOWN\n"
         "where_to_act: UNKNOWN\n"
-        "changed: []\n"
+        "changed: UNKNOWN\n"
         "known_good: UNKNOWN\n"
         "rollback_action: UNKNOWN\n"
         "automatic_rollback: null\n"
         "restart_or_new_session: UNKNOWN\n"
         "verify_operation: UNKNOWN\n"
         "verify_communication: UNKNOWN\n"
+        "restore_only: UNKNOWN\n"
         "fallback: UNKNOWN\n",
+        encoding="utf-8",
+    )
+    (package / "rollback.py").write_text(
+        "#!/usr/bin/env python3\n"
+        "raise SystemExit('UNCONFIGURED_ROLLBACK: replace this placeholder or use a verified Host-native rollback action')\n",
         encoding="utf-8",
     )
 

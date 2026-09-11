@@ -14,18 +14,24 @@ from datetime import datetime, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from control_yaml import ControlYamlError, parse_control_yaml, scalar
+
 
 def configured_timezone(home: Path) -> tuple[object, str]:
     ena = home / "ENA.yaml"
-    if ena.is_file():
-        for raw in ena.read_text(encoding="utf-8").splitlines():
-            if raw.strip().startswith("canonical_timezone:"):
-                name = raw.split(":", 1)[1].strip().strip("'\"")
-                try:
-                    return ZoneInfo(name), name
-                except Exception:
-                    break
-    return timezone.utc, "UTC"
+    if not ena.is_file():
+        return timezone.utc, "UTC"
+    try:
+        data = parse_control_yaml(ena.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, ControlYamlError) as exc:
+        raise ValueError(f"ENA.yaml cannot be safely parsed: {exc}") from exc
+    name = scalar(data, "canonical_timezone")
+    if not name:
+        raise ValueError("ENA.yaml has no canonical_timezone")
+    try:
+        return ZoneInfo(name), name
+    except Exception as exc:
+        raise ValueError(f"invalid canonical_timezone {name!r}") from exc
 
 
 def digest(text: str) -> str:
@@ -55,7 +61,12 @@ def main() -> int:
     if not command:
         p.error("provide a check command after --")
 
-    tz, tz_name = configured_timezone(args.home)
+    try:
+        tz, tz_name = configured_timezone(args.home)
+    except ValueError as exc:
+        print(f"ENA validation: ERROR: {exc}", file=sys.stderr)
+        return 2
+
     started = time.monotonic()
     stdout = ""
     stderr = ""

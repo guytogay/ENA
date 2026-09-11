@@ -6,6 +6,7 @@ These scripts use only the Python standard library. An Agent can run them as exa
 ena_init.py                 create ENA.yaml, SYSTEM.yaml and working directories
 ena_preflight.py            fail fast when First Use is missing/not ready/stale
 change_scaffold.py          create a timestamped safe-change package skeleton
+safe_change_state.py        gate SAFE-CHANGE state transitions and evidence
 validate_change.py          run one deterministic check and record PASS/FAIL experience
 freshness_scan.py           report fresh/stale/unknown JSONL records from explicit metadata
 sleep_prepare.py            build a bounded Sleep input bundle from JSONL records
@@ -15,13 +16,16 @@ candidate_record.py         write new candidates only into the speculative path
 self_test.py                verify the reference tools against included sample data
 ```
 
+`control_yaml.py` is a shared strict reader used by the control-file tools. It intentionally supports only ENA's mapping/scalar control subset and fails closed on unsupported YAML features such as sequences and multiline scalars.
+
 ## Verify the tools
 
 ```bash
+python tools/test_control_yaml.py
 python tools/self_test.py
 ```
 
-Expected output:
+Expected final output:
 
 ```text
 ENA reference tools: OK
@@ -60,7 +64,7 @@ python tools/ena_preflight.py
 
 Configure the Host to run this before ordinary Agent work when a startup/session hook exists. Exit code `2` means First Use must be completed/refreshed before continuing.
 
-## Create a safe-change package
+## Create and arm a safe-change package
 
 Choose the Host profile from `SAFE-CHANGE.md`:
 
@@ -70,7 +74,24 @@ python tools/change_scaffold.py --name fix-config --timezone CONFIRMED_IANA_TIME
 
 or use `--profile resident` for a long-running service/daemon style Agent.
 
-The scaffold does not edit live state and does not pretend one universal rollback scheduler is reliable on every Host. Fill it with the profile-appropriate restore path from `SAFE-CHANGE.md`.
+The scaffold does not edit live state. It creates flat machine-readable `status.yaml` / `rescue.yaml`, a `change.md`, backup directory, and an intentionally non-working `rollback.py` placeholder. Replace the placeholder or record a verified Host-native recovery action before arming.
+
+After filling the real recovery facts, use the state gate:
+
+```text
+python tools/safe_change_state.py CHANGE_PACKAGE armed
+python tools/safe_change_state.py CHANGE_PACKAGE applied
+```
+
+A blocked `armed` transition returns exit code `2`; do not apply the live change. After the final real check:
+
+```text
+python tools/safe_change_state.py CHANGE_PACKAGE retained --evidence VALIDATION_EVENT_OR_RESULT_REF
+```
+
+The gate requires evidence for `retained`, `restored`, and `failed`, and writes transition history to `transitions.jsonl`.
+
+This is reference enforcement, not magical interception. A Host must actually route state transitions through this tool (or an equivalent native hook/permission boundary) for the gate to prevent bypass.
 
 For a directly usable session/coding example based on Git branch + worktree + revert, see:
 

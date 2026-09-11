@@ -1,149 +1,76 @@
 # Session / coding Agent safe change with Git worktree
 
-Use this example when the Agent works in a Git repository and a new session plus durable repository state can serve as the external recovery path.
+Use this reference when durable Git history plus a human or fresh Agent session can recover the current work.
 
-This is a reference sequence, not a universal Git policy. Adapt branch names, test commands and restart/reload steps to the real repository.
+## 1. Preserve the current state
 
-## Preconditions
+Before the risky change:
 
-Before starting:
+- inspect the working tree;
+- preserve unrelated uncommitted work deliberately;
+- record the current known-good commit;
+- create an isolated branch/worktree when isolation is useful;
+- make the bounded change there and run the repository's relevant checks.
 
-- the repository is under Git;
-- important uncommitted work has already been committed, stashed or backed up deliberately;
-- the current known-good commit can be identified;
-- a human or later Agent session can access the repository if the current session fails.
+Do not perform destructive cleanup merely to obtain a clean tree.
 
-Do not run destructive cleanup merely to make the worktree appear clean.
+## 2. Create the ENA recovery package
 
-## 1. Record the known-good state
+Use `tools/change_scaffold.py`, then replace every required `UNKNOWN` in `rescue.yaml` with the real values for this repository.
 
-From the main working tree:
-
-```bash
-git status --short
-git rev-parse --show-toplevel
-git rev-parse HEAD
-```
-
-Record the resulting commit as `base_commit` in the safe-change package.
-
-If `git status --short` shows unrelated uncommitted work, preserve it deliberately before continuing.
-
-## 2. Create an isolated change worktree
-
-Choose a unique change ID and create a branch/worktree from the known-good commit:
-
-```bash
-git branch ena-change/CHANGE_ID BASE_COMMIT
-git worktree add ../REPO-NAME-CHANGE_ID ena-change/CHANGE_ID
-```
-
-The original worktree remains on the known-good state while the Agent edits and tests the isolated worktree.
-
-Record in `rescue.yaml`:
+For a Git-backed session Agent, the important fields normally describe:
 
 ```yaml
-profile: session
-known_good:
-  commit: BASE_COMMIT
-change_branch: ena-change/CHANGE_ID
-change_worktree: ../REPO-NAME-CHANGE_ID
-recovery_actor: HUMAN_OR_NEW_SESSION
+host_profile: session
+target: REAL_REPOSITORY_OR_AGENT_SESSION
+recovery_actor: REAL_HUMAN_OR_FRESH_AGENT_SESSION
+where_to_act: REAL_REPOSITORY_PATH
+changed: EXACT_CHANGE_COMMIT_OR_SCOPE
+known_good: KNOWN_GOOD_COMMIT
+rollback_action: EXACT_REPOSITORY_RECOVERY_ACTION
+restart_or_new_session: HOW_TO_OPEN_A_FRESH_SESSION
+verify_operation: REAL_REPOSITORY_TEST_OR_TASK
+verify_communication: REAL_TWO_WAY_CHECK_OR_NOT_NEEDED
+restore_only: EXACT_CHANGE_SCOPE
+fallback: REAL_ESCALATION_PATH
 ```
 
-## 3. Make one bounded change
+Keep the actual Git commands appropriate to the repository in `change.md` / `rescue.yaml`. Prefer recovery that reverses only the intended change and preserves unrelated later history.
 
-Inside the isolated worktree:
+## 3. Arm before applying live state
 
-```bash
-cd ../REPO-NAME-CHANGE_ID
-# edit only the intended change
-git status --short
-git diff
-# run the repository's relevant tests/checks
-git add PATHS_FOR_THIS_CHANGE
-git commit -m "Describe the bounded change"
-git rev-parse HEAD
-```
-
-Record the new commit as `change_commit`.
-
-Prefer one reviewable commit for this example. If the real change requires multiple commits, record the exact commit range and prepare a rollback appropriate to that history.
-
-## 4. Prepare recovery before applying to the main worktree
-
-For this one-commit example, the preferred recovery after application is normally:
-
-```bash
-git revert --no-edit CHANGE_COMMIT
-```
-
-Why `revert` rather than a blind `reset --hard`:
-
-- it preserves later repository history;
-- it expresses recovery as the inverse of the exact change;
-- it is safer if another valid commit was added after the change.
-
-If `git revert` reports a conflict, stop and let the human/new session inspect the conflict. Do not force a destructive reset over unrelated work.
-
-Put the exact command and `BASE_COMMIT` / `CHANGE_COMMIT` in the recovery package before the live/main branch changes.
-
-## 5. Apply only when the main worktree has not diverged
-
-Return to the main worktree and verify its HEAD is still `BASE_COMMIT`:
-
-```bash
-git rev-parse HEAD
-git status --short
-```
-
-If the branch moved or acquired unrelated changes, stop and rebuild/rebase the candidate against the new current state instead of forcing it.
-
-If it is still safe to apply:
-
-```bash
-git merge --ff-only ena-change/CHANGE_ID
-```
-
-`--ff-only` intentionally refuses to apply when the main branch has diverged.
-
-Set the safe-change package state to `applied`.
-
-## 6. Verify useful operation
-
-Run the real post-change checks, for example:
+Run:
 
 ```text
-repository tests/checks
-Agent/tool startup if applicable
-human-visible reply or new-session verification
-specific task the change was meant to improve
+python tools/safe_change_state.py CHANGE_PACKAGE armed
 ```
 
-A clean Git merge alone does not prove the change is useful.
+If it exits non-zero, do not apply the live/main change.
 
-If verification succeeds, set the package state to `retained`.
+Only after the repository's own checks and the ENA gate are ready should the bounded change be applied to the live/main branch.
 
-## 7. Recover from a bad change
+Then record:
 
-A human or fresh Agent session can inspect the safe-change package and run:
-
-```bash
-git revert --no-edit CHANGE_COMMIT
+```text
+python tools/safe_change_state.py CHANGE_PACKAGE applied
 ```
 
-Then rerun the required tests/startup/communication check and set the package state to `restored` when useful operation is back.
+## 4. Verify and decide
 
-If the revert conflicts, stop and inspect. The prepared `BASE_COMMIT` is still a reference for comparison/recovery, but do not discard unrelated newer work with a forced reset unless an authorized recovery plan explicitly requires it.
+Run the actual repository tests/checks, startup check if relevant, and the real task or communication check the change was meant to preserve/improve.
 
-## 8. Clean up only after the result is settled
+A clean Git operation alone does not prove usefulness.
 
-After the change is either retained or restored and no longer needs the extra worktree:
+If the change should remain:
 
-```bash
-git worktree remove ../REPO-NAME-CHANGE_ID
+```text
+python tools/safe_change_state.py CHANGE_PACKAGE retained --evidence REAL_RESULT_REFERENCE
 ```
 
-The change branch may be kept for history or deleted according to the repository's normal policy.
+If recovery is needed, transition to `restoring`, use the prepared repository recovery action, verify useful operation, then record `restored --evidence REAL_RECOVERY_REFERENCE` or `failed --evidence REAL_FAILURE_REFERENCE`.
 
-Keep the ENA safe-change package while it still carries useful recovery/history evidence.
+## 5. Clean up only after the result is settled
+
+Remove temporary worktrees/branches according to the repository's normal policy only after the change is retained or restoration is complete.
+
+Keep the ENA recovery package while its evidence or restore information is still useful.

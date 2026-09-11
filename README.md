@@ -13,7 +13,7 @@ Read and apply these in order:
 1. `FIRST-USE.md` — establish the minimum real system map and shared settings. It also explains trusted preset/unattended adoption.
 2. `A2A.md` — reuse or establish a two-way Agent-to-Agent path when the Host can support it.
 3. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
-4. `SAFE-CHANGE.md` — preserve the previous working state, prepare recovery, and run the smallest relevant deterministic checks close to important changes. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
+4. `SAFE-CHANGE.md` — preserve the previous working state, prepare recovery, gate state transitions, and run the smallest relevant deterministic checks close to important changes. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
 5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it while retaining useful validation/repair evidence.
 6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism, including freshness/drift handling for long-lived knowledge and capability records.
 
@@ -25,6 +25,8 @@ For a capability you choose to adopt, completion requires one of these:
 - `SYSTEM.yaml` explicitly records that the capability is `UNAVAILABLE` or `NOT_NEEDED` on this Host, with enough reason to avoid silently forgetting the gap.
 
 Acknowledging, summarizing or agreeing with a document does not install the capability.
+
+Reference scripts only enforce what the Host actually routes through them. For example, `ena_preflight.py` is a real non-zero gate only when session/startup wiring honors its exit status, and `safe_change_state.py` prevents invalid SAFE-CHANGE transitions only when state changes go through it or an equivalent Host-native boundary. ENA cannot intercept arbitrary manual edits without Host cooperation.
 
 ## Make First Use happen without a reminder
 
@@ -64,6 +66,7 @@ The `tools/` directory contains small standard-library Python examples:
 ena_init.py
 ena_preflight.py
 change_scaffold.py
+safe_change_state.py
 validate_change.py
 freshness_scan.py
 sleep_prepare.py
@@ -76,6 +79,7 @@ self_test.py
 Verify them with:
 
 ```bash
+python tools/test_control_yaml.py
 python tools/self_test.py
 ```
 
