@@ -1,57 +1,82 @@
 # Survive failure
 
-Build a recovery path that remains available when the Agent process is crashed, unreachable, or unable to repair itself.
+Keep at least one recovery path outside the failure surface of the current Agent/session.
 
-Prefer reliable Host-native supervision and recovery mechanisms. Keep recovery controls outside the component they protect.
+## Choose the Host profile
 
-## 1. Make restart possible without the Agent
+### Resident runtime
 
-Identify/configure the Host mechanism that can start and restart the Agent without requiring the Agent to be healthy first.
+Examples: service, daemon, long-running container, VM Agent or always-on worker.
 
-Examples:
-
-- service manager;
-- process supervisor;
-- container/orchestrator restart policy;
-- VM supervisor;
-- another Host-native restart mechanism.
-
-Record in `SYSTEM.yaml`:
+Use the Host's external supervisor/restart mechanism when available. Record:
 
 - start/stop/restart actions;
 - the external component that performs them;
-- whether the Agent returns after Host reboot or process failure.
+- whether the Agent returns after Host/process failure;
+- the external communication check;
+- the relevant known-good restore point;
+- a human or A2A rescue path.
 
-Enable automatic restart for ordinary process failure when appropriate.
-
-## 2. Keep an external communication check
-
-A running process does not prove the Agent is usable.
-
-Use the smallest reliable external check available. A successful normal two-way human or A2A exchange is sufficient evidence that a rescue channel exists.
-
-A lower-level process/service health check can help with detection, but do not place the only health check inside the Agent being checked.
-
-## 3. Use this recovery order
+A useful recovery order is:
 
 ```text
 probe again once
-→ restart the Agent
+→ restart
 → verify communication
-→ if still unreachable, restore the most relevant known-good state
-→ restart/reload as required
-→ verify communication again
-→ if still unreachable, use the rescue peer or human/external recovery
+→ restore the smallest relevant known-good state if still unavailable
+→ restart/reload
+→ verify again
+→ use human/A2A/external escalation if still unavailable
 ```
 
-The second probe avoids reacting to a transient miss.
+### Session / coding Agent
 
-## 4. Restore the smallest relevant state
+Examples: Codex, Claude Code, terminal coding Agent, IDE Agent or chat/tool session.
 
-If failure follows a recent package from `SAFE-CHANGE.md`, use that package's prepared rollback before restoring unrelated state.
+The current process may not be restartable by a daemon. In this profile, survivability comes from durable state that a later session or human can recover.
 
-Otherwise use the known-good recovery mechanism recorded during First Use, such as:
+Record:
 
+- repository/worktree or other durable working state;
+- the last known-good commit/backup before consequential self-change;
+- how a new session can reopen the same workspace/state;
+- how to revert/restore the last change;
+- which human can intervene when the current session is gone;
+- any Host session-resume mechanism if one exists.
+
+A useful recovery order is:
+
+```text
+current session becomes unusable
+→ preserve/leave durable evidence if still possible
+→ human or Host starts a new session
+→ inspect the latest safe-change package / Git state
+→ restore the smallest relevant known-good state
+→ rerun the relevant tests/checks
+→ resume work
+```
+
+Do not require an always-on watchdog merely to imitate a resident service.
+
+## External communication check
+
+A running process is not enough.
+
+For a resident Agent, a successful normal two-way human or A2A exchange is sufficient evidence that a rescue channel exists.
+
+For a session/coding Agent, a human receiving a normal reply from the new/recovered session is sufficient. Relevant repository/tests may additionally verify that the changed working state is usable.
+
+## Human and Agent rescue are both valid
+
+A human is a first-class recovery path. Use A2A when it exists and is useful; do not make the Agent's survival depend on an A2A network that the Host does not support.
+
+## Restore the smallest relevant state
+
+If failure follows a recent package from `SAFE-CHANGE.md`, use its prepared rollback before restoring unrelated state.
+
+Otherwise use the known-good recovery mechanism recorded in `SYSTEM.yaml`, such as:
+
+- Git revision/worktree;
 - service-definition backup;
 - deployment revision;
 - file/volume snapshot;
@@ -59,29 +84,22 @@ Otherwise use the known-good recovery mechanism recorded during First Use, such 
 - VM snapshot;
 - another verified restore point.
 
-Prefer a smaller reliable recovery over an unnecessarily broad old snapshot.
+Prefer a smaller reliable recovery over a broad old snapshot.
 
-## 5. Keep recovery outside the same failure path
+## Keep recovery outside the same failure path
 
 Where possible:
 
-- keep restart/supervisor control outside the Agent process;
-- keep automatic rollback outside the component being changed;
-- keep recovery packages on storage that survives failure of the target service/container/process;
-- keep at least one rescue peer outside the target Agent;
-- do not change the only communication path and its only recovery path in the same operation.
+- keep resident restart/supervisor control outside the Agent process;
+- keep session recovery data on durable disk/repository state outside the current conversation/process;
+- keep recovery packages outside the component being changed;
+- do not modify the only communication path and its only recovery path in one operation;
+- keep at least one human, Agent or Host mechanism able to recover the target.
 
-## 6. Keep `SYSTEM.yaml` current
+## Keep `SYSTEM.yaml` fresh
 
-Record the recovery mechanisms currently available:
+Record the recovery mechanisms currently available and the Host profile in use.
 
-- supervisor/service manager;
-- restart action;
-- communication check;
-- latest unresolved safe-change package, if any;
-- backup/snapshot/version restore points;
-- rescue peer;
-- human/external escalation path;
-- known limitations.
+When startup, workspace location, service name, A2A endpoint, recovery storage, repository, scheduler or other recovery facts change, refresh `SYSTEM.yaml` and its `checked_at` / `valid_until` values.
 
-When a retained change alters startup, service names, runtime location, A2A endpoint, recovery storage or scheduler, update the system record.
+Before consequential self-change, recheck the specific recovery facts that change depends on even when the overall system record is still within its freshness window.
