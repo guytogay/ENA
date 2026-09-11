@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import random
+import secrets
 from datetime import datetime
 from pathlib import Path
 
@@ -83,10 +85,16 @@ def main() -> int:
     )
     args = p.parse_args()
 
-    rng = random.Random(args.seed)
-    records = [json.loads(line) for line in Path(args.memory).read_text(encoding="utf-8").splitlines() if line.strip()]
+    memory_path = Path(args.memory)
+    memory_text = memory_path.read_text(encoding="utf-8")
+    input_sha256 = hashlib.sha256(memory_text.encode("utf-8")).hexdigest()
+    records = [json.loads(line) for line in memory_text.splitlines() if line.strip()]
     if len(records) < 2:
         raise SystemExit("Need at least two memory records")
+
+    # Always make the effective seed explicit so every produced Dream set can be replayed.
+    seed = args.seed if args.seed is not None else secrets.randbits(64)
+    rng = random.Random(seed)
 
     by_id = {x.get("id"): x for x in records}
     unresolved = [x for x in records if x.get("unresolved")]
@@ -137,7 +145,14 @@ def main() -> int:
     output = {
         "experimental_parameters": True,
         "mode": args.mode,
-        "anchor_id": anchor.get("id"),
+        "seed": seed,
+        "input": {
+            "reference": args.memory,
+            "sha256": input_sha256,
+            "record_count": len(records),
+        },
+        "anchor_id": anchor.get("id") if args.mode == "problem-guided" else None,
+        "sampled_anchor_id": anchor.get("id") if args.mode == "free" else None,
         "count": args.count,
         "random_jump_probability": args.random_jump_probability,
         "truth_status": "speculative_input",
