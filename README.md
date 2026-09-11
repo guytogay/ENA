@@ -1,17 +1,35 @@
 # ENA
 
-ENA helps an Agent inspect its environment, collaborate with other Agents, recover from failure, change itself reversibly, consolidate memory, generate new ideas, and test improvements against reality.
+ENA helps an Agent add runtime capabilities that reasoning alone does not provide: grounded self-inspection, external recovery, reversible self-change, cross-session memory maintenance, idea variation, and evidence-backed evolution.
+
+ENA does not replace the model's ordinary judgment or add a second reasoning bureaucracy around it.
+
+New adopters should use this repository. The older `evolution-native-agent-architecture` repository preserves the previous release line, research evidence, and project history; do not treat its `releases/current/` tree as the install path for this product.
 
 ## Start here
 
 Read and apply these in order:
 
-1. `FIRST-USE.md` — inspect the real Agent/Host and confirm one timezone, language and ENA home.
-2. `A2A.md` — reuse or establish a real two-way Agent-to-Agent path and rescue peer.
-3. `SURVIVAL.md` — keep restart and recovery available outside the Agent process.
+1. `FIRST-USE.md` — establish the minimum real system map and shared settings.
+2. `A2A.md` — reuse or establish a two-way Agent-to-Agent path when the Host can support it.
+3. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
 4. `SAFE-CHANGE.md` — preserve the previous working state and prepare recovery before an important self-change.
 5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it.
-6. `SLEEP-DREAM-QUICKSTART.md` — run the first Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism.
+6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism.
+
+## Make First Use happen without a reminder
+
+If the Host supports a session-start, shell-start, Agent-start or workspace-start hook, run:
+
+```bash
+python tools/ena_preflight.py
+```
+
+before ordinary work.
+
+The preflight fails when the local ENA setup is missing, First Use is not marked minimally ready, or `SYSTEM.yaml` is stale. In that case, refresh `FIRST-USE.md` first instead of merely acknowledging the instruction and continuing.
+
+If the Host has no startup hook, run the same preflight at the start of a new working session.
 
 ## Local files
 
@@ -33,9 +51,11 @@ The `tools/` directory contains small standard-library Python examples:
 
 ```text
 ena_init.py
+ena_preflight.py
 change_scaffold.py
 sleep_prepare.py
 dream_sample.py
+candidate_record.py
 self_test.py
 ```
 
