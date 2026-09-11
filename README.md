@@ -85,6 +85,8 @@ python tools/self_test.py
 
 Then see `tools/README.md` for runnable examples. Prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
 
+The tools share small boundary modules: `ena_home.py` refuses a home without a readable `ENA.yaml` and a resolvable `canonical_timezone` (so durable state is never timestamped by an implicit UTC fallback), and `ena_text.py` reads ENA-owned text tolerating a leading UTF-8 byte order mark written by some Host-native paths.
+
 ## License
 
 Licensed under the Apache License, Version 2.0. See `LICENSE`.

@@ -12,16 +12,23 @@ from pathlib import Path
 from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
-def parse_time(value: str | None) -> datetime | None:
-    if not value:
-        return None
+def parse_time(value: object) -> tuple[datetime | None, bool]:
+    """Return `(timestamp, declared_but_unreadable)`.
+
+    An absent value is not a defect: the caller never declared freshness. A value
+    that is present and cannot be read is a defect, and has to stay
+    distinguishable from the absent case instead of being reported as "no
+    policy". A value without an offset is read as UTC, as before.
+    """
+    if value is None or not str(value).strip():
+        return None, False
     try:
-        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     except ValueError:
-        return None
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt
+        return None, True
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed, False
 
 
 def main() -> int:
@@ -37,13 +44,19 @@ def main() -> int:
         help="Optional caller policy used only when checked_at exists but valid_until does not",
     )
     p.add_argument("--fail-on-stale", action="store_true")
+    p.add_argument(
+        "--fail-on-unparseable",
+        action="store_true",
+        help="Exit 4 when a record declares checked_at/valid_until that cannot be read",
+    )
     args = p.parse_args()
 
-    now = parse_time(args.now) if args.now else datetime.now(timezone.utc)
-    if now is None:
+    now, now_unreadable = parse_time(args.now) if args.now else (datetime.now(timezone.utc), False)
+    if now is None or now_unreadable:
         p.error("--now must be an ISO timestamp")
 
     results = []
+    invalid_timestamps: list[dict[str, object]] = []
     counts = {"fresh": 0, "stale": 0, "unknown": 0}
 
     try:
@@ -60,15 +73,35 @@ def main() -> int:
                     file=sys.stderr,
                 )
                 return 2
-            checked_at = parse_time(record.get("checked_at"))
-            valid_until = parse_time(record.get("valid_until"))
+            checked_at, checked_unreadable = parse_time(record.get("checked_at"))
+            valid_until, valid_unreadable = parse_time(record.get("valid_until"))
+
+            for field, unreadable in (("checked_at", checked_unreadable), ("valid_until", valid_unreadable)):
+                if unreadable:
+                    invalid_timestamps.append(
+                        {
+                            "source_file": str(path),
+                            "line": line_no,
+                            "id": record.get("id"),
+                            "field": field,
+                            "value": record.get(field),
+                        }
+                    )
 
             if valid_until is not None:
                 freshness = "fresh" if now <= valid_until else "stale"
                 reason = "explicit_valid_until"
+            elif valid_unreadable:
+                # A declared deadline that cannot be read must not silently become
+                # the caller's generic max-age policy either.
+                freshness = "unknown"
+                reason = "unparseable_valid_until"
             elif checked_at is not None and args.max_age_hours is not None:
                 freshness = "fresh" if now <= checked_at + timedelta(hours=args.max_age_hours) else "stale"
                 reason = "caller_max_age"
+            elif checked_unreadable:
+                freshness = "unknown"
+                reason = "unparseable_checked_at"
             else:
                 freshness = "unknown"
                 reason = "no_explicit_freshness_policy"
@@ -90,14 +123,21 @@ def main() -> int:
 
     report = {
         "scanned_at": now.isoformat(timespec="seconds"),
-        "policy": {"max_age_hours": args.max_age_hours},
+        "policy": {
+            "max_age_hours": args.max_age_hours,
+            "fail_on_stale": args.fail_on_stale,
+            "fail_on_unparseable": args.fail_on_unparseable,
+        },
         "counts": counts,
+        "invalid_timestamps": invalid_timestamps,
         "records": results,
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     print(args.output)
 
+    if args.fail_on_unparseable and invalid_timestamps:
+        return 4
     if args.fail_on_stale and counts["stale"]:
         return 3
     return 0

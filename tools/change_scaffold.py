@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 from datetime import datetime
 from pathlib import Path
 
+from ena_home import EnaHomeError, require_initialized_home
 from timezone_utils import TimezoneUnavailable, load_timezone
 
 
@@ -16,22 +18,45 @@ def clean(value: str) -> str:
     return value or "change"
 
 
+def package_timezone(home: Path, requested: str | None):
+    """Use the home's confirmed canonical timezone; never stamp a package with a foreign clock."""
+    tz, tz_name = require_initialized_home(home)
+    if requested is None:
+        return tz, tz_name
+
+    try:
+        requested_tz = load_timezone(requested)
+    except TimezoneUnavailable as exc:
+        raise EnaHomeError(str(exc)) from exc
+    if requested_tz != tz:
+        raise EnaHomeError(
+            f"--timezone {requested} does not match this ENA home's canonical_timezone {tz_name}. "
+            "Omit --timezone to use the home's confirmed timezone, or re-run FIRST-USE for the home."
+        )
+    return tz, tz_name
+
+
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--name", required=True)
     p.add_argument("--home", default="~/.ena")
-    p.add_argument("--timezone", required=True, help="Confirmed IANA timezone")
+    p.add_argument(
+        "--timezone",
+        help="Confirmed IANA timezone; defaults to ENA.yaml canonical_timezone and must match it when given",
+    )
     p.add_argument("--profile", choices=("resident", "session"), required=True)
     args = p.parse_args()
 
+    home = Path(args.home).expanduser().resolve()
     try:
-        tz = load_timezone(args.timezone)
-    except TimezoneUnavailable as exc:
-        raise SystemExit(str(exc)) from exc
+        tz, tz_name = package_timezone(home, args.timezone)
+    except EnaHomeError as exc:
+        print(f"ENA change scaffold: ERROR: {exc}", file=sys.stderr)
+        return 2
 
     now = datetime.now(tz)
     stamp = now.strftime("%Y%m%dT%H%M%S%z")
-    package = Path(args.home).expanduser().resolve() / "changes" / f"{stamp}__{clean(args.name)}"
+    package = home / "changes" / f"{stamp}__{clean(args.name)}"
     (package / "backup").mkdir(parents=True, exist_ok=False)
 
     (package / "status.yaml").write_text(
@@ -40,7 +65,8 @@ def main() -> int:
         "state: preparing\n"
         f"updated_at: {now.isoformat()}\n"
         "previous_state: null\n"
-        "last_evidence: null\n",
+        "last_evidence: null\n"
+        f"timezone: {tz_name}\n",
         encoding="utf-8",
     )
     (package / "change.md").write_text(

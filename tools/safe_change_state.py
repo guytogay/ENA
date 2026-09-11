@@ -7,11 +7,12 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
-from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
-from timezone_utils import TimezoneUnavailable, load_timezone
+from control_yaml import missing, scalar
+from ena_home import EnaHomeError, home_of_package, read_control, require_initialized_home
+from ena_text import read_text
 
 
 ALLOWED = {
@@ -37,32 +38,73 @@ REQUIRED_FOR_ARM = (
     "verify_operation",
 )
 
+PLACEHOLDER_MARKER = "UNCONFIGURED_ROLLBACK"
+ROLLBACK_EXECUTABLE = "executable_script"
+ROLLBACK_DECLARED_MANUAL = "declared_no_automatic_rollback"
 
-def read_control(path: Path) -> dict[str, object]:
+ROLLBACK_DESCRIPTIONS = {
+    "placeholder": "rollback.py is still the unconfigured placeholder",
+    "absent": "the package has no rollback.py",
+    "unreadable": "rollback.py cannot be read",
+}
+
+ROLLBACK_CLAIM_CONFLICTS = {
+    "placeholder": "rollback_action points at rollback.py, which is still the unconfigured placeholder",
+    "absent": "rollback_action points at rollback.py, but the package has no rollback.py",
+    "unreadable": "rollback_action points at rollback.py, which cannot be read",
+}
+
+
+def rollback_state(package: Path) -> str:
+    """Report what the package can actually execute right now."""
+    script = package / "rollback.py"
+    if not script.is_file():
+        return "absent"
     try:
-        return parse_control_yaml(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, ControlYamlError) as exc:
-        raise ValueError(f"{path.name}: {exc}") from exc
+        text = read_text(script)
+    except (OSError, UnicodeError):
+        return "unreadable"
+    return "placeholder" if PLACEHOLDER_MARKER in text else "executable"
 
 
-def configured_timezone(package: Path):
-    try:
-        ena = package.parents[1] / "ENA.yaml"
-    except IndexError:
-        return timezone.utc
-    if not ena.is_file():
-        return timezone.utc
-    try:
-        data = read_control(ena)
-        name = scalar(data, "canonical_timezone")
-        if not name:
-            return timezone.utc
-        return load_timezone(name)
-    except (ValueError, TimezoneUnavailable):
-        return timezone.utc
+def rollback_problems(rescue: dict[str, object], state: str) -> tuple[list[str], str | None]:
+    """Require the recovery declaration to match what the package can execute.
+
+    `tools/README.md` and `SAFE-CHANGE.md` both say the scaffolded `rollback.py`
+    must be replaced *or* a verified Host-native recovery action recorded before
+    arming. The gate previously checked only that `rollback_action` was non-empty
+    and, additionally, only when that text happened to contain the literal
+    `rollback.py`, so an undeclared placeholder reached `armed`, `applied` and
+    `retained` looking exactly like prepared recovery.
+    """
+    problems: list[str] = []
+    declared = scalar(rescue, "automatic_rollback")
+    mode: str | None = None
+
+    if state == "executable":
+        mode = ROLLBACK_EXECUTABLE
+    else:
+        description = ROLLBACK_DESCRIPTIONS.get(state, "rollback.py is not executable")
+        if missing(declared):
+            problems.append(
+                f"{description}: provide an executable rollback or declare automatic_rollback: false "
+                "to record that rollback is manual/Host-native"
+            )
+        elif declared.strip().lower() == "true":
+            problems.append(f"rescue.yaml automatic_rollback is true but {description}")
+        else:
+            mode = ROLLBACK_DECLARED_MANUAL
+
+    rollback_action = scalar(rescue, "rollback_action") or ""
+    if "rollback.py" in rollback_action and state in ROLLBACK_CLAIM_CONFLICTS:
+        problems.append(ROLLBACK_CLAIM_CONFLICTS[state])
+
+    return problems, mode
 
 
-def write_status(path: Path, state: str, profile: str, previous: str, evidence: str | None, tz) -> str:
+def write_status(
+    path: Path, state: str, profile: str, previous: str, evidence: str | None, tz, tz_name: str
+) -> str:
     now = datetime.now(tz).isoformat(timespec="seconds")
     text = (
         "schema_version: '0.3'\n"
@@ -71,6 +113,7 @@ def write_status(path: Path, state: str, profile: str, previous: str, evidence: 
         f"updated_at: {now}\n"
         f"previous_state: {previous}\n"
         f"last_evidence: {evidence if evidence else 'null'}\n"
+        f"timezone: {tz_name}\n"
     )
     temp = path.with_suffix(".yaml.tmp")
     temp.write_text(text, encoding="utf-8")
@@ -93,10 +136,16 @@ def main() -> int:
         return 2
 
     try:
+        tz, tz_name = require_initialized_home(home_of_package(package))
+    except EnaHomeError as exc:
+        print(f"SAFE-CHANGE gate: {exc}", file=sys.stderr)
+        return 2
+
+    try:
         status = read_control(status_path)
         rescue = read_control(rescue_path)
-    except ValueError as exc:
-        print(f"SAFE-CHANGE gate: cannot safely parse control file: {exc}", file=sys.stderr)
+    except EnaHomeError as exc:
+        print(f"SAFE-CHANGE gate: {exc}", file=sys.stderr)
         return 2
 
     current = scalar(status, "state")
@@ -109,6 +158,7 @@ def main() -> int:
         return 2
 
     problems: list[str] = []
+    rollback_mode: str | None = None
     if args.to_state == "armed":
         if profile not in {"resident", "session"}:
             problems.append("status.yaml host_profile must be resident or session")
@@ -118,14 +168,8 @@ def main() -> int:
             if missing(scalar(rescue, key)):
                 problems.append(f"rescue.yaml {key} is unresolved")
 
-        rollback_action = scalar(rescue, "rollback_action") or ""
-        placeholder = package / "rollback.py"
-        if "rollback.py" in rollback_action and placeholder.is_file():
-            try:
-                if "UNCONFIGURED_ROLLBACK" in placeholder.read_text(encoding="utf-8"):
-                    problems.append("rollback.py is still the unconfigured placeholder")
-            except OSError as exc:
-                problems.append(f"cannot inspect rollback.py: {exc}")
+        recovery_problems, rollback_mode = rollback_problems(rescue, rollback_state(package))
+        problems.extend(recovery_problems)
 
     if args.to_state in {"retained", "restored", "failed"} and not args.evidence:
         problems.append(f"{args.to_state} requires --evidence")
@@ -142,10 +186,20 @@ def main() -> int:
         profile or "UNKNOWN",
         current,
         args.evidence,
-        configured_timezone(package),
+        tz,
+        tz_name,
     )
+    transition = {
+        "at": now,
+        "from": current,
+        "to": args.to_state,
+        "evidence": args.evidence,
+        "timezone": tz_name,
+    }
+    if args.to_state == "armed":
+        transition["rollback_mode"] = rollback_mode
     with (package / "transitions.jsonl").open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps({"at": now, "from": current, "to": args.to_state, "evidence": args.evidence}) + "\n")
+        fh.write(json.dumps(transition) + "\n")
 
     print(f"SAFE-CHANGE gate: {current} -> {args.to_state}")
     return 0

@@ -8,6 +8,8 @@ from datetime import datetime
 from pathlib import Path
 
 from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
+from ena_home import EnaHomeError, require_initialized_home
+from ena_text import read_text
 
 
 def main() -> int:
@@ -22,12 +24,17 @@ def main() -> int:
     problems: list[str] = []
     if not config.exists():
         problems.append(f"missing {config}")
+    else:
+        try:
+            require_initialized_home(home)
+        except EnaHomeError as exc:
+            problems.append(str(exc))
     if not system.exists():
         problems.append(f"missing {system}")
 
     if system.exists():
         try:
-            data = parse_control_yaml(system.read_text(encoding="utf-8"))
+            data = parse_control_yaml(read_text(system))
         except (OSError, UnicodeError, ControlYamlError) as exc:
             problems.append(f"SYSTEM.yaml cannot be safely parsed: {exc}")
             data = {}

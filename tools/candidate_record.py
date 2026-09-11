@@ -8,27 +8,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from control_yaml import ControlYamlError, parse_control_yaml, scalar
-from timezone_utils import TimezoneUnavailable, load_timezone
-
-
-def configured_timezone(home: Path):
-    ena = home / "ENA.yaml"
-    if not ena.is_file():
-        raise ValueError(
-            f"ENA home is not initialized: missing {ena}. Run tools/ena_init.py first or pass --home to an initialized ENA home."
-        )
-    try:
-        data = parse_control_yaml(ena.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, ControlYamlError) as exc:
-        raise ValueError(f"ENA.yaml cannot be safely parsed: {exc}") from exc
-    name = scalar(data, "canonical_timezone")
-    if not name:
-        raise ValueError("ENA.yaml has no canonical_timezone")
-    try:
-        return load_timezone(name), name
-    except TimezoneUnavailable as exc:
-        raise ValueError(str(exc)) from exc
+from ena_home import EnaHomeError, require_initialized_home
 
 
 def main() -> int:
@@ -42,8 +22,8 @@ def main() -> int:
 
     home = Path(args.home).expanduser().resolve()
     try:
-        tz, tz_name = configured_timezone(home)
-    except ValueError as exc:
+        tz, tz_name = require_initialized_home(home)
+    except EnaHomeError as exc:
         print(f"ENA candidate: ERROR: {exc}", file=sys.stderr)
         return 2
 

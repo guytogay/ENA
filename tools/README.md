@@ -18,6 +18,10 @@ self_test.py                verify the reference tools against included sample d
 
 `control_yaml.py` is a shared strict reader used by the control-file tools. It intentionally supports only ENA's mapping/scalar control subset and fails closed on unsupported YAML features such as sequences and multiline scalars.
 
+`ena_home.py` is the shared boundary for "is this an initialized ENA home, and which clock does it record?". It refuses a home without a readable `ENA.yaml` and a resolvable `canonical_timezone`, and it resolves the home that owns a SAFE-CHANGE package. Tools that maintain durable ENA state call it instead of growing their own copy, so a fix to the boundary cannot miss a sibling tool.
+
+`ena_text.py` reads ENA-owned text files tolerating a leading UTF-8 byte order mark, because some Host-native write paths add one (PowerShell 5.1 `Out-File -Encoding UTF8`, `Set-Content -Encoding UTF8`, `Export-Csv`). A BOM carries no content, so accepting it cannot change what a declared file means.
+
 `jsonl_source.py` is the shared reader for declared JSONL inputs used by Sleep/Dream/freshness tools. A path that was explicitly supplied but is missing, unreadable, or malformed fails closed with an actionable error instead of silently becoming an empty source.
 
 `timezone_utils.py` keeps UTC usable without an external timezone database and gives an actionable error when another IANA timezone is unavailable. Some Windows Python installations need the optional `tzdata` package before zones such as `Asia/Shanghai` can be resolved.
@@ -29,6 +33,10 @@ python tools/test_control_yaml.py
 python tools/test_timezone_utils.py
 python tools/test_jsonl_source.py
 python tools/test_input_boundaries.py
+python tools/test_candidate_record.py
+python tools/test_ena_home.py
+python tools/test_safe_change_gate.py
+python tools/test_freshness_scan.py
 python tools/self_test.py
 ```
 
@@ -80,10 +88,12 @@ Configure the Host to run this before ordinary Agent work when a startup/session
 Choose the Host profile from `SAFE-CHANGE.md`:
 
 ```text
-python tools/change_scaffold.py --name fix-config --timezone CONFIRMED_IANA_TIMEZONE --profile session
+python tools/change_scaffold.py --name fix-config --profile session
 ```
 
 or use `--profile resident` for a long-running service/daemon style Agent.
+
+The scaffold requires an initialized ENA home and stamps the package with that home's confirmed `canonical_timezone`. `--timezone` is optional and must match the home's value when given, so a package directory can no longer be named after one timezone while the home records another. A refused scaffold leaves no package behind.
 
 The scaffold does not edit live state. It creates flat machine-readable `status.yaml` / `rescue.yaml`, a `change.md`, backup directory, and an intentionally non-working `rollback.py` placeholder. Replace the placeholder or record a verified Host-native recovery action before arming.
 
@@ -100,7 +110,9 @@ A blocked `armed` transition returns exit code `2`; do not apply the live change
 python tools/safe_change_state.py CHANGE_PACKAGE retained --evidence VALIDATION_EVENT_OR_RESULT_REF
 ```
 
-The gate requires evidence for `retained`, `restored`, and `failed`, and writes transition history to `transitions.jsonl`.
+The gate requires an initialized ENA home (the package must live under `<ENA home>/changes/`), records transitions on the home's confirmed timezone, requires evidence for `retained`, `restored`, and `failed`, and writes transition history to `transitions.jsonl`.
+
+When the package cannot execute an automatic rollback — `rollback.py` is still the scaffolded placeholder, is missing, or cannot be read — the gate requires the package to declare it: `automatic_rollback: false` for a manual or Host-native rollback, or a real `rollback.py`. Claiming `automatic_rollback: true` while no executable rollback exists is rejected. The recorded transition carries the result as `rollback_mode` (`executable_script` or `declared_no_automatic_rollback`), so history shows which kind of recovery was actually prepared.
 
 This is reference enforcement, not magical interception. A Host must actually route state transitions through this tool (or an equivalent native hook/permission boundary) for the gate to prevent bypass.
 
@@ -147,7 +159,9 @@ python tools/freshness_scan.py \
   --output freshness-report.json
 ```
 
-Records without an explicit freshness policy are reported as `unknown`. A caller may supply `--max-age-hours` as local policy when `checked_at` exists but `valid_until` does not. Use `--fail-on-stale` only when the surrounding workflow really should stop on stale records.
+Records without an explicit freshness policy are reported as `unknown` with reason `no_explicit_freshness_policy`. A caller may supply `--max-age-hours` as local policy when `checked_at` exists but `valid_until` does not. Use `--fail-on-stale` only when the surrounding workflow really should stop on stale records.
+
+A record that *declares* `checked_at` or `valid_until` with a value that cannot be read is a different fact: it is reported as `unknown` with reason `unparseable_valid_until` or `unparseable_checked_at`, listed under `invalid_timestamps`, and it does not silently fall back to `--max-age-hours`. Without `--fail-on-unparseable` it does not gate; with it, the scan exits `4` so a typo cannot quietly disable a staleness check. Exit codes: `2` unusable input, `3` stale records, `4` unreadable declared metadata.
 
 ## Prepare a Sleep input bundle
 
