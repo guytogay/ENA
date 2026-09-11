@@ -84,3 +84,7 @@ python tools/self_test.py
 ```
 
 Then see `tools/README.md` for runnable examples. Prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE`.
