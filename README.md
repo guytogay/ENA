@@ -36,6 +36,13 @@ ena_init.py
 change_scaffold.py
 sleep_prepare.py
 dream_sample.py
+self_test.py
 ```
 
-See `tools/README.md` for commands. Prefer stronger Host-native backup, scheduler, snapshot, A2A or memory mechanisms when they already exist.
+Verify them with:
+
+```bash
+python tools/self_test.py
+```
+
+Then see `tools/README.md` for runnable examples. Prefer stronger Host-native backup, scheduler, snapshot, A2A or memory mechanisms when they already exist.
