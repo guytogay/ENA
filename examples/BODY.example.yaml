@@ -32,6 +32,17 @@ communication:
     agent_card: null
     verified_bidirectional: false
 
+memory:
+  sources: []
+  durable_store: null
+  episodic_or_experience_history: null
+  retrieval_or_index: null
+  write_method: null
+  reversible_history_or_snapshot: null
+  scheduler_or_wake: null
+  excluded_sources: []
+  unknowns: []
+
 host_recovery:
   version_control: null
   backup_or_snapshot: null
