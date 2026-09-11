@@ -20,4 +20,5 @@ jobs:
       - run: python tools/test_timezone_utils.py
       - run: python tools/test_jsonl_source.py
       - run: python tools/test_input_boundaries.py
+      - run: python tools/test_candidate_record.py
       - run: python tools/self_test.py
