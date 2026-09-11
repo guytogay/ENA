@@ -35,3 +35,7 @@ recovery:
 
 evolution:
   records: ~/.ena/evolution
+  sleep_dream_config: ~/.ena/evolution/sleep-dream.yaml
+  experience_inbox: ~/.ena/evolution/experience
+  candidates: ~/.ena/evolution/candidates
+  scheduler: null
