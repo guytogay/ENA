@@ -133,7 +133,26 @@ If A2A already exists, reuse its identity/discovery mechanism rather than creati
 
 If no A2A path exists and the Host provides enough capability to create one, establish a practical A2A path and at least one reachable rescue peer. See [`A2A.md`](A2A.md).
 
-## 7. Find existing protection and recovery mechanisms
+## 7. Inspect the memory and evolution substrate
+
+Find out how this Agent actually retains and retrieves experience across sessions or restarts.
+
+Identify, where available:
+
+- durable memory stores;
+- episodic/conversation/task history that can supply experience;
+- semantic/vector/indexed retrieval mechanisms;
+- procedures, skills, preferences, or other persistent adaptive records;
+- how durable memory can be written or updated;
+- how a mistaken memory update can be versioned, reversed, restored, or superseded;
+- schedulers, idle hooks, event triggers, or other wake mechanisms that can run offline maintenance;
+- memory sources that must not be included in consolidation or recombination.
+
+Do not invent a separate ENA memory database when the Host already has a suitable memory substrate. Record stable pointers and the actual update/recovery mechanisms in `BODY.yaml` and `ENA.yaml` as appropriate.
+
+If no durable experience path exists, record the gap. [`SLEEP-DREAM.md`](SLEEP-DREAM.md) may use an ENA-owned experience inbox for evolution-relevant occurrences, but that inbox is not a replacement for every Host memory function.
+
+## 8. Find existing protection and recovery mechanisms
 
 Inspect what the Host already provides:
 
@@ -148,7 +167,7 @@ Inspect what the Host already provides:
 
 Reuse reliable Host-native mechanisms where possible.
 
-## 8. Identify body-changing surfaces
+## 9. Identify body-changing surfaces
 
 Record the places where a self-change could affect the Agent's ability to keep operating or repair itself.
 
@@ -159,7 +178,7 @@ For each important surface, determine:
 - how that specific change can be reversed;
 - what independent mechanism can still execute the reversal if the main Agent becomes unresponsive.
 
-## 9. Write the durable First Use outputs
+## 10. Write the durable First Use outputs
 
 First Use should leave two durable entry records.
 
@@ -178,11 +197,11 @@ text_encoding: UTF-8
 
 Replace example values with the user's confirmed choices and store `ena_home` in the Host-appropriate form.
 
-`ENA.yaml` may also keep stable pointers to runtime controls, A2A Agent Card/rescue peers, survivability controls, ACMS, rollback scheduler, backups/snapshots, and evolution records. See [`ENA.example.yaml`](ENA.example.yaml).
+`ENA.yaml` may also keep stable pointers to runtime controls, A2A Agent Card/rescue peers, survivability controls, ACMS, rollback scheduler, backups/snapshots, memory/evolution configuration, and evolution records. See [`ENA.example.yaml`](ENA.example.yaml).
 
 ### `BODY.yaml`
 
-Store the grounded result of the actual inspection: runtime, confirmed capabilities, critical components and locations, communication paths, Host recovery mechanisms, body-changing surfaces, clock synchronization, verification evidence, and important unknowns.
+Store the grounded result of the actual inspection: runtime, confirmed capabilities, critical components and locations, communication paths, memory/evolution substrate, Host recovery mechanisms, body-changing surfaces, clock synchronization, verification evidence, and important unknowns.
 
 Do not treat `BODY.yaml` as timeless truth. Re-check mutable facts before a consequential self-change. See [`examples/BODY.example.yaml`](examples/BODY.example.yaml).
 
@@ -191,9 +210,10 @@ Do not treat `BODY.yaml` as timeless truth. Re-check mutable facts before a cons
 - the user has confirmed the canonical timezone, canonical language, and ENA home;
 - the Host clock/synchronization state has been checked;
 - `ENA.yaml` exists at the confirmed ENA home;
-- `BODY.yaml` contains grounded runtime, communication, recovery, and critical-component findings rather than assumptions;
+- `BODY.yaml` contains grounded runtime, communication, memory, recovery, and critical-component findings rather than assumptions;
 - the human communication path has been identified;
 - A2A has either been verified/established with a usable rescue peer or the missing capability is explicitly recorded;
+- durable memory sources, write/update path, recovery/versioning path, and available offline scheduler/wake mechanisms have been identified or their absence recorded;
 - restart, backup/snapshot, scheduler/timer, and other Host recovery mechanisms have been identified or their absence recorded;
 - important body-changing surfaces and known recovery limitations are visible to later ENA capabilities.
 
@@ -205,6 +225,6 @@ Once the Agent has inspected and normalized its operating environment:
 2. build the external restart/recovery ladder in [`SURVIVAL.md`](SURVIVAL.md);
 3. build the protected change/recovery mechanism in [`ACMS.md`](ACMS.md);
 4. route body-changing operations through ACMS;
-5. use [`EVOLUTION.md`](EVOLUTION.md) to turn useful improvement candidates into observed, retainable, reversible change.
+5. use [`EVOLUTION.md`](EVOLUTION.md) for cumulative improvement and install the offline consolidation/recombination workflow in [`SLEEP-DREAM.md`](SLEEP-DREAM.md).
 
 Use the confirmed ENA home, canonical timezone, canonical language, and grounded body record throughout these operations.
