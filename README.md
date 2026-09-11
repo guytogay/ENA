@@ -17,6 +17,15 @@ Read and apply these in order:
 5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it.
 6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism.
 
+## Reading is not installation
+
+For a capability you choose to adopt, completion requires one of these:
+
+- a real Host/runtime mechanism was configured and verified; or
+- `SYSTEM.yaml` explicitly records that the capability is `UNAVAILABLE` or `NOT_NEEDED` on this Host, with enough reason to avoid silently forgetting the gap.
+
+Acknowledging, summarizing or agreeing with a document does not install the capability.
+
 ## Make First Use happen without a reminder
 
 If the Host supports a session-start, shell-start, Agent-start or workspace-start hook, run:
