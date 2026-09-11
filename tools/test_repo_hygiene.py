@@ -10,6 +10,7 @@ from pathlib import Path
 
 ALLOWED_ENV_FILES = {".env.example", ".env.sample", ".env.template"}
 BANNED_SUFFIXES = {".pyc", ".tmp", ".temp", ".bak", ".swp", ".swo", ".orig"}
+TEMP_MARKER_ENDINGS = ("-TEMP", "_TEMP", ".TEMP")
 
 
 def tracked_paths(repo: Path) -> list[Path]:
@@ -22,17 +23,26 @@ def tracked_paths(repo: Path) -> list[Path]:
     return [Path(item.decode("utf-8")) for item in result.stdout.split(b"\0") if item]
 
 
+def basename_without_suffixes(path: Path) -> str:
+    suffixes = path.suffixes
+    if not suffixes:
+        return path.name
+    return path.name[: -sum(len(suffix) for suffix in suffixes)]
+
+
 def violation_reason(path: Path) -> str | None:
     name = path.name
     upper = name.upper()
+    stem_upper = basename_without_suffixes(path).upper()
+    suffixes = {suffix.lower() for suffix in path.suffixes}
 
     if "__pycache__" in path.parts:
         return "tracked Python bytecode cache"
     if name == ".DS_Store":
         return "tracked macOS metadata file"
-    if path.suffix.lower() in BANNED_SUFFIXES or name.endswith("~"):
+    if suffixes & BANNED_SUFFIXES or name.endswith("~"):
         return "tracked temporary/editor backup file"
-    if upper == "TEMP" or upper.endswith("-TEMP") or upper.endswith("_TEMP"):
+    if stem_upper == "TEMP" or stem_upper.endswith(TEMP_MARKER_ENDINGS):
         return "tracked temporary marker file"
     if (name == ".env" or name.startswith(".env.")) and name not in ALLOWED_ENV_FILES:
         return "tracked environment file; keep secrets/local configuration out of the repository"
@@ -43,6 +53,13 @@ class RepositoryHygieneTests(unittest.TestCase):
     def test_known_bad_signatures_are_detected(self):
         cases = [
             "LICENSE-README-TEMP",
+            "notes-TEMP.md",
+            "report_TEMP.txt",
+            "TEMP.yaml",
+            "draft.tmp.md",
+            "session.temp.yaml",
+            "data.bak.json",
+            "config.orig.md",
             "scratch.tmp",
             "backup.bak",
             "module/__pycache__/x.pyc",
@@ -58,6 +75,10 @@ class RepositoryHygieneTests(unittest.TestCase):
         cases = [
             "TEMPLATE.md",
             "docs/SESSION-TEMPLATE.md",
+            "docs/TEMPORARY-NOTES.md",
+            "attempt.md",
+            "report_template.txt",
+            "archive.origami.json",
             ".env.example",
             ".env.sample",
             ".env.template",
