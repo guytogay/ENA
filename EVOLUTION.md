@@ -8,6 +8,7 @@ experience
 → Dream or ordinary work: generate candidates
 → reality check / bounded trial
 → retain / revise / reject / restore
+→ production application when needed
 → outcome becomes new experience
 ```
 
@@ -15,7 +16,7 @@ experience
 
 ## 1. Preserve the candidate as a candidate
 
-A candidate may come from normal work, memory consolidation, Dream, another Agent or the user.
+A candidate may come from normal work, memory consolidation, Dream, another Agent, the user, a knowledge source or a newly discovered capability.
 
 Before reality contact, keep it under:
 
@@ -23,7 +24,7 @@ Before reality contact, keep it under:
 ~/.ena/evolution/candidates/speculative/
 ```
 
-with a truth/status marker that makes its epistemic state explicit. Dream-generated candidates always start with:
+Dream-generated candidates always start with:
 
 ```yaml
 truth_status: speculative
@@ -36,7 +37,8 @@ Record only what is needed to test the candidate:
 - origin/source references;
 - observable result that would count as improvement;
 - important regression that must not occur;
-- components or durable memories that would change.
+- components or durable memories that would change;
+- any tool/skill/connector/API that must be installed, enabled or authorized first.
 
 `tools/candidate_record.py` provides a reference writer for initial speculative candidates.
 
@@ -48,7 +50,18 @@ Examples include the targeted task/failure, repeatable check, operational metric
 
 Do not create a broad benchmark when a small direct comparison is enough.
 
-## 3. Protect risky self-change
+## 3. Verify required capabilities
+
+If the candidate depends on a tool, skill, connector/plugin, API or other capability, verify the live state before relying on it:
+
+- installed/enabled or only discoverable;
+- current permissions/authorization;
+- current interface/capabilities;
+- any required user/operator approval.
+
+A capability seen in a Dream, catalog or Agent Card is only a possibility until live verification succeeds.
+
+## 4. Protect risky self-change
 
 If the trial modifies code, runtime dependencies, services, communication, tool access, startup/recovery configuration or another critical operating component, use `SAFE-CHANGE.md` with the appropriate Host profile.
 
@@ -56,13 +69,13 @@ Link the candidate to the exact recovery package used for the trial.
 
 For ordinary memory edits, use the memory system's own reversible/versioned path when sufficient. If memory controls startup, recovery, communication or tool access, treat it as critical runtime state.
 
-## 4. Separate survival from improvement
+## 5. Separate survival from improvement
 
 First confirm the Agent remains usable/recoverable. Then ask whether the change actually improved the intended outcome.
 
 A successful restart, new session or successful conversation proves recoverability/communication. It does not prove the candidate was useful.
 
-## 5. Observe real results
+## 6. Observe real results
 
 Compare the result with the baseline using evidence appropriate to the candidate:
 
@@ -76,7 +89,7 @@ Compare the result with the baseline using evidence appropriate to the candidate
 
 Record actual evidence, including negative and null results.
 
-## 6. Decide what survives
+## 7. Decide what survives
 
 Use one practical outcome:
 
@@ -87,23 +100,33 @@ reject   current evidence does not justify it
 restore  return to the previous state because the trial regressed
 ```
 
-A candidate that survives reality contact may be copied/recorded under:
+A candidate that survives reality contact may be recorded under:
 
 ```text
 ~/.ena/evolution/candidates/selected/
 ```
 
-with the evidence and outcome that justified selection. Selection still does not automatically make every generated sentence factual memory; later Sleep decides how verified experience changes durable memory.
+with the evidence and outcome that justified selection.
 
-If a safe-change package is still active, use its prepared rollback. If a change was already retained and later needs reversal, make that reversal a new safe change against the current live state rather than blindly running an old rollback.
+**Selected does not necessarily mean already in production.**
 
-## 7. Feed the result back into experience
+- If the bounded trial happened directly on live state and the change is retained, production application may already be complete.
+- If the trial happened in a sandbox, branch, worktree, preview environment or other isolated copy, apply the selected change to live state separately.
+- Use `SAFE-CHANGE.md` when production application can affect critical runtime state.
+- Re-verify required capabilities and permissions at production time.
+- Observe the live result after application; a sandbox success is not proof of production success.
 
-Preserve what was tried, what happened, the final outcome, changed assumptions, useful procedures/boundaries/uncertainties, and negative/null results that should prevent repeated waste.
+Selection also does not automatically make generated prose factual memory. Later Sleep decides how verified experience changes durable memory.
+
+If a retained production change later needs reversal, make that reversal against the current live state rather than blindly running an old rollback after unrelated valid changes may have accumulated.
+
+## 8. Feed the result back into experience
+
+Preserve what was tried, where it was tried, whether it reached production, what happened afterward, the final outcome, changed assumptions, useful procedures/boundaries/uncertainties, and negative/null results that should prevent repeated waste.
 
 Later Sleep consolidates what reality established. Later Dream runs may reuse rejected ideas when new context supports a different variation.
 
-## 8. Keep the history simple
+## 9. Keep the history simple
 
 A minimal layout is:
 
