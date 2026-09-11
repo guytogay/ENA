@@ -20,26 +20,29 @@ Before enabling these jobs, identify:
 
 - durable memory sources;
 - experience/history sources, including earlier sessions when the Host can expose them;
-- how memory is retrieved/indexed and changed;
-- how a mistaken memory update can be reversed;
+- authorized knowledge sources such as project documentation, note/knowledge systems, repositories, connected files or other long-lived knowledge bases;
+- how memory/knowledge is retrieved or indexed;
+- how durable memory can be changed and how a mistaken change can be reversed;
 - a scheduler/idle/event mechanism when available;
 - sources that must be excluded;
 - the current capability inventory when available: tools, skills, connectors/plugins, APIs and other callable mechanisms;
 - discoverable capabilities that are available to install/enable but are not currently active.
 
-Keep the real long-term memory where the Host already keeps it. Do not duplicate it solely for ENA.
+Keep long-term memory and knowledge in the systems that already own them. Do not duplicate them solely for ENA.
 
-## 2. Cross-session scope
+## 2. Cross-session and cross-source scope
 
 Sleep and Dream are not limited to the current conversation.
 
-Past sessions, task history, conversation history, project records and future sessions may all become material when the Host or an authorized integration makes them accessible. Preserve enough provenance to distinguish directly experienced material from user-reported, document-derived, Agent-derived or inferred material.
+Past sessions, task history, conversation history, project records, knowledge-base material and future sessions may all become material when the Host or an authorized integration makes them accessible. This includes systems such as note/knowledge stores, connected document systems, code repositories and other durable sources the Agent is permitted to use.
 
-Do not assume inaccessible sessions can be recovered. Record that limitation instead of inventing continuity.
+Preserve provenance so later reasoning can distinguish direct experience from user-reported, document-derived, knowledge-base-derived, Agent-derived or inferred material.
 
-Future sessions naturally join the same loop: useful events enter experience/history; later Sleep consolidates them; later Dream may recombine them with much older material.
+Do not assume inaccessible sessions or knowledge can be recovered. Record that limitation instead of inventing continuity.
 
-Full transcripts are not required. Stable references, indexed records or concise experience fragments are preferable when they preserve enough context.
+Future sessions naturally join the same loop: useful events enter experience/history; later Sleep consolidates them; later Dream may recombine them with much older experience and knowledge.
+
+Full transcripts or full knowledge-base dumps are not required. Stable references, indexed records or bounded fragments are preferable when they preserve enough context.
 
 ## 3. Capture useful experience while awake
 
@@ -51,7 +54,7 @@ Do not dump full conversations by default. Keep enough provenance to recover why
 
 Sleep is memory maintenance, not a daily summary.
 
-Read new experience plus only the older memory needed to resolve duplication, contradiction, stale knowledge, overreach, reusable procedure, boundaries, unresolved questions or missing links.
+Read new experience plus only the older memory/knowledge needed to resolve duplication, contradiction, stale knowledge, overreach, reusable procedure, boundaries, unresolved questions or missing links.
 
 Produce a consolidation plan before changing durable memory. Useful operations include:
 
@@ -86,7 +89,7 @@ Dream does not directly write generated claims into factual memory and does not 
 
 ```text
 free             explore without a required problem anchor
-problem-guided   start from one unresolved problem, then draw most additional material from distant memory
+problem-guided   start from one unresolved problem, then draw most additional material from distant memory/knowledge
 ```
 
 ### Material pools
@@ -96,23 +99,36 @@ Eligible pools may include:
 ```text
 recent       recent experience/memory
 old          substantially older memory
-underused    rarely retrieved/activated memory
-external     learned from a user, document, A2A peer or other outside source
+underused    rarely retrieved/activated memory or knowledge
+external     learned from a user, document, knowledge base, A2A peer or other outside source
 unresolved   unanswered question, contradiction or failed approach
-salient      surprising/high-consequence/repeatedly reinforced memory
+salient      surprising/high-consequence/repeatedly reinforced material
 distant      non-nearest material by meaning/domain/source/time
 capability   installed/enabled tools, skills, connectors, APIs or other real capabilities
 possibility  discoverable capabilities that are not currently installed/enabled
 random       unrestricted eligible material
 ```
 
-Capability material must keep its real state. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has.
+### Capability sources
+
+Use grounded capability information rather than Dreaming capabilities into existence.
+
+Preferred sources are:
+
+1. First Use / live Host capability discovery and `SYSTEM.yaml`;
+2. actual tool/plugin/connector registries exposed by the Host;
+3. the Agent's A2A Agent Card or equivalent discovery record, when present;
+4. discoverable catalogs for capabilities that could be installed/enabled.
+
+An Agent Card is useful material because it expresses the Agent's advertised skills/capabilities, but advertised capability must still be checked against live reality before use.
+
+Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has.
 
 A Dream may propose combining a problem with a currently unavailable capability. Reality contact must verify that the capability still exists, can actually be installed/enabled, has the required authorization, and behaves as expected before selection.
 
 ### Sampling
 
-Use a small mixed set with some recent grounding plus older/underused/external-or-unresolved/distant material and an occasional random jump. Capability/possibility material may participate when useful.
+Use a small mixed set with some recent grounding plus older/underused/external-or-unresolved/distant material and an occasional random jump. Knowledge-base and capability/possibility material may participate when useful.
 
 Choose probabilistically inside pools instead of always selecting the highest-scoring record. If vector similarity exists, derive close/middle/far bands from the local distribution rather than hard-coding a universal threshold. If vectors are unavailable, approximate distance using time, domain/project, source, tags/entities, task type and retrieval history.
 
@@ -124,7 +140,7 @@ Freeze the sampled set for a round and deliberately delay convergence. Try sever
 
 ```text
 seek remote structural similarities
-combine mechanisms from different memories
+combine mechanisms from different memories/knowledge sources
 reverse roles, assumptions or causal direction
 transfer a mechanism across domains
 combine a problem with an existing or discoverable capability
