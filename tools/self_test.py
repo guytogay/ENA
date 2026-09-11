@@ -28,6 +28,8 @@ def main() -> int:
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
+
+        # Interactive/manual First Use path starts not ready.
         home = tmp / "ena-home"
         run(tools / "ena_init.py", "--home", home, "--timezone", "Etc/UTC", "--language", "en-US")
         assert (home / "ENA.yaml").is_file()
@@ -44,6 +46,24 @@ def main() -> int:
         text = text.replace("rescue:\n  primary: UNKNOWN\n  type: UNKNOWN", "rescue:\n  primary: human-operator\n  type: human")
         system.write_text(text, encoding="utf-8")
         run(tools / "ena_preflight.py", "--home", home)
+
+        # Caller-verified preset path can start ready without an interactive edit.
+        preset_home = tmp / "ena-preset"
+        run(
+            tools / "ena_init.py",
+            "--home", preset_home,
+            "--timezone", "Etc/UTC",
+            "--language", "en-US",
+            "--host-profile", "session",
+            "--recovery", "git-revert",
+            "--rescuer", "human-operator",
+            "--rescuer-type", "human",
+            "--verified-minimum",
+        )
+        run(tools / "ena_preflight.py", "--home", preset_home)
+        preset_system = (preset_home / "SYSTEM.yaml").read_text(encoding="utf-8")
+        assert "minimum_ready: true" in preset_system
+        assert "host_profile: session" in preset_system
 
         package = run(
             tools / "change_scaffold.py",

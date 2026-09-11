@@ -10,10 +10,10 @@ New adopters should use this repository. The older `evolution-native-agent-archi
 
 Read and apply these in order:
 
-1. `FIRST-USE.md` — establish the minimum real system map and shared settings.
+1. `FIRST-USE.md` — establish the minimum real system map and shared settings. It also explains trusted preset/unattended adoption.
 2. `A2A.md` — reuse or establish a two-way Agent-to-Agent path when the Host can support it.
 3. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
-4. `SAFE-CHANGE.md` — preserve the previous working state and prepare recovery before an important self-change.
+4. `SAFE-CHANGE.md` — preserve the previous working state and prepare recovery before an important self-change. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
 5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it.
 6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism.
 
@@ -39,6 +39,8 @@ before ordinary work.
 The preflight fails when the local ENA setup is missing, First Use is not marked minimally ready, or `SYSTEM.yaml` is stale. In that case, refresh `FIRST-USE.md` first instead of merely acknowledging the instruction and continuing.
 
 If the Host has no startup hook, run the same preflight at the start of a new working session.
+
+A trusted deployment/workspace policy may pre-provision timezone, language, Host profile, recovery path and rescuer so First Use can run without interactive confirmation. See `FIRST-USE.md` and `tools/README.md`; missing policy values must remain unresolved rather than being replaced by guessed defaults.
 
 ## Local files
 
