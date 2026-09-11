@@ -1,5 +1,6 @@
-schema_version: '0.1'
-package: 20260912T011530+0800__fix-a2a-channel
+schema_version: '0.2'
+package: 20260912T011530+0800__example
+host_profile: session
 state: applied
 updated_at: 2026-09-12T01:16:02+08:00
 previous_state: armed
