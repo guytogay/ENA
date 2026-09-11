@@ -38,6 +38,8 @@ Prefer:
 
 A wall-clock rollback daemon and A2A peer are not required when the Host does not naturally provide them. Do not block safe work merely because those mechanisms are absent.
 
+For a complete reference sequence using Git branch + worktree + one bounded commit + `git revert`, see `examples/change/SESSION-GIT-WORKTREE.md`.
+
 ## A human is a valid rescuer
 
 The recovery actor may be:
