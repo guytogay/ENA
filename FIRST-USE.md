@@ -14,7 +14,7 @@ Detect the Host/local timezone when possible, then ask the user to confirm the I
 
 Use the current user interaction as a language hint when useful, then ask the user to confirm the working language tag such as `zh-CN` or `en-US`.
 
-Ask where ENA-owned files should live. If the user has no preference, a stable user-home directory such as `~/.ena/` is suitable.
+Ask where ENA-owned files should live. If there is no preference, a stable user-home directory such as `~/.ena/` is suitable.
 
 Keep commands, paths, identifiers, API fields and protocol payloads in the exact form required by their systems. Use UTF-8 for ENA-owned text unless an external interface requires otherwise.
 
@@ -36,7 +36,8 @@ Record the exact mechanism, or `UNKNOWN` if none exists yet.
 A rescuer may be:
 
 - a human who can access the Host/repository/recovery mechanism; or
-- another Agent reachable through A2A and able to perform or relay recovery.
+- another Agent reachable through A2A and able to perform or relay recovery;
+- a Host-native supervisor/recovery actor when it can perform the required action independently.
 
 Human recovery is a valid first-class path. A2A is useful when supported, but it is not required merely to complete First Use.
 
@@ -65,7 +66,7 @@ runtime:
 recovery:
   primary: REPLACE_WITH_REAL_RECOVERY_PATH_OR_UNKNOWN
 rescue:
-  primary: REPLACE_WITH_HUMAN_OR_AGENT_RESCUER
+  primary: REPLACE_WITH_HUMAN_AGENT_OR_HOST_RESCUER
 unknowns: []
 ```
 
@@ -80,6 +81,43 @@ Set `minimum_ready: true` only after shared settings, one recovery path, and one
 Run `python tools/ena_preflight.py` at session/Agent/workspace start when the Host supports a startup hook. Refresh First Use when the file is past `valid_until`.
 
 Before an important self-change, recheck the specific mutable recovery/startup/communication facts the change depends on even if `SYSTEM.yaml` has not yet expired.
+
+## Preset / unattended adoption
+
+First Use does not require an interactive human when the required choices were already supplied by a trusted operator, deployment policy, workspace configuration or Host integration.
+
+A pre-provisioned value counts as confirmed only when it came from an explicit authority/policy. Do not replace a missing value with a guessed default merely to make automation pass.
+
+The minimum can be automated as follows:
+
+```text
+pre-provision timezone + language + ENA home
+→ detect/select Host profile where practical
+→ verify one external recovery path
+→ verify one human / Agent / Host rescuer
+→ write ENA.yaml + SYSTEM.yaml
+→ set minimum_ready only after those supplied mechanisms were actually verified
+→ run ena_preflight.py
+```
+
+The reference initializer supports caller-verified presets, for example:
+
+```text
+python tools/ena_init.py \
+  --timezone CONFIRMED_IANA_TIMEZONE \
+  --language CONFIRMED_LANGUAGE_TAG \
+  --host-profile session \
+  --recovery VERIFIED_RECOVERY_REFERENCE \
+  --rescuer VERIFIED_RESCUER_REFERENCE \
+  --rescuer-type human \
+  --verified-minimum
+```
+
+`--verified-minimum` is intentionally explicit. The initializer does not prove an arbitrary recovery command or rescuer is real; the caller/integration that supplies those values is responsible for that verification.
+
+If policy does not already provide timezone, language, ENA home, recovery or rescuer, leave the setup not ready and obtain or establish the missing value instead of inventing one.
+
+Sleep/Dream scheduling and cost limits may also be supplied by policy. If absent, leave the jobs disabled/unconfigured until an operator or applicable Host policy chooses them.
 
 ## Expand the map only when a capability needs it
 
@@ -101,11 +139,11 @@ Additional useful facts may include Git/version control, backups, snapshots, log
 
 ## First Use is minimally complete when
 
-- timezone, language and ENA home are confirmed;
+- timezone, language and ENA home are confirmed or explicitly pre-provisioned by trusted policy;
 - `ENA.yaml` exists;
 - `SYSTEM.yaml` has `checked_at`, `valid_until` and `minimum_ready: true`;
 - one real recovery path is recorded;
-- one human or Agent rescuer is recorded;
+- one human, Agent or Host rescuer is recorded;
 - unknown facts remain visible as `UNKNOWN` rather than being guessed.
 
 Then continue with the capabilities actually needed on this Host.
