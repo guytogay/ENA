@@ -60,14 +60,42 @@ def main() -> int:
         )
         run(tools / "ena_preflight.py", "--home", preset_home)
 
-        package = run(
+        package = Path(run(
             tools / "change_scaffold.py",
-            "--home", home,
+            "--home", preset_home,
             "--timezone", "Etc/UTC",
             "--profile", "session",
             "--name", "self-test",
-        )
-        assert Path(package).is_dir()
+        ))
+        assert package.is_dir()
+        assert (package / "rollback.py").is_file()
+
+        blocked_arm = raw(tools / "safe_change_state.py", package, "armed")
+        assert blocked_arm.returncode == 2
+
+        rescue = package / "rescue.yaml"
+        rescue_text = rescue.read_text(encoding="utf-8")
+        replacements = {
+            "target: UNKNOWN": "target: test-repository",
+            "recovery_actor: UNKNOWN": "recovery_actor: human-operator",
+            "where_to_act: UNKNOWN": "where_to_act: test-workspace",
+            "changed: UNKNOWN": "changed: config-file",
+            "known_good: UNKNOWN": "known_good: git-base-commit",
+            "rollback_action: UNKNOWN": "rollback_action: git-revert-change",
+            "restart_or_new_session: UNKNOWN": "restart_or_new_session: new-session",
+            "verify_operation: UNKNOWN": "verify_operation: reference-self-test",
+        }
+        for old, new in replacements.items():
+            rescue_text = rescue_text.replace(old, new)
+        rescue.write_text(rescue_text, encoding="utf-8")
+
+        run(tools / "safe_change_state.py", package, "armed")
+        run(tools / "safe_change_state.py", package, "applied")
+        no_evidence = raw(tools / "safe_change_state.py", package, "retained")
+        assert no_evidence.returncode == 2
+        run(tools / "safe_change_state.py", package, "retained", "--evidence", "self-test-pass")
+        assert "state: retained" in (package / "status.yaml").read_text(encoding="utf-8")
+        assert (package / "transitions.jsonl").is_file()
 
         validation = raw(
             tools / "validate_change.py",
