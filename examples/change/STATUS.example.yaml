@@ -1,0 +1,12 @@
+schema_version: '0.1'
+package: 20260912T011530+0800__fix-a2a-channel
+state: applied
+updated_at: 2026-09-12T01:16:02+08:00
+previous_state: armed
+history:
+  - state: preparing
+    at: 2026-09-12T01:15:30+08:00
+  - state: armed
+    at: 2026-09-12T01:15:55+08:00
+  - state: applied
+    at: 2026-09-12T01:16:02+08:00
