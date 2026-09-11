@@ -1,164 +1,111 @@
 # First Use
 
-First Use has two jobs:
+First Use should establish a usable minimum quickly. Unknown facts may remain `UNKNOWN`; do not turn first adoption into a full-system questionnaire.
 
-1. inspect the Agent and Host as they actually exist;
-2. normalize the settings later ENA functions will share.
+Verify what can be inspected from the Host, runtime, files, tools, APIs or documentation. Do not guess when the environment can be checked.
 
-Verify facts from the Host, runtime, files, tools, APIs, documentation or other available evidence. Do not guess when the environment can be inspected.
+## Minimum First Use
 
-## 1. Inspect the runtime
+Complete these five things before treating ENA as active.
 
-Identify:
+### 1. Confirm shared settings
 
-- Agent runtime and Host;
-- model/model service when exposed;
-- available tools, plugins, APIs, shell/code execution, browser and schedulers;
-- startup, stop, restart and supervision mechanisms;
-- important working directories, mounts, configuration and dependencies.
+Detect the Host/local timezone when possible, then ask the user to confirm the IANA timezone ENA should use. Do not impose a product default.
 
-Record how important facts were verified.
+Use the current user interaction as a language hint when useful, then ask the user to confirm the working language tag such as `zh-CN` or `en-US`.
 
-## 2. Confirm one timezone
+Ask where ENA-owned files should live. If the user has no preference, a stable user-home directory such as `~/.ena/` is suitable.
 
-Inspect the timezone used by the operating system, runtime, scheduler, logs, databases and relevant applications when exposed.
+Keep commands, paths, identifiers, API fields and protocol payloads in the exact form required by their systems. Use UTF-8 for ENA-owned text unless an external interface requires otherwise.
 
-Ask the user to confirm the canonical timezone. Suggest `Asia/Shanghai` by default unless the user chooses another IANA timezone such as `America/Los_Angeles`.
+### 2. Identify one real recovery path
 
-Also check whether the Host clock is reasonably synchronized.
+Find at least one action that can recover useful operation without depending on the current Agent session remaining healthy.
 
-After confirmation:
+Examples:
 
-- use this timezone for ENA timestamps, schedules, deadlines, recovery records and evolution records;
-- use the actual UTC offset in event timestamps where useful;
-- align Agent-controlled components when safe;
-- record explicit conversion boundaries for components that must use another timezone.
+- restart through a service/process/container/VM supervisor;
+- start a new coding/chat session against durable disk state;
+- restore a Git revision/worktree/file backup/snapshot;
+- another verified Host-native recovery action.
 
-## 3. Confirm one working language
+Record the exact mechanism, or `UNKNOWN` if none exists yet.
 
-Ask the user to confirm the language used for ENA records and operational Agent-to-Agent messages. Store a normal language tag such as `zh-CN` or `en-US`.
+### 3. Identify one rescuer
 
-Keep commands, paths, identifiers, API fields and protocol payloads in the exact form required by the underlying system.
+A rescuer may be:
 
-Use UTF-8 for ENA-owned text files unless an external interface requires another encoding.
+- a human who can access the Host/repository/recovery mechanism; or
+- another Agent reachable through A2A and able to perform or relay recovery.
 
-## 4. Confirm the ENA home
+Human recovery is a valid first-class path. A2A is useful when supported, but it is not required merely to complete First Use.
 
-Ask where ENA-owned files should live. If there is no preference, use a stable directory under the Agent user's home, for example:
+### 4. Write `ENA.yaml` and `SYSTEM.yaml`
 
-```text
-~/.ena/
-```
+`ENA.yaml` keeps confirmed settings and stable pointers.
 
-Create only what is needed. A typical installation may become:
-
-```text
-~/.ena/
-  ENA.yaml
-  SYSTEM.yaml
-  changes/
-  evolution/
-```
-
-## 5. Verify communication
-
-Identify and test:
-
-- how humans reach the Agent;
-- whether A2A already exists;
-- the Agent Card or other discovery record used by the A2A implementation;
-- at least one real two-way A2A exchange;
-- transport, authentication and permissions;
-- at least one reachable rescue peer when the Host can support it.
-
-Reuse the existing A2A identity/discovery mechanism. Do not create a second ENA identity system.
-
-See `A2A.md`.
-
-## 6. Inspect memory
-
-Identify how the Agent actually retains and retrieves information across sessions/restarts:
-
-- durable memory sources;
-- conversation/task/episodic history that can supply experience;
-- semantic/vector/indexed retrieval;
-- persistent procedures, skills or preferences;
-- how durable memory is written or updated;
-- how a mistaken update can be versioned, reversed, restored or superseded;
-- schedulers, idle hooks or event triggers that can run maintenance;
-- memory sources that must be excluded from consolidation or recombination.
-
-Do not create a separate ENA memory database when the Host already has a suitable memory system.
-
-## 7. Inspect backup and recovery
-
-Find the Host mechanisms already available:
-
-- Git or other version control;
-- file, volume, container, VM or database snapshots;
-- backup/restore tools;
-- service restart mechanisms;
-- task schedulers/timers;
-- watchdogs and health checks;
-- deployment/release rollback;
-- logs.
-
-Prefer reliable Host-native mechanisms.
-
-## 8. Identify risky self-change surfaces
-
-List the parts whose modification could stop the Agent from starting, communicating, using required tools or repairing itself.
-
-For each important surface, identify:
-
-- what can change;
-- where the previous working state can be preserved;
-- how the change can be reversed;
-- what independent mechanism can still execute recovery if the Agent becomes unreachable.
-
-See `SAFE-CHANGE.md`.
-
-## 9. Write two durable records
-
-### `ENA.yaml`
-
-Keep user-confirmed shared settings and stable pointers.
-
-Minimum:
+Minimum shape:
 
 ```yaml
 ena_home: ~/.ena
-canonical_timezone: Asia/Shanghai
-canonical_language: zh-CN
+canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+canonical_language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
 text_encoding: UTF-8
 ```
 
-Use `ENA.example.yaml` as a starting point.
+`SYSTEM.yaml` is the current system map. At minimum record:
 
-### `SYSTEM.yaml`
-
-Record the verified runtime, capabilities, communication, memory, recovery mechanisms, risky change surfaces and important unknowns.
-
-This is a current system map, not timeless truth. Recheck mutable facts before consequential changes.
-
-Use `examples/SYSTEM.example.yaml` as a starting point.
-
-## First Use is complete when
-
-- the user has confirmed timezone, language and ENA home;
-- `ENA.yaml` exists;
-- `SYSTEM.yaml` describes verified runtime, communication, memory and recovery facts;
-- human communication is known;
-- A2A is verified/established or its absence is recorded;
-- restart, backup/snapshot and scheduler/timer mechanisms are known or their absence is recorded;
-- risky self-change surfaces and recovery limits are visible.
-
-Then continue with:
-
-```text
-A2A.md
-→ SURVIVAL.md
-→ SAFE-CHANGE.md
-→ EVOLUTION.md
-→ SLEEP-DREAM-QUICKSTART.md
+```yaml
+checked_at: 2026-09-12T02:00:00+08:00
+valid_until: 2026-09-19T02:00:00+08:00
+minimum_ready: true
+runtime:
+  host: UNKNOWN
+  agent_runtime: UNKNOWN
+recovery:
+  primary: REPLACE_WITH_REAL_RECOVERY_PATH_OR_UNKNOWN
+rescue:
+  primary: REPLACE_WITH_HUMAN_OR_AGENT_RESCUER
+unknowns: []
 ```
+
+The dates above are only an example. Choose a freshness window appropriate to the Host. The reference initializer starts with seven days; shorten or lengthen it when the environment changes at a different rate.
+
+Set `minimum_ready: true` only after shared settings, one recovery path, and one rescuer are recorded. If no usable recovery path or rescuer exists, leave it false and record the gap.
+
+### 5. Make the record expire
+
+`SYSTEM.yaml` is not timeless truth.
+
+Run `python tools/ena_preflight.py` at session/Agent/workspace start when the Host supports a startup hook. Refresh First Use when the file is past `valid_until`.
+
+Before an important self-change, recheck the specific mutable recovery/startup/communication facts the change depends on even if `SYSTEM.yaml` has not yet expired.
+
+## Expand the map only when a capability needs it
+
+After the minimum is working, inspect additional areas as they become relevant instead of blocking adoption on a complete inventory.
+
+### Communication / A2A
+
+When configuring A2A, identify and verify the real two-way path, Agent Card/discovery record, transport/authentication, permissions and reachable peers. Reuse the existing A2A identity mechanism. See `A2A.md`.
+
+### Memory / evolution
+
+Before enabling Sleep/Dream, identify durable memory sources, experience/history, retrieval/indexing, write/update method, reversible history/snapshot, scheduler/idle/event triggers, and excluded sensitive sources. Do not create a second ENA memory database when the Host already has a suitable memory system.
+
+### Recovery and risky self-change
+
+Before important self-change, identify the exact affected surface, previous working state, rollback method and external recovery actor. See `SURVIVAL.md` and `SAFE-CHANGE.md`.
+
+Additional useful facts may include Git/version control, backups, snapshots, logs, watchdogs, deployment rollback, working directories, mounts, credentials references and startup dependencies. Record unknowns explicitly rather than inventing completeness.
+
+## First Use is minimally complete when
+
+- timezone, language and ENA home are confirmed;
+- `ENA.yaml` exists;
+- `SYSTEM.yaml` has `checked_at`, `valid_until` and `minimum_ready: true`;
+- one real recovery path is recorded;
+- one human or Agent rescuer is recorded;
+- unknown facts remain visible as `UNKNOWN` rather than being guessed.
+
+Then continue with the capabilities actually needed on this Host.

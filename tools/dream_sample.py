@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sample a Dream set from JSONL memory records using biased randomness and optional associative distance."""
+"""Experimental Dream sampler using biased randomness and optional associative distance."""
 
 from __future__ import annotations
 
@@ -54,7 +54,6 @@ def middle_distance_pool(anchor, records):
         hi = max(lo + 1, int(len(scored) * 0.75))
         return [item for _, item in scored[lo:hi]]
 
-    # Fallback when vectors are unavailable: prefer a different domain/source.
     domain = anchor.get("domain")
     source = anchor.get("source_type")
     distant = [
@@ -67,14 +66,21 @@ def middle_distance_pool(anchor, records):
 
 
 def main() -> int:
-    p = argparse.ArgumentParser()
+    p = argparse.ArgumentParser(
+        description="Reference Dream sampler. Defaults are experimental field parameters, not ENA requirements."
+    )
     p.add_argument("--memory", required=True, help="JSONL records")
     p.add_argument("--output", required=True)
     p.add_argument("--mode", choices=("free", "problem-guided"), default="free")
     p.add_argument("--anchor-id", help="Required for problem-guided mode")
     p.add_argument("--seed", type=int)
-    p.add_argument("--count", type=int, default=6)
-    p.add_argument("--random-jump-probability", type=float, default=0.10)
+    p.add_argument("--count", type=int, default=6, help="Experimental default: 6 source fragments")
+    p.add_argument(
+        "--random-jump-probability",
+        type=float,
+        default=0.10,
+        help="Experimental default: 0.10",
+    )
     args = p.parse_args()
 
     rng = random.Random(args.seed)
@@ -129,8 +135,11 @@ def main() -> int:
         selected.append({"pool": "random", "memory": item})
 
     output = {
+        "experimental_parameters": True,
         "mode": args.mode,
         "anchor_id": anchor.get("id"),
+        "count": args.count,
+        "random_jump_probability": args.random_jump_probability,
         "truth_status": "speculative_input",
         "fragments": selected,
     }

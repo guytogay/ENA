@@ -1,11 +1,15 @@
-schema_version: '0.1'
+schema_version: '0.2'
 
 candidate:
-  id: 20260912T020000+0800__improve-a2a-reconnect
+  id: 20260912T020000+0800__example
   created_at: 2026-09-12T02:00:00+08:00
-  timezone: Asia/Shanghai
-  language: zh-CN
+  timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+  language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
+  origin: dream
+  truth_status: speculative
   state: candidate
+
+  source_fragments: []
 
   intended_improvement:
     capability: REPLACE_WITH_TARGET_CAPABILITY
@@ -13,9 +17,8 @@ candidate:
     proposed_change: REPLACE_WITH_BOUNDED_CHANGE
 
   baseline:
-    captured_at: 2026-09-12T02:00:10+08:00
-    evidence:
-      - REPLACE_WITH_REAL_BASELINE_REFERENCE
+    captured_at: null
+    evidence: []
 
   success_signal:
     - REPLACE_WITH_OBSERVABLE_IMPROVEMENT

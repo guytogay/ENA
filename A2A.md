@@ -1,6 +1,8 @@
 # Agent-to-Agent communication
 
-ENA expects a practical two-way path to at least one other Agent when the Host can support it. Reuse a working Host-native or standards-based A2A implementation when one already exists.
+ENA uses a practical two-way path to other Agents when the Host can support it. Reuse a working Host-native or standards-based A2A implementation when one already exists.
+
+A2A is a collaboration and recovery capability, not a universal installation gate. A human recovery path remains valid on Hosts where A2A is unavailable or unnecessary.
 
 ## If A2A already exists
 
@@ -13,7 +15,7 @@ Do not create a second ENA identity system when the A2A implementation already p
 
 ## If A2A does not exist
 
-When the Host provides enough capability to create it:
+When the Host provides enough capability and a real collaboration need exists:
 
 1. choose the simplest reliable implementation appropriate to the Host;
 2. expose/register the Agent using that implementation's normal discovery mechanism;
@@ -22,17 +24,19 @@ When the Host provides enough capability to create it:
 5. prove a real two-way exchange works;
 6. save stable references in `ENA.yaml`.
 
-## Keep at least one rescue peer
+If the Host does not support a practical A2A path, record the limitation and continue using human/Host recovery rather than blocking the rest of ENA.
 
-For a risky self-change, another Agent should be able to receive the recovery package before live state is modified.
+## Use a rescue peer when A2A is part of recovery
 
-The rescue peer should be able to:
+For a risky self-change, an A2A peer can receive the recovery package before live state is modified.
+
+A usable rescue peer should be able to:
 
 - receive `rescue.yaml` and the location of required recovery material;
-- acknowledge the exact change package before the change starts;
+- acknowledge the exact change package when interactive acknowledgement is part of the recovery plan;
 - reach the target Host or recovery mechanism when authorized;
 - determine whether communication has returned;
-- follow the prepared rollback without first reconstructing the target Agent from conversation history.
+- follow the prepared rollback without reconstructing the target from conversation history.
 
 If the peer can receive messages but cannot actually execute or relay recovery, record that limitation instead of treating delivery alone as rescue capability.
 
@@ -40,14 +44,14 @@ If the peer can receive messages but cannot actually execute or relay recovery, 
 
 Changes to networking, authentication, routing, startup or the A2A endpoint can remove the same path needed for rescue.
 
-For such changes:
+When A2A is being used as recovery:
 
 - send the recovery package before modifying live state;
-- keep automatic rollback outside the component being changed;
+- keep any automatic rollback outside the component being changed;
 - avoid changing the only recovery channel and its only backup in the same operation;
 - require a new real two-way exchange before retaining the change.
 
-See `SAFE-CHANGE.md`.
+See `SAFE-CHANGE.md` for resident versus session/coding Host profiles and human/Agent recovery alternatives.
 
 ## Configuration example
 

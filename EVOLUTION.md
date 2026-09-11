@@ -4,70 +4,63 @@ The Agent improves over time through one loop:
 
 ```text
 experience
-→ sleep: consolidate memory
-→ dream: generate new possibilities
-→ candidate
+→ Sleep: consolidate memory
+→ Dream or ordinary work: generate candidates
 → reality check / bounded trial
 → retain / revise / reject / restore
 → outcome becomes new experience
 ```
 
-`SLEEP-DREAM.md` defines the Sleep and Dream steps. This file defines what happens to a candidate after it exists.
+`SLEEP-DREAM.md` defines the experimental Sleep/Dream path. This file defines what happens after a candidate exists.
 
-## 1. Preserve the candidate
+## 1. Preserve the candidate as a candidate
 
-A candidate may come from normal work, memory consolidation, dreaming, another Agent or the user.
+A candidate may come from normal work, memory consolidation, Dream, another Agent or the user.
 
-Record only what is needed to test it:
-
-- what is expected to improve;
-- the proposed change;
-- where the idea came from;
-- what observable result would count as improvement;
-- an important regression that must not occur;
-- what live components or durable memories would change.
-
-Use the timezone/language from `ENA.yaml`.
-
-Example:
+Before reality contact, keep it under:
 
 ```text
-~/.ena/evolution/candidates/
-  20260912T020000+0800__improve-a2a-reconnect/
-    candidate.yaml
+~/.ena/evolution/candidates/speculative/
 ```
 
-See `examples/evolution/CANDIDATE.example.yaml`.
+with a truth/status marker that makes its epistemic state explicit. Dream-generated candidates always start with:
+
+```yaml
+truth_status: speculative
+```
+
+Record only what is needed to test the candidate:
+
+- expected improvement;
+- proposed bounded change;
+- origin/source references;
+- observable result that would count as improvement;
+- important regression that must not occur;
+- components or durable memories that would change.
+
+`tools/candidate_record.py` provides a reference writer for initial speculative candidates.
 
 ## 2. Capture the relevant baseline
 
-Before changing anything, preserve the smallest real baseline that will later show whether the candidate helped.
+Before changing anything, preserve the smallest real baseline that can later show whether the candidate helped.
 
-Examples:
-
-- the task/failure the change is meant to improve;
-- current output from a repeatable check;
-- an operational metric;
-- current observed behavior;
-- current retrieval/memory behavior.
+Examples include the targeted task/failure, repeatable check, operational metric, current observed behavior or current retrieval/memory behavior.
 
 Do not create a broad benchmark when a small direct comparison is enough.
 
 ## 3. Protect risky self-change
 
-If the trial modifies code, runtime dependencies, services, communication, tool access, startup/recovery configuration or another critical operating component, use `SAFE-CHANGE.md`.
+If the trial modifies code, runtime dependencies, services, communication, tool access, startup/recovery configuration or another critical operating component, use `SAFE-CHANGE.md` with the appropriate Host profile.
 
-Link the candidate to the exact change package used for the trial.
+Link the candidate to the exact recovery package used for the trial.
 
-For ordinary memory edits, use the memory system's own reversible/versioned path when sufficient. If the memory controls startup, recovery, communication or tool access, treat it as a critical self-change.
+For ordinary memory edits, use the memory system's own reversible/versioned path when sufficient. If memory controls startup, recovery, communication or tool access, treat it as critical runtime state.
 
 ## 4. Separate survival from improvement
 
-First confirm that the Agent remains reachable/recoverable.
+First confirm the Agent remains usable/recoverable. Then ask whether the change actually improved the intended outcome.
 
-Then ask whether the change actually improved the intended outcome.
-
-A successful restart or successful conversation proves that the change did not kill the communication path. It does not prove the change was useful.
+A successful restart, new session or successful conversation proves recoverability/communication. It does not prove the candidate was useful.
 
 ## 5. Observe real results
 
@@ -81,47 +74,46 @@ Compare the result with the baseline using evidence appropriate to the candidate
 - retrieval/memory behavior;
 - a period of normal operation without the targeted failure.
 
-Record actual evidence, not only the Agent's interpretation.
+Record actual evidence, including negative and null results.
 
 ## 6. Decide what survives
 
 Use one practical outcome:
 
 ```text
-retain   keep the change
-revise   keep the idea, try another bounded variation
+retain   evidence supports keeping the change
+revise   idea remains useful but needs another bounded variation
 reject   current evidence does not justify it
-restore  return to the previous behavior/state because the change regressed
+restore  return to the previous state because the trial regressed
 ```
 
-If a safe-change package is still active, use its prepared rollback.
+A candidate that survives reality contact may be copied/recorded under:
 
-If a change was already retained and later needs reversal, make the reversal a new safe change against the current live state. Do not blindly run an old rollback after unrelated valid changes may have accumulated.
+```text
+~/.ena/evolution/candidates/selected/
+```
 
-## 7. Feed the result back into memory
+with the evidence and outcome that justified selection. Selection still does not automatically make every generated sentence factual memory; later Sleep decides how verified experience changes durable memory.
 
-Preserve:
+If a safe-change package is still active, use its prepared rollback. If a change was already retained and later needs reversal, make that reversal a new safe change against the current live state rather than blindly running an old rollback.
 
-- what was tried;
-- what happened;
-- the final outcome;
-- which assumptions changed;
-- useful procedures/boundaries/uncertainties;
-- negative and null results that should prevent repeated waste.
+## 7. Feed the result back into experience
 
-Later Sleep runs consolidate what reality established. Later Dream runs may reuse rejected ideas when new context makes a different variation plausible.
+Preserve what was tried, what happened, the final outcome, changed assumptions, useful procedures/boundaries/uncertainties, and negative/null results that should prevent repeated waste.
 
-## 8. Keep history
+Later Sleep consolidates what reality established. Later Dream runs may reuse rejected ideas when new context supports a different variation.
 
-A simple layout is:
+## 8. Keep the history simple
+
+A minimal layout is:
 
 ```text
 ~/.ena/evolution/
   experience/
   candidates/
-  retained/
-  rejected/
+    speculative/
+    selected/
   runs/
 ```
 
-Indexes may point to stable candidate records instead of moving files. Keep links to safe-change packages rather than duplicating their backups and rollback material.
+Keep stable links to recovery packages rather than duplicating their backups and rollback material.
