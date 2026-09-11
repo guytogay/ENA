@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -15,14 +16,23 @@ def main() -> int:
     p.add_argument("--language", required=True, help="Language tag, e.g. zh-CN")
     args = p.parse_args()
 
-    ZoneInfo(args.timezone)  # fail early on an invalid timezone
+    tz = ZoneInfo(args.timezone)
     home = Path(args.home).expanduser().resolve()
-    for rel in ("changes", "evolution/experience", "evolution/candidates", "evolution/runs/sleep", "evolution/runs/dream", "evolution/locks"):
+    for rel in (
+        "changes",
+        "evolution/experience",
+        "evolution/candidates",
+        "evolution/runs/sleep",
+        "evolution/runs/dream",
+        "evolution/locks",
+    ):
         (home / rel).mkdir(parents=True, exist_ok=True)
 
     config = home / "ENA.yaml"
-    if config.exists():
-        raise SystemExit(f"Refusing to overwrite existing {config}")
+    system = home / "SYSTEM.yaml"
+    for path in (config, system):
+        if path.exists():
+            raise SystemExit(f"Refusing to overwrite existing {path}")
 
     config.write_text(
         "schema_version: '0.1'\n"
@@ -46,7 +56,34 @@ def main() -> int:
         encoding="utf-8",
     )
 
+    now = datetime.now(tz).isoformat()
+    system.write_text(
+        "schema_version: '0.1'\n"
+        f"inspected_at: {now}\n"
+        f"canonical_timezone: {args.timezone}\n"
+        "runtime:\n"
+        "  host: null\n"
+        "  agent_runtime: null\n"
+        "  startup: null\n"
+        "  restart: null\n"
+        "communication:\n"
+        "  human: null\n"
+        "  a2a_agent_card: null\n"
+        "memory:\n"
+        "  sources: []\n"
+        "  durable_store: null\n"
+        "  retrieval_or_index: null\n"
+        "  write_method: null\n"
+        "recovery:\n"
+        "  backup_or_snapshot: null\n"
+        "  scheduler_or_timer: null\n"
+        "change_surfaces: []\n"
+        "unknowns: []\n",
+        encoding="utf-8",
+    )
+
     print(config)
+    print(system)
     return 0
 
 
