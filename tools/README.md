@@ -24,15 +24,30 @@ Expected output:
 ENA reference tools: OK
 ```
 
-## Initialize
+## Initialize interactively or from policy
 
-Use values the user has actually confirmed:
+When values are being confirmed during First Use:
 
 ```text
 python tools/ena_init.py --timezone CONFIRMED_IANA_TIMEZONE --language CONFIRMED_LANGUAGE_TAG
 ```
 
-The initializer creates `SYSTEM.yaml` with `minimum_ready: false`. Complete the minimum First Use, record a real recovery path and rescuer, then set it true.
+This creates `SYSTEM.yaml` with `minimum_ready: false`. Verify a real recovery path and rescuer before marking it ready.
+
+For a trusted deployment/workspace policy that already verified the minimum, the same tool can initialize non-interactively:
+
+```text
+python tools/ena_init.py \
+  --timezone CONFIRMED_IANA_TIMEZONE \
+  --language CONFIRMED_LANGUAGE_TAG \
+  --host-profile session \
+  --recovery VERIFIED_RECOVERY_REFERENCE \
+  --rescuer VERIFIED_RESCUER_REFERENCE \
+  --rescuer-type human \
+  --verified-minimum
+```
+
+`--verified-minimum` is not automatic proof. The caller is asserting that the supplied recovery path and rescuer were actually verified. Missing policy values should remain unresolved rather than being filled with product defaults.
 
 ## Preflight at session/startup time
 
@@ -53,6 +68,12 @@ python tools/change_scaffold.py --name fix-config --timezone CONFIRMED_IANA_TIME
 or use `--profile resident` for a long-running service/daemon style Agent.
 
 The scaffold does not edit live state and does not pretend one universal rollback scheduler is reliable on every Host. Fill it with the profile-appropriate restore path from `SAFE-CHANGE.md`.
+
+For a directly usable session/coding example based on Git branch + worktree + revert, see:
+
+```text
+examples/change/SESSION-GIT-WORKTREE.md
+```
 
 ## Prepare a Sleep input bundle
 
