@@ -3,23 +3,14 @@
 Sleep and Dream are experimental offline evolution jobs for a long-lived Agent.
 
 - **Sleep** consolidates accumulated experience into cleaner, better-connected durable memory.
-- **Dream** recombines memories that normal task retrieval would not usually place together and creates speculative candidates.
+- **Dream** recombines material that normal task retrieval would not usually place together and creates speculative candidates.
 - **Reality** decides what survives. Dream output is never factual memory merely because it was generated.
 
 Use `SLEEP-DREAM-QUICKSTART.md` for the first run.
 
 ## Experimental boundary
 
-The current fragment counts, sampling weights, distance bands and cadence in examples/reference tools are **field parameters, not ENA requirements**. Change them when evidence from the actual Host suggests a better setting.
-
-Useful evidence includes:
-
-- later retrieval/behavior improves after Sleep;
-- a Dream candidate survives reality contact;
-- Sleep overcompresses nuance or damages useful boundaries;
-- Dream is repetitive or mostly noise;
-- a run produces no useful candidate;
-- speculative Dream material leaks toward factual memory.
+Fragment counts, sampling weights, distance bands and cadence in examples/reference tools are field parameters, not ENA requirements. Change them when evidence from the actual Host suggests a better setting.
 
 Negative and null results are evidence. Do not expand Dream modes or sampling complexity merely because an additional mechanism sounds plausible.
 
@@ -28,72 +19,42 @@ Negative and null results are evidence. Do not expand Dream modes or sampling co
 Before enabling these jobs, identify:
 
 - durable memory sources;
-- experience/history sources;
-- how memory is retrieved/indexed;
-- how durable memory can be changed;
-- how a mistaken memory update can be reversed;
+- experience/history sources, including earlier sessions when the Host can expose them;
+- authorized knowledge sources such as project documentation, note/knowledge systems, repositories, connected files or other long-lived knowledge bases;
+- how memory/knowledge is retrieved or indexed;
+- how durable memory can be changed and how a mistaken change can be reversed;
 - a scheduler/idle/event mechanism when available;
-- memory sources that must be excluded.
+- sources that must be excluded;
+- the current capability inventory when available: tools, skills, connectors/plugins, APIs and other callable mechanisms;
+- discoverable capabilities that are available to install/enable but are not currently active.
 
-A typical local work area is:
+Keep long-term memory and knowledge in the systems that already own them. Do not duplicate them solely for ENA.
 
-```text
-~/.ena/evolution/
-  experience/
-  candidates/
-    speculative/
-    selected/
-  runs/
-    sleep/
-    dream/
-  locks/
-  sleep-dream.yaml
-```
+## 2. Cross-session and cross-source scope
 
-Keep the real long-term memory where the Host already keeps it. Do not duplicate it solely for ENA.
+Sleep and Dream are not limited to the current conversation.
 
-## 2. Capture useful experience while awake
+Past sessions, task history, conversation history, project records, knowledge-base material and future sessions may all become material when the Host or an authorized integration makes them accessible. This includes systems such as note/knowledge stores, connected document systems, code repositories and other durable sources the Agent is permitted to use.
 
-If the Host does not already preserve an equivalent durable record, add concise experience records for things likely to matter later:
+Preserve provenance so later reasoning can distinguish direct experience from user-reported, document-derived, knowledge-base-derived, Agent-derived or inferred material.
 
-- user corrections;
-- repeated failures/successes;
-- surprising outcomes;
-- useful repeated procedures;
-- unresolved problems;
-- important exceptions/counterexamples;
-- lessons received from another Agent;
-- outcomes from evolution or safe self-change;
-- ideas worth revisiting.
+Do not assume inaccessible sessions or knowledge can be recovered. Record that limitation instead of inventing continuity.
+
+Future sessions naturally join the same loop: useful events enter experience/history; later Sleep consolidates them; later Dream may recombine them with much older experience and knowledge.
+
+Full transcripts or full knowledge-base dumps are not required. Stable references, indexed records or bounded fragments are preferable when they preserve enough context.
+
+## 3. Capture useful experience while awake
+
+If the Host does not already preserve an equivalent durable record, keep concise experience records for things likely to matter later, such as user corrections, repeated failures/successes, surprising outcomes, useful procedures, unresolved problems, important exceptions, lessons from another Agent, and evolution/safe-change outcomes.
 
 Do not dump full conversations by default. Keep enough provenance to recover why an occurrence matters.
 
-## 3. Sleep
+## 4. Sleep
 
 Sleep is memory maintenance, not a daily summary.
 
-### Select material
-
-Read new experience, the active memories those experiences touch, older memories needed to resolve contradiction/merge/preserve boundaries, and explicitly unresolved material. Do not load the whole lifetime archive by default.
-
-### Find useful memory changes
-
-Look for:
-
-```text
-repetition
-duplication
-fragmentation
-conflict
-staleness
-overreach
-reusable procedure
-counterexample/boundary
-unresolved question
-missing association
-```
-
-### Plan before writing
+Read new experience plus only the older memory/knowledge needed to resolve duplication, contradiction, stale knowledge, overreach, reusable procedure, boundaries, unresolved questions or missing links.
 
 Produce a consolidation plan before changing durable memory. Useful operations include:
 
@@ -112,128 +73,122 @@ leave unchanged
 create an evolution candidate
 ```
 
-Keep source references, intended result and important uncertainty/counterevidence. When evidence is ambiguous, prefer a narrower memory, an unresolved record or no change over manufactured certainty.
+Before durable writes, preserve a reversible previous state using the memory system's version/history/snapshot mechanism. If memory controls startup, communication, tool access or recovery, use `SAFE-CHANGE.md` as well.
 
-### Preserve and apply
-
-Before durable writes, preserve a reversible previous state using the memory system's version/history/snapshot mechanism. If the memory controls startup, communication, tool access or recovery, use `SAFE-CHANGE.md` as well.
-
-Apply only the planned operations. When supported, update mechanisms that actually influence future retrieval/behavior rather than only rewriting prose.
-
-### Verify
-
-Confirm memory remains readable, changed records resolve, useful provenance/counterexamples remain reachable, and the new revision/version is recorded. Restore the pre-Sleep state if verification fails.
+After writing, verify that memory remains readable, changed records resolve, useful provenance/counterexamples remain reachable, and a new revision/version is recorded. Restore the previous state if verification fails.
 
 A prettier summary is not a successful Sleep run if later retrieval/behavior is unchanged.
 
-## 4. Dream
+## 5. Dream
 
 Dream is a variation generator. It should defeat ordinary nearest-neighbor retrieval without becoming pure noise.
 
 Dream does not directly write generated claims into factual memory and does not directly modify the live Agent.
 
-### Choose a mode
+### Modes
 
 ```text
 free             explore without a required problem anchor
-problem-guided   start from one unresolved problem, then draw most additional material from distant memory
+problem-guided   start from one unresolved problem, then draw most additional material from distant memory/knowledge
 ```
 
-These are the current field modes, not a claim that all useful Dream modes have been discovered.
-
-### Build memory pools
+### Material pools
 
 Eligible pools may include:
 
 ```text
 recent       recent experience/memory
 old          substantially older memory
-underused    rarely retrieved/activated memory
-external     learned from a user, document, A2A peer or other outside source
+underused    rarely retrieved/activated memory or knowledge
+external     learned from a user, document, knowledge base, A2A peer or other outside source
 unresolved   unanswered question, contradiction or failed approach
-salient      surprising/high-consequence/repeatedly reinforced memory
+salient      surprising/high-consequence/repeatedly reinforced material
 distant      non-nearest material by meaning/domain/source/time
-random       unrestricted eligible memory
+capability   installed/enabled tools, skills, connectors, APIs or other real capabilities
+possibility  discoverable capabilities that are not currently installed/enabled
+random       unrestricted eligible material
 ```
 
-Remove/redact secrets, credentials, private payloads and material excluded by local policy.
+### Capability sources
 
-### Sample with biased randomness
+Use grounded capability information rather than Dreaming capabilities into existence.
 
-Use a **small mixed set** that deliberately includes some recent grounding plus older/underused/external-or-unresolved/distant material and an occasional random jump.
+Preferred sources are:
 
-Choose probabilistically inside pools instead of always selecting the highest-scoring record. Reduce repeated use of near-duplicates and memories that already dominate normal retrieval.
+1. First Use / live Host capability discovery and `SYSTEM.yaml`;
+2. actual tool/plugin/connector registries exposed by the Host;
+3. the Agent's A2A Agent Card or equivalent discovery record, when present;
+4. discoverable catalogs for capabilities that could be installed/enabled.
 
-If vector similarity exists, derive close/middle/far bands from the local similarity distribution rather than hard-coding a universal cosine threshold. Prefer middle-distance material for many associative jumps while retaining some grounding and occasional far/random material.
+An Agent Card is useful material because it expresses the Agent's advertised skills/capabilities, but advertised capability must still be checked against live reality before use.
 
-If vectors are unavailable, approximate distance with time, domain/project, source, tags/entities, task type and retrieval history.
+Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has.
 
-Concrete proportions in `examples/evolution/SLEEP-DREAM.example.yaml` and `tools/dream_sample.py` are experimental defaults for field use, not normative values.
+A Dream may propose combining a problem with a currently unavailable capability. Reality contact must verify that the capability still exists, can actually be installed/enabled, has the required authorization, and behaves as expected before selection.
 
-### Perform divergent exploration
+### Sampling
 
-Freeze the sampled set for the round, then deliberately delay convergence. Do several of these before judging the ideas:
+Use a small mixed set with some recent grounding plus older/underused/external-or-unresolved/distant material and an occasional random jump. Knowledge-base and capability/possibility material may participate when useful.
+
+Choose probabilistically inside pools instead of always selecting the highest-scoring record. If vector similarity exists, derive close/middle/far bands from the local distribution rather than hard-coding a universal threshold. If vectors are unavailable, approximate distance using time, domain/project, source, tags/entities, task type and retrieval history.
+
+Concrete proportions in examples/reference tools remain experimental defaults.
+
+### Divergent exploration
+
+Freeze the sampled set for a round and deliberately delay convergence. Try several operations before judging the ideas:
 
 ```text
 seek remote structural similarities
-combine partial mechanisms from different memories
-reverse roles, direction, assumptions or causal order
-transfer a mechanism from one domain to another
-change constraints in a counterfactual scenario
+combine mechanisms from different memories/knowledge sources
+reverse roles, assumptions or causal direction
+transfer a mechanism across domains
+combine a problem with an existing or discoverable capability
+change constraints in a counterfactual
 follow a strange connection longer than normal retrieval would
-produce multiple variants instead of stopping at the first coherent one
+produce multiple variants
 ```
 
 Keep generated content speculative during this stage.
 
-### Extract candidates into the speculative path
+### Candidate output
 
-Return to normal reasoning and discard most dream prose. Keep only potentially useful hypotheses, mechanisms, questions, procedures, experiments, alternative explanations or possible self-improvements.
+Return to normal reasoning and keep only useful hypotheses, mechanisms, questions, procedures, experiments, alternative explanations or possible self-improvements.
 
-Dream-generated candidates must be recorded under:
+Dream-generated candidates belong under:
 
 ```text
 ~/.ena/evolution/candidates/speculative/
 ```
 
-with:
+with `origin: dream` and `truth_status: speculative`. `tools/candidate_record.py` provides a reference writer.
 
-```yaml
-origin: dream
-truth_status: speculative
-source_fragments: []
-candidate: "..."
-reality_check: "..."
-```
+Do not write Dream output into factual memory. A candidate that survives reality contact may move into the selected path, while factual/adaptive memory changes happen later through evidence-backed Sleep consolidation.
 
-Use `tools/candidate_record.py --origin dream ...` when using the reference tools. That helper always writes Dream candidates into the speculative directory and sets `truth_status: speculative`.
-
-Do not write Dream output into factual memory. A candidate that later survives reality contact may be recorded under `candidates/selected/`, but factual/adaptive memory changes still happen through normal reality evidence and later Sleep consolidation.
-
-## 5. Return to reality
+## 6. Return to reality
 
 Candidates from Sleep or Dream follow `EVOLUTION.md`:
 
 ```text
 candidate
 → normal reasoning
+→ verify current capability/install/authorization state when relevant
 → research / observation / real task / bounded trial
 → SAFE-CHANGE.md when critical runtime state changes
 → retain / revise / reject / restore
+→ production application if selected but not yet live
 → outcome becomes new experience
 → later Sleep consolidates what reality established
 ```
 
-Do not invent a separate selection system for Dream output.
+Do not create a separate selection system for Dream output.
 
-## 6. Scheduling and limits
+## 7. Scheduling and limits
 
-Sleep and Dream do not need human biological timing. Ask the user to confirm a cadence/cost envelope and use the Host's existing scheduler when possible.
-
-Sleep will often be more frequent than Dream; problem-guided Dream is useful when ordinary reasoning repeatedly converges without resolving a durable problem. Treat that as a field starting point, not a universal law.
+Sleep and Dream do not need human biological timing. Use user-confirmed or trusted-policy cadence/cost limits and the Host's existing scheduler when possible.
 
 Respect explicit per-run limits for source material, generated candidates, wall-clock time and model/tool cost. Do not replay an unlimited backlog after missed runs.
 
-## 7. Reference tools
+## 8. Reference tools
 
 The `tools/` directory contains conservative reference helpers for initialization, preflight, safe-change scaffolding, Sleep input preparation, Dream sampling and speculative candidate recording. Replace them with stronger Host-native mechanisms when available.

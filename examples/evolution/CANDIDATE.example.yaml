@@ -1,4 +1,4 @@
-schema_version: '0.2'
+schema_version: '0.3'
 
 candidate:
   id: 20260912T020000+0800__example
@@ -10,6 +10,7 @@ candidate:
   state: candidate
 
   source_fragments: []
+  required_capabilities: []
 
   intended_improvement:
     capability: REPLACE_WITH_TARGET_CAPABILITY
@@ -29,12 +30,21 @@ candidate:
   affected_components: []
 
   trial:
+    environment: null   # live | sandbox | branch | worktree | preview | other
     safe_change_package: null
     started_at: null
     completed_at: null
 
-  result:
-    post_change_evidence: []
-    outcome: null
+  selection:
+    outcome: null       # retain | revise | reject | restore
+    evidence: []
     reason: null
-    revisit_when: null
+
+  production:
+    required: null
+    applied_at: null
+    safe_change_package: null
+    evidence: []
+    state: null         # not_needed | pending | applied | observed | reverted
+
+  revisit_when: null

@@ -3,13 +3,14 @@
 These scripts use only the Python standard library. An Agent can run them as examples and replace them with stronger Host-native mechanisms later.
 
 ```text
-ena_init.py          create ENA.yaml, SYSTEM.yaml and working directories
-ena_preflight.py     fail fast when First Use is missing/not ready/stale
-change_scaffold.py   create a timestamped safe-change package skeleton
-sleep_prepare.py     build a bounded Sleep input bundle from JSONL records
-dream_sample.py      sample a Dream set with biased randomness / distance
-candidate_record.py  write new candidates only into the speculative path
-self_test.py         verify the reference tools against included sample data
+ena_init.py                 create ENA.yaml, SYSTEM.yaml and working directories
+ena_preflight.py            fail fast when First Use is missing/not ready/stale
+change_scaffold.py          create a timestamped safe-change package skeleton
+sleep_prepare.py            build a bounded Sleep input bundle from JSONL records
+combine_dream_material.py   combine memory + knowledge + capability material
+dream_sample.py             sample a Dream set with biased randomness / distance
+candidate_record.py         write new candidates only into the speculative path
+self_test.py                verify the reference tools against included sample data
 ```
 
 ## Verify the tools
@@ -86,11 +87,25 @@ python tools/sleep_prepare.py \
 
 Give the bundle to the Agent/model and apply the consolidation steps in `SLEEP-DREAM.md`.
 
+## Combine Dream material from multiple sources
+
+`dream_sample.py` accepts one JSONL stream. Use the combiner when the Dream should include authorized knowledge-base material and the Agent's capability surface as well as memory/session history:
+
+```bash
+python tools/combine_dream_material.py \
+  --memory examples/evolution/MEMORY.example.jsonl \
+  --knowledge examples/evolution/KNOWLEDGE.example.jsonl \
+  --capabilities examples/evolution/CAPABILITIES.example.jsonl \
+  --output dream-material.jsonl
+```
+
+Capability records should preserve whether the capability is actually installed/verified, merely advertised by an Agent Card, or only discoverable but not enabled. Do not convert an advertised or catalog capability into a real ability merely by including it in Dream material.
+
 ## Sample a free Dream
 
 ```bash
 python tools/dream_sample.py \
-  --memory examples/evolution/MEMORY.example.jsonl \
+  --memory dream-material.jsonl \
   --output dream-set.json \
   --seed 42
 ```
@@ -99,7 +114,7 @@ python tools/dream_sample.py \
 
 ```bash
 python tools/dream_sample.py \
-  --memory examples/evolution/MEMORY.example.jsonl \
+  --memory dream-material.jsonl \
   --mode problem-guided \
   --anchor-id m4 \
   --output dream-set.json \
