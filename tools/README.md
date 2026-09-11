@@ -44,9 +44,13 @@ Configure the Host to run this before ordinary Agent work when a startup/session
 
 ## Create a safe-change package
 
+Choose the Host profile from `SAFE-CHANGE.md`:
+
 ```text
-python tools/change_scaffold.py --name fix-config --timezone CONFIRMED_IANA_TIMEZONE
+python tools/change_scaffold.py --name fix-config --timezone CONFIRMED_IANA_TIMEZONE --profile session
 ```
+
+or use `--profile resident` for a long-running service/daemon style Agent.
 
 The scaffold does not edit live state and does not pretend one universal rollback scheduler is reliable on every Host. Fill it with the profile-appropriate restore path from `SAFE-CHANGE.md`.
 
