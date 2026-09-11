@@ -1,14 +1,10 @@
 schema_version: '0.1'
 
-# Replace these values with the user's confirmed choices during First Use.
 ena_home: ~/.ena
 canonical_timezone: Asia/Shanghai
 canonical_language: zh-CN
-
-# ENA-owned text records use UTF-8.
 text_encoding: UTF-8
 
-# Stable pointers discovered or created during First Use.
 runtime:
   host: null
   agent: null
@@ -28,7 +24,6 @@ survival:
   external_escalation: null
 
 recovery:
-  acms: ~/.ena/acms
   changes: ~/.ena/changes
   rollback_scheduler: null
   backup_or_snapshot: null

@@ -1,0 +1,51 @@
+schema_version: '0.1'
+
+rescue:
+  target:
+    agent_card: https://agent-a.example/.well-known/agent-card.json
+    host: agent-a-host.example
+    service: agent-a
+
+  package:
+    id: 20260912T011530+0800__fix-a2a-channel
+    status_file: /home/agent-a/.ena/changes/20260912T011530+0800__fix-a2a-channel/status.yaml
+
+  changed:
+    - /etc/agent-a/a2a.yaml
+
+  known_good:
+    backup: /home/agent-a/.ena/changes/20260912T011530+0800__fix-a2a-channel/backup/etc/agent-a/a2a.yaml
+    sha256: REPLACE_WITH_REAL_SHA256
+
+  automatic_rollback:
+    mechanism: systemd-run
+    job_id: rollback-20260912T011530+0800
+    deadline: 2026-09-12T01:25:30+08:00
+
+  rollback:
+    command: python /home/agent-a/.ena/changes/20260912T011530+0800__fix-a2a-channel/rollback.py --apply
+
+  restart:
+    command: systemctl restart agent-a
+
+  verify:
+    service: systemctl is-active agent-a
+    communication: establish_normal_bidirectional_A2A_or_human_conversation
+
+  act_when_any:
+    - automatic_rollback_deadline_passed_and_target_is_unreachable
+    - automatic_rollback_failed
+    - human_authorized_recovery
+
+  do_not_act_when_any:
+    - target_has_confirmed_normal_bidirectional_communication
+    - package_state_is_retained
+    - package_state_is_restored
+    - package_state_is_cancelled
+
+  restore_only:
+    - /etc/agent-a/a2a.yaml
+
+  fallback:
+    next_restore_point: REPLACE_WITH_REAL_SNAPSHOT_OR_VERSION
+    escalation: REPLACE_WITH_REAL_HUMAN_OR_EXTERNAL_RECOVERY_PATH

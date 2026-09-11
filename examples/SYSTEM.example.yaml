@@ -1,0 +1,23 @@
+schema_version: '0.1'
+inspected_at: 2026-09-12T01:00:00+08:00
+canonical_timezone: Asia/Shanghai
+runtime:
+  host: null
+  agent_runtime: null
+  startup: null
+  restart: null
+  supervision: null
+communication:
+  human: null
+  a2a_agent_card: null
+memory:
+  sources: []
+  durable_store: null
+  retrieval_or_index: null
+  write_method: null
+recovery:
+  backup_or_snapshot: null
+  scheduler_or_timer: null
+  logs: null
+change_surfaces: []
+unknowns: []
