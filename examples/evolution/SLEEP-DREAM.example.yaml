@@ -1,11 +1,31 @@
 schema_version: '0.1'
 timezone: Asia/Shanghai
 language: zh-CN
+
+paths:
+  experience_inbox: ~/.ena/evolution/experience
+  candidates: ~/.ena/evolution/candidates
+  sleep_runs: ~/.ena/evolution/runs/sleep
+  dream_runs: ~/.ena/evolution/runs/dream
+
+memory:
+  sources: []
+  write_method: null
+  reversible_history_or_snapshot: null
+
 sleep:
   enabled: true
   cadence: null
+  trigger_after_new_experiences: 20
+  max_source_fragments: 80
+  max_generated_operations: 30
+
 dream:
   enabled: true
   cadence: null
   default_mode: free
   default_temperature: medium
+  fragments_per_round:
+    min: 5
+    max: 7
+  max_candidates_per_run: 5
