@@ -1,0 +1,11 @@
+schema_version: '0.1'
+timezone: Asia/Shanghai
+language: zh-CN
+sleep:
+  enabled: true
+  cadence: null
+dream:
+  enabled: true
+  cadence: null
+  default_mode: free
+  default_temperature: medium
