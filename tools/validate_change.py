@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
 from control_yaml import ControlYamlError, parse_control_yaml, scalar
@@ -20,7 +20,9 @@ from timezone_utils import TimezoneUnavailable, load_timezone
 def configured_timezone(home: Path) -> tuple[object, str]:
     ena = home / "ENA.yaml"
     if not ena.is_file():
-        return timezone.utc, "UTC"
+        raise ValueError(
+            f"ENA home is not initialized: missing {ena}. Run tools/ena_init.py first or pass --home to an initialized ENA home."
+        )
     try:
         data = parse_control_yaml(ena.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, ControlYamlError) as exc:
