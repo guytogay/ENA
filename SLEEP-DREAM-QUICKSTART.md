@@ -1,6 +1,8 @@
 # Sleep / Dream Quickstart
 
-Use this after `FIRST-USE.md` has identified the real Host, memory sources, timezone/language and ENA home.
+Use this after minimum First Use is complete and the Agent has identified the memory sources needed for this experiment.
+
+Current sampler sizes and weights are experimental starting parameters. Do not treat them as ENA rules.
 
 ## 1. Create the working directories
 
@@ -8,6 +10,8 @@ Use this after `FIRST-USE.md` has identified the real Host, memory sources, time
 ~/.ena/evolution/
   experience/
   candidates/
+    speculative/
+    selected/
   runs/
     sleep/
     dream/
@@ -18,68 +22,42 @@ Keep the real long-term memory where the Host already keeps it.
 
 ## 2. Create `sleep-dream.yaml`
 
-Start from `examples/evolution/SLEEP-DREAM.example.yaml` and fill in:
-
-- actual memory sources;
-- memory write/update method;
-- how the previous memory state can be restored;
-- excluded sources;
-- run limits;
-- scheduler references when available.
-
-Keep timezone/language aligned with `ENA.yaml`.
+Start from `examples/evolution/SLEEP-DREAM.example.yaml` and fill in the actual memory sources, write/update method, restore path, excluded sources, run limits and scheduler references when available.
 
 ## 3. Feed useful experience
 
-When normal work produces a correction, repeated success/failure, surprising outcome, unresolved problem, useful procedure or evolution result, preserve a concise record in `~/.ena/evolution/experience/` if the Host does not already provide an equivalent durable record.
+Preserve concise records for corrections, repeated success/failure, surprising outcomes, unresolved problems, useful procedures or evolution results when the Host does not already keep equivalent durable records.
 
 Do not dump whole conversations by default.
 
 ## 4. Run Sleep once manually
 
 ```text
-lock the memory-maintenance scope
-→ collect new experience + only relevant existing memory
+lock memory scope
+→ collect new experience and relevant memory
 → find duplication/conflict/staleness/overreach/procedures/boundaries/unresolved links
-→ write a consolidation plan without changing memory
+→ write a consolidation plan before changing memory
 → preserve a reversible pre-run state
 → apply only the plan
-→ verify memory + provenance remain usable
+→ verify memory and provenance remain usable
 → record the run
 → unlock
 ```
 
-If verification fails, restore the pre-run memory state.
-
-The result should improve real memory/retrieval behavior, not merely create a summary.
+If verification fails, restore the pre-run state. A prettier summary is not success unless later retrieval or behavior improves.
 
 ## 5. Run Dream once manually
 
-Choose:
+Choose either `free` or `problem-guided` mode.
 
-```text
-free             no required problem anchor
-problem-guided   one unresolved problem as anchor
-```
-
-Build a 5–7 fragment set using a mixture of:
-
-```text
-recent
-old
-underused
-external or unresolved
-distant
-optional salient
-optional random jump
-```
+Build a small mixed fragment set containing some grounding plus older, underused, external/unresolved or distant material and an occasional random jump. The reference sampler's exact ratios are experimental.
 
 Then deliberately delay convergence and try several operations:
 
 ```text
 seek remote structural similarities
 combine mechanisms from different memories
-invert roles/assumptions/causal direction
+invert roles, assumptions or causal direction
 transfer mechanisms across domains
 change constraints in a counterfactual
 follow strange connections
@@ -88,11 +66,11 @@ produce multiple variants
 
 Return to normal reasoning after divergence.
 
-Keep only useful speculative candidates. Never promote dream-generated material directly into factual memory.
+Record useful outputs under `~/.ena/evolution/candidates/speculative/` with `truth_status: speculative`. `tools/candidate_record.py` provides a reference path for this.
+
+Never write Dream-generated material directly into factual memory.
 
 ## 6. Touch reality
-
-For a candidate worth pursuing:
 
 ```text
 candidate
@@ -100,32 +78,17 @@ candidate
 → research / observation / real task / bounded trial
 → SAFE-CHANGE.md if critical runtime state changes
 → retain / revise / reject / restore
-→ preserve the outcome as new experience
+→ record the outcome
 ```
 
-Later Sleep runs consolidate what reality established.
+A candidate that survives reality contact may be recorded under `candidates/selected/`. Later Sleep runs decide how verified outcomes should affect durable memory.
 
-## 7. Add scheduling
+Preserve negative and null results.
 
-Ask the user to confirm cadence and cost limits.
+## 7. Add scheduling only after the manual path works
 
-A simple start:
+Ask the user to confirm cadence and cost limits. Use the Host scheduler when available and respect per-run limits.
 
-```text
-Sleep: more frequent
-Dream: less frequent
-problem-guided Dream: invoke when ordinary reasoning repeatedly converges without resolving a durable problem
-```
+## 8. Reference tools
 
-Use the Host scheduler when available. Respect per-run limits rather than replaying an unlimited backlog.
-
-## 8. Optional reference tools
-
-```text
-python tools/ena_init.py --timezone Asia/Shanghai --language zh-CN
-python tools/change_scaffold.py --name fix-config --timezone Asia/Shanghai
-python tools/sleep_prepare.py --experience experience.jsonl --memory memory.jsonl --output sleep-input.json
-python tools/dream_sample.py --memory memories.jsonl --output dream-set.json
-```
-
-These are reference implementations. Replace them with stronger Host-native mechanisms when available.
+Use confirmed settings rather than copying example values. See `tools/README.md` for commands.
