@@ -6,7 +6,8 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
-from zoneinfo import ZoneInfo
+
+from timezone_utils import TimezoneUnavailable, load_timezone
 
 
 def known(value: str | None) -> bool:
@@ -45,7 +46,11 @@ def main() -> int:
             "--verified-minimum requires non-UNKNOWN --recovery, --rescuer and --rescuer-type"
         )
 
-    tz = ZoneInfo(args.timezone)
+    try:
+        tz = load_timezone(args.timezone)
+    except TimezoneUnavailable as exc:
+        raise SystemExit(str(exc)) from exc
+
     home = Path(args.home).expanduser().resolve()
     for rel in (
         "changes",
