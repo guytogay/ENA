@@ -53,10 +53,10 @@ def main() -> int:
         return 2
 
     for path, source in sources:
-        for line_no, record in enumerate(source.records, start=1):
+        for line_no, record in zip(source.line_numbers, source.records):
             if not isinstance(record, dict):
                 print(
-                    f"ENA freshness scan: ERROR: record {line_no} in {path} must be a JSON object",
+                    f"ENA freshness scan: ERROR: record at line {line_no} in {path} must be a JSON object",
                     file=sys.stderr,
                 )
                 return 2
