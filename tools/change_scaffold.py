@@ -40,7 +40,9 @@ def main() -> int:
         "Previous working state:\n\n"
         "Recovery actor/path:\n\n"
         "Rollback:\n\n"
-        "Verification:\n",
+        "Incremental deterministic checks:\n\n"
+        "Validation event references:\n\n"
+        "Final verification:\n",
         encoding="utf-8",
     )
     (package / "rescue.yaml").write_text(
