@@ -61,11 +61,28 @@ Before changing live state, create a package such as:
     change.md
     rescue.yaml
     status.yaml
+    transitions.jsonl
     backup/
-    rollback.py | rollback.sh | rollback.ps1 | Host-native recovery reference
+    rollback.py | Host-native recovery reference
 ```
 
 Use the timezone confirmed in `ENA.yaml`. Store the package somewhere that survives failure of the changed component/current session.
+
+`tools/change_scaffold.py` creates a conservative skeleton. Its generated `rollback.py` is intentionally an unconfigured placeholder that exits rather than pretending recovery exists. Replace it or record a verified Host-native rollback action before arming the change.
+
+## Reference state gate
+
+`tools/safe_change_state.py` is the reference executable gate for the state machine below. It rejects malformed control files, unresolved recovery fields and invalid transitions. It also requires an evidence reference before `retained`, `restored`, or `failed`, updates `status.yaml`, and appends transition history to `transitions.jsonl`.
+
+Example:
+
+```text
+python tools/safe_change_state.py CHANGE_PACKAGE armed
+python tools/safe_change_state.py CHANGE_PACKAGE applied
+python tools/safe_change_state.py CHANGE_PACKAGE retained --evidence VALIDATION_EVENT_OR_RESULT_REF
+```
+
+The reference gate has force only when the Agent/Host actually routes state transitions through it. Direct manual edits can bypass it. A Host that needs stronger enforcement should connect this gate, or an equivalent native implementation, to tool/edit/deployment hooks or permission boundaries.
 
 ## Before the change
 
@@ -77,8 +94,8 @@ Use the timezone confirmed in `ENA.yaml`. Store the package somewhere that survi
    - resident runtime: normally arm an independent rollback timer/scheduler when available;
    - session/coding Agent: ensure the durable restore point and recovery instructions survive the session, and identify the human/new-session recovery path.
 6. **Confirm the external recovery actor/path is usable.** Obtain human/Agent acknowledgement when that actor is expected to intervene interactively.
-7. Set `status.yaml` to `armed`.
-8. Only then apply the live change and set status to `applied`.
+7. Move `preparing -> armed` through `tools/safe_change_state.py`. Do not apply the live change if the gate rejects the package.
+8. Apply the bounded live change, then move `armed -> applied` through the same gate.
 
 ## Validate close to the change
 
@@ -110,22 +127,24 @@ A local PASS does not replace the final post-change check. It shortens the lifet
 
 ## What `rescue.yaml` needs
 
-Keep it short and executable. Include what applies on this Host:
+Keep it short and executable. The reference control file intentionally uses a small flat mapping so the gate can fail closed instead of pretending to parse arbitrary YAML. Put longer explanation in `change.md`.
+
+Record what applies on this Host:
 
 ```text
+host profile
 target Agent/session/repository
-Host profile: resident | session
 where recovery must run
-package path or identifier
+recovery actor
 exact components changed
 known-good backup/snapshot/version/commit
-exact rollback command or action
-automatic rollback job and deadline, if one exists
+exact rollback action
+automatic rollback reference, if one exists
 restart/reload/new-session action
-how to verify communication or useful operation is back
-human / Agent / Host recovery actor
-what the rescuer must not modify
-fallback restore point or escalation
+operation verification
+communication verification when relevant
+exact restore scope
+fallback/escalation
 ```
 
 Refer to credentials; do not embed secrets merely for convenience. See `examples/change/RESCUE.example.yaml`.
@@ -145,7 +164,9 @@ failed      prepared recovery did not restore usability
 cancelled   change was abandoned before live mutation
 ```
 
-A resident runtime with a rollback timer cancels that timer only after the post-change check succeeds. A session Agent without such a timer simply records `retained` after the corresponding repository/test/human communication check succeeds.
+Use `tools/safe_change_state.py` for the reference transitions. `retained`, `restored`, and `failed` require an evidence reference. Transition history lives in `transitions.jsonl` so `status.yaml` remains a small enforceable control file.
+
+A resident runtime with a rollback timer cancels that timer only after the post-change check succeeds. A session Agent without such a timer records `retained` only after the corresponding repository/test/human communication check succeeds.
 
 A running process alone does not prove recovery.
 
@@ -155,8 +176,20 @@ When more than one recovery actor can act, make rollback idempotent where possib
 
 A rollback should normally refuse destructive action when state is already `retained`, `restored`, or `cancelled` unless an explicit fallback says otherwise.
 
+## Keep the validation/repair trajectory
+
+When a check fails and a later bounded repair makes it pass, link the later validation event to the failed event. Preserve the sequence as experience:
+
+```text
+change
+→ deterministic FAIL
+→ bounded repair
+→ deterministic PASS
+→ final useful-operation check
+```
+
+Later Sleep may consolidate repeated trajectories into a procedure, earlier retrieval cue, narrower rule or candidate improvement. Do not turn one failure into a universal rule merely because it is easy to summarize.
+
 ## Keep the package
 
 Keep the completed package as change history. Archive it only when doing so does not remove a restore dependency still needed by the current known-good state.
-
-`tools/change_scaffold.py` creates the package skeleton. Fill it with the real Host-native restore path before changing live state.
