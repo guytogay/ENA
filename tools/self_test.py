@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -19,6 +20,11 @@ def run(*args):
     if result.returncode:
         raise SystemExit(result.stdout + result.stderr)
     return result.stdout.strip()
+
+
+def text_sha256(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def main() -> int:
@@ -119,14 +125,31 @@ def main() -> int:
         freshness = json.loads(freshness_out.read_text(encoding="utf-8"))
         assert freshness["counts"] == {"fresh": 1, "stale": 1, "unknown": 1}
 
+        experience_path = examples / "EXPERIENCE.example.jsonl"
+        memory_path = examples / "MEMORY.example.jsonl"
         sleep_out = tmp / "sleep-input.json"
         run(
             tools / "sleep_prepare.py",
-            "--experience", examples / "EXPERIENCE.example.jsonl",
-            "--memory", examples / "MEMORY.example.jsonl",
+            "--experience", experience_path,
+            "--memory", memory_path,
             "--output", sleep_out,
+            "--max-experience", "2",
+            "--max-memory", "3",
         )
-        assert json.loads(sleep_out.read_text(encoding="utf-8"))["task"] == "sleep_consolidation"
+        sleep = json.loads(sleep_out.read_text(encoding="utf-8"))
+        assert sleep["task"] == "sleep_consolidation"
+        assert len(sleep["experience"]) == 2
+        assert len(sleep["memory"]) == 3
+        assert sleep["input"]["prepared_at"].endswith("Z")
+        sleep_sources = {item["role"]: item for item in sleep["input"]["sources"]}
+        assert sleep_sources["experience"]["reference"] == str(experience_path)
+        assert sleep_sources["experience"]["sha256"] == text_sha256(experience_path)
+        assert sleep_sources["experience"]["selected_record_count"] == 2
+        assert sleep_sources["experience"]["selection"] == {"strategy": "tail", "max_records": 2}
+        assert sleep_sources["memory"]["reference"] == str(memory_path)
+        assert sleep_sources["memory"]["sha256"] == text_sha256(memory_path)
+        assert sleep_sources["memory"]["selected_record_count"] == 3
+        assert sleep_sources["memory"]["selection"] == {"strategy": "tail", "max_records": 3}
 
         dream_material = tmp / "dream-material.jsonl"
         run(
