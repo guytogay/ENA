@@ -1,0 +1,39 @@
+schema_version: '0.1'
+run_id: 20260912T010000+0800__sleep__a4f2
+status: completed
+started_at: 2026-09-12T01:00:00+08:00
+completed_at: 2026-09-12T01:08:30+08:00
+
+memory_scope:
+  sources: []
+  pre_run_revision: null
+  post_run_revision: null
+
+input:
+  new_experience_count: 0
+  memory_fragments_read: 0
+
+plan:
+  add: 0
+  merge: 0
+  link: 0
+  refine: 0
+  correct: 0
+  strengthen: 0
+  weaken: 0
+  dormant: 0
+  supersede: 0
+  archive: 0
+  no_change: 0
+  create_candidate: 0
+
+verification:
+  memory_readable: true
+  changed_records_resolve: true
+  provenance_preserved: true
+  restored_pre_run_state: false
+
+outputs:
+  changed_memory_refs: []
+  candidates_created: []
+  unresolved: []
