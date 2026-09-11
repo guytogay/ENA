@@ -1,36 +1,38 @@
-schema_version: '0.1'
+schema_version: '0.2'
 
 ena_home: ~/.ena
-canonical_timezone: Asia/Shanghai
-canonical_language: zh-CN
+canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+canonical_language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
 text_encoding: UTF-8
 
 runtime:
-  host: null
-  agent: null
-  startup: null
-  restart: null
-  clock_sync: null
+  host: UNKNOWN
+  agent: UNKNOWN
+  startup: UNKNOWN
+  restart: UNKNOWN
+  clock_sync: UNKNOWN
 
 communication:
-  human: null
+  human: UNKNOWN
   a2a:
-    agent_card: null
+    agent_card: UNKNOWN
     rescue_peers: []
 
 survival:
-  supervisor: null
-  communication_probe: null
-  external_escalation: null
+  host_profile: UNKNOWN   # resident | session
+  supervisor: UNKNOWN
+  communication_probe: UNKNOWN
+  external_escalation: UNKNOWN
 
 recovery:
   changes: ~/.ena/changes
-  rollback_scheduler: null
-  backup_or_snapshot: null
+  rollback_scheduler: UNKNOWN
+  backup_or_snapshot: UNKNOWN
 
 evolution:
   records: ~/.ena/evolution
   sleep_dream_config: ~/.ena/evolution/sleep-dream.yaml
   experience_inbox: ~/.ena/evolution/experience
-  candidates: ~/.ena/evolution/candidates
-  scheduler: null
+  speculative_candidates: ~/.ena/evolution/candidates/speculative
+  selected_candidates: ~/.ena/evolution/candidates/selected
+  scheduler: UNKNOWN
