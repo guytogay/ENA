@@ -1,22 +1,26 @@
-schema_version: '0.1'
-timezone: Asia/Shanghai
-language: zh-CN
+schema_version: '0.2'
+experimental_parameters: true
+
+timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
+language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
 
 paths:
   experience_inbox: ~/.ena/evolution/experience
-  candidates: ~/.ena/evolution/candidates
+  speculative_candidates: ~/.ena/evolution/candidates/speculative
+  selected_candidates: ~/.ena/evolution/candidates/selected
   sleep_runs: ~/.ena/evolution/runs/sleep
   dream_runs: ~/.ena/evolution/runs/dream
 
 memory:
   sources: []
-  write_method: null
-  reversible_history_or_snapshot: null
+  write_method: UNKNOWN
+  reversible_history_or_snapshot: UNKNOWN
 
 scheduler:
-  sleep: null
-  dream: null
+  sleep: UNKNOWN
+  dream: UNKNOWN
 
+# The values below are starting field parameters, not ENA requirements.
 sleep:
   enabled: true
   cadence: null
@@ -29,7 +33,7 @@ dream:
   enabled: true
   cadence: null
   default_mode: free
-  default_temperature: medium
+  default_intensity: medium
   fragments_per_round:
     min: 5
     max: 7
