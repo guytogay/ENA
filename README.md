@@ -11,9 +11,11 @@ This repository is under active development and is **not yet the Current release
 3. [`SURVIVAL.md`](SURVIVAL.md) — build an external restart/recovery ladder that remains available when the main Agent is unhealthy.
 4. [`ACMS.md`](ACMS.md) — route critical body changes through preserved known-good state, executable rollback, timed automatic recovery, and an externally shared rescue package.
 5. [`EVOLUTION.md`](EVOLUTION.md) — improve the Agent through accumulated experience, candidate variation, reality contact, and retained outcomes.
-6. [`SLEEP-DREAM.md`](SLEEP-DREAM.md) — install the first executable offline evolution loop: Sleep consolidates memory; Dream uses biased distant-memory recombination plus Divergent Explorer to generate speculative candidates; Wake/Reality selects what survives.
+6. [`SLEEP-DREAM.md`](SLEEP-DREAM.md) — install the first executable offline evolution loop: Sleep consolidates memory; Dream uses biased distant-memory recombination plus Divergent Explorer to generate speculative candidates; Wake/Reality selects what survives. Start with [`SLEEP-DREAM-QUICKSTART.md`](SLEEP-DREAM-QUICKSTART.md).
 
-[`ENA.example.yaml`](ENA.example.yaml) shows the shared local configuration shape. Examples under [`examples/`](examples/) show body, ACMS rescue/status, evolution candidate, and Sleep/Dream configuration records.
+[`ENA.example.yaml`](ENA.example.yaml) shows the shared local configuration shape. Examples under [`examples/`](examples/) show body, ACMS rescue/status, evolution candidate, Sleep/Dream configuration, and Sleep/Dream run records.
+
+Field observations from Sleep/Dream v0.1 can be reported in [Issue #12](https://github.com/guytogay/ENA/issues/12).
 
 ## Current build shape
 
