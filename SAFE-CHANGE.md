@@ -80,6 +80,34 @@ Use the timezone confirmed in `ENA.yaml`. Store the package somewhere that survi
 7. Set `status.yaml` to `armed`.
 8. Only then apply the live change and set status to `applied`.
 
+## Validate close to the change
+
+When the Host exposes a post-write, post-tool, Git, IDE, CI or service hook, run the smallest relevant **deterministic** check as close to the change as practical instead of waiting until the whole task is finished.
+
+Examples:
+
+```text
+source/code edit     -> syntax / type / targeted test / build check
+config edit          -> parser / schema / dry-run validation
+service/runtime edit -> health probe / startup check
+permission edit      -> access check
+memory/index edit    -> read/retrieval check
+```
+
+Use tools for properties that tools can determine. Model review can add semantic context, but it should not replace a compiler, parser, test runner, linter, health probe, or other deterministic check for the property that tool actually measures.
+
+If an incremental check fails:
+
+1. stop expanding the same change when practical;
+2. preserve the failed validation result;
+3. repair the bounded fault;
+4. rerun the relevant check;
+5. continue only after the check passes or an explicit, evidence-backed warning is accepted.
+
+A local PASS does not replace the final post-change check. It shortens the lifetime of defects and makes the failure/repair path attributable to the change that caused it.
+
+`tools/validate_change.py` is a reference wrapper that runs a Host-native command, returns its exit status, and appends a compact validation event to `~/.ena/evolution/experience/validation-events.jsonl`. A later successful check can use `--repair-of` to link back to the failed event. Host-native PostToolUse/Git/IDE hooks may call it directly or implement the same behavior themselves.
+
 ## What `rescue.yaml` needs
 
 Keep it short and executable. Include what applies on this Host:
