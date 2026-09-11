@@ -69,13 +69,32 @@ Link the candidate to the exact recovery package used for the trial.
 
 For ordinary memory edits, use the memory system's own reversible/versioned path when sufficient. If memory controls startup, recovery, communication or tool access, treat it as critical runtime state.
 
-## 5. Separate survival from improvement
+## 5. Validate close to the changed state
+
+When the Host provides a deterministic check for the property being changed, run it as close to the corresponding mutation as practical rather than only at the end of the whole trial.
+
+Examples include parser/schema checks, compilation, type checking, targeted tests, build checks, health probes, access checks and retrieval/readability checks.
+
+A failed check is useful evolution evidence when the repair path is preserved:
+
+```text
+bounded change
+→ deterministic FAIL
+→ bounded repair
+→ deterministic PASS
+```
+
+Record the failed check and the later successful repair as linked experience when practical. `tools/validate_change.py` provides a reference path; Host-native hooks may implement the same behavior.
+
+Incremental validation does not prove the candidate improved the intended outcome. It prevents obvious defects from surviving too long and creates better evidence about how the candidate behaved.
+
+## 6. Separate survival from improvement
 
 First confirm the Agent remains usable/recoverable. Then ask whether the change actually improved the intended outcome.
 
-A successful restart, new session or successful conversation proves recoverability/communication. It does not prove the candidate was useful.
+A successful restart, new session, passing syntax check, or successful conversation proves only the property it directly checks. It does not by itself prove the candidate was useful.
 
-## 6. Observe real results
+## 7. Observe real results
 
 Compare the result with the baseline using evidence appropriate to the candidate:
 
@@ -85,11 +104,12 @@ Compare the result with the baseline using evidence appropriate to the candidate
 - before/after output;
 - user feedback from actual use;
 - retrieval/memory behavior;
+- deterministic validation and repair history;
 - a period of normal operation without the targeted failure.
 
 Record actual evidence, including negative and null results.
 
-## 7. Decide what survives
+## 8. Decide what survives
 
 Use one practical outcome:
 
@@ -114,19 +134,21 @@ with the evidence and outcome that justified selection.
 - If the trial happened in a sandbox, branch, worktree, preview environment or other isolated copy, apply the selected change to live state separately.
 - Use `SAFE-CHANGE.md` when production application can affect critical runtime state.
 - Re-verify required capabilities and permissions at production time.
-- Observe the live result after application; a sandbox success is not proof of production success.
+- Re-run relevant deterministic checks near the production change and observe the live result afterward; sandbox success is not proof of production success.
 
 Selection also does not automatically make generated prose factual memory. Later Sleep decides how verified experience changes durable memory.
 
 If a retained production change later needs reversal, make that reversal against the current live state rather than blindly running an old rollback after unrelated valid changes may have accumulated.
 
-## 8. Feed the result back into experience
+## 9. Feed the result back into experience
 
 Preserve what was tried, where it was tried, whether it reached production, what happened afterward, the final outcome, changed assumptions, useful procedures/boundaries/uncertainties, and negative/null results that should prevent repeated waste.
 
+Also preserve useful validation/repair trajectories. Repeated evidence that the same structural mistake triggers the same deterministic failure and repair may later become a stronger procedure, retrieval cue or preventive check during Sleep.
+
 Later Sleep consolidates what reality established. Later Dream runs may reuse rejected ideas when new context supports a different variation.
 
-## 9. Keep the history simple
+## 10. Keep the history simple
 
 A minimal layout is:
 
