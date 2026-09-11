@@ -6,6 +6,8 @@ These scripts use only the Python standard library. An Agent can run them as exa
 ena_init.py                 create ENA.yaml, SYSTEM.yaml and working directories
 ena_preflight.py            fail fast when First Use is missing/not ready/stale
 change_scaffold.py          create a timestamped safe-change package skeleton
+validate_change.py          run one deterministic check and record PASS/FAIL experience
+freshness_scan.py           report fresh/stale/unknown JSONL records from explicit metadata
 sleep_prepare.py            build a bounded Sleep input bundle from JSONL records
 combine_dream_material.py   combine memory + knowledge + capability material
 dream_sample.py             sample a Dream set with biased randomness / distance
@@ -76,6 +78,43 @@ For a directly usable session/coding example based on Git branch + worktree + re
 examples/change/SESSION-GIT-WORKTREE.md
 ```
 
+## Validate immediately after a bounded change
+
+Use a deterministic check the Host already trusts. For example:
+
+```bash
+python tools/validate_change.py \
+  --name python-compile \
+  --target tools/example.py \
+  -- python -m py_compile tools/example.py
+```
+
+The wrapper returns the check command's exit status and appends a compact event to:
+
+```text
+~/.ena/evolution/experience/validation-events.jsonl
+```
+
+If a repair follows a failed validation, link the next run with:
+
+```text
+--repair-of PRIOR_VALIDATION_EVENT_ID
+```
+
+This is intended for PostToolUse, Git, IDE, CI or equivalent Host hooks as well as manual checks. Do not pass secrets on the command line merely to make the record self-contained. Raw stdout/stderr is not persisted unless `--include-output` is explicitly used.
+
+## Report stale knowledge/capability records
+
+When JSONL records carry `checked_at` and `valid_until`, scan them without inventing a product-wide TTL:
+
+```bash
+python tools/freshness_scan.py \
+  --input examples/evolution/FRESHNESS.example.jsonl \
+  --output freshness-report.json
+```
+
+Records without an explicit freshness policy are reported as `unknown`. A caller may supply `--max-age-hours` as local policy when `checked_at` exists but `valid_until` does not. Use `--fail-on-stale` only when the surrounding workflow really should stop on stale records.
+
 ## Prepare a Sleep input bundle
 
 ```bash
@@ -85,7 +124,7 @@ python tools/sleep_prepare.py \
   --output sleep-input.json
 ```
 
-Give the bundle to the Agent/model and apply the consolidation steps in `SLEEP-DREAM.md`.
+Validation/repair events are also useful Sleep material. `examples/evolution/VALIDATION-TRAJECTORY.example.jsonl` shows the minimal shape.
 
 ## Combine Dream material from multiple sources
 
