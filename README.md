@@ -13,9 +13,9 @@ Read and apply these in order:
 1. `FIRST-USE.md` — establish the minimum real system map and shared settings. It also explains trusted preset/unattended adoption.
 2. `A2A.md` — reuse or establish a two-way Agent-to-Agent path when the Host can support it.
 3. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
-4. `SAFE-CHANGE.md` — preserve the previous working state and prepare recovery before an important self-change. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
-5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it.
-6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism.
+4. `SAFE-CHANGE.md` — preserve the previous working state, prepare recovery, and run the smallest relevant deterministic checks close to important changes. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
+5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it while retaining useful validation/repair evidence.
+6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism, including freshness/drift handling for long-lived knowledge and capability records.
 
 ## Reading is not installation
 
@@ -64,7 +64,10 @@ The `tools/` directory contains small standard-library Python examples:
 ena_init.py
 ena_preflight.py
 change_scaffold.py
+validate_change.py
+freshness_scan.py
 sleep_prepare.py
+combine_dream_material.py
 dream_sample.py
 candidate_record.py
 self_test.py
@@ -76,4 +79,4 @@ Verify them with:
 python tools/self_test.py
 ```
 
-Then see `tools/README.md` for runnable examples. Prefer stronger Host-native backup, scheduler, snapshot, A2A or memory mechanisms when they already exist.
+Then see `tools/README.md` for runnable examples. Prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
