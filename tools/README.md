@@ -18,6 +18,8 @@ self_test.py                verify the reference tools against included sample d
 
 `control_yaml.py` is a shared strict reader used by the control-file tools. It intentionally supports only ENA's mapping/scalar control subset and fails closed on unsupported YAML features such as sequences and multiline scalars.
 
+`jsonl_source.py` is the shared reader for declared JSONL inputs used by Sleep/Dream/freshness tools. A path that was explicitly supplied but is missing, unreadable, or malformed fails closed with an actionable error instead of silently becoming an empty source.
+
 `timezone_utils.py` keeps UTC usable without an external timezone database and gives an actionable error when another IANA timezone is unavailable. Some Windows Python installations need the optional `tzdata` package before zones such as `Asia/Shanghai` can be resolved.
 
 ## Verify the tools
@@ -25,6 +27,8 @@ self_test.py                verify the reference tools against included sample d
 ```bash
 python tools/test_control_yaml.py
 python tools/test_timezone_utils.py
+python tools/test_jsonl_source.py
+python tools/test_input_boundaries.py
 python tools/self_test.py
 ```
 
@@ -123,6 +127,8 @@ The wrapper returns the check command's exit status and appends a compact event 
 ~/.ena/evolution/experience/validation-events.jsonl
 ```
 
+`validate_change.py` records into an already initialized ENA home. If `ENA.yaml` is absent, it fails instead of silently creating a new `~/.ena/` tree; initialization belongs to First Use / `ena_init.py`.
+
 If a repair follows a failed validation, link the next run with:
 
 ```text
@@ -153,6 +159,8 @@ python tools/sleep_prepare.py \
 ```
 
 The bundle records when it was prepared plus, for each input source, its reference, SHA-256 digest, total source record count, selected record count, and the bounded tail-selection policy. This lets a later Agent tell which exact source state a Sleep run was based on even if the source files have since changed.
+
+The reference tool's `tail` selection is only a conservative bounded transport example for recent records. It is **not** the full Sleep retrieval policy described in `SLEEP-DREAM.md`: a real Host should also retrieve or preselect older memory/knowledge when it is needed to resolve duplication, contradiction, staleness, boundaries, reusable procedures, or missing links. Do not infer “Sleep = summarize the last N records” from this helper.
 
 Validation/repair events are also useful Sleep material. `examples/evolution/VALIDATION-TRAJECTORY.example.jsonl` shows the minimal shape.
 
