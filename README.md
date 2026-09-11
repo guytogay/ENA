@@ -10,9 +10,10 @@ This repository is under active development and is **not yet the Current release
 2. [`A2A.md`](A2A.md) — reuse or establish a real bidirectional A2A path, Agent Card, and at least one usable rescue peer.
 3. [`SURVIVAL.md`](SURVIVAL.md) — build an external restart/recovery ladder that remains available when the main Agent is unhealthy.
 4. [`ACMS.md`](ACMS.md) — route critical body changes through preserved known-good state, executable rollback, timed automatic recovery, and an externally shared rescue package.
-5. [`EVOLUTION.md`](EVOLUTION.md) — turn improvement candidates into bounded trials, compare them with real baseline evidence, and retain/revise/reject/restore the result.
+5. [`EVOLUTION.md`](EVOLUTION.md) — improve the Agent through accumulated experience, candidate variation, reality contact, and retained outcomes.
+6. [`SLEEP-DREAM.md`](SLEEP-DREAM.md) — install the first executable offline evolution loop: Sleep consolidates memory; Dream uses biased distant-memory recombination plus Divergent Explorer to generate speculative candidates; Wake/Reality selects what survives.
 
-[`ENA.example.yaml`](ENA.example.yaml) shows the shared local configuration shape. Examples under [`examples/`](examples/) show body, ACMS rescue/status, and evolution candidate records.
+[`ENA.example.yaml`](ENA.example.yaml) shows the shared local configuration shape. Examples under [`examples/`](examples/) show body, ACMS rescue/status, evolution candidate, and Sleep/Dream configuration records.
 
 ## Current build shape
 
@@ -25,7 +26,10 @@ Survival: external restart + recovery ladder
         ↓
 ACMS: protected body-change path
         ↓
-Evolution: cumulative observed improvement
+Evolution
+  experience → Sleep → memory → Dream → candidates
+        ↓                         ↑
+  reality / work / ACMS → outcome
 ```
 
 The Host may already provide better native mechanisms for some of these capabilities. Reuse those mechanisms and record the actual integration rather than rebuilding equivalent infrastructure only for ENA.
