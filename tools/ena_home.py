@@ -50,8 +50,8 @@ def require_initialized_home(home: Path) -> tuple[object, str]:
     `ENA.yaml` is the sole authority for the canonical timezone. Older schema-0.2
     homes may also carry a duplicate `SYSTEM.yaml canonical_timezone`; when that
     duplicate is known and disagrees, clock-dependent tools stop rather than
-    silently choosing one side. A matching legacy duplicate is tolerated until
-    explicit migration removes it.
+    silently choosing one side. If the legacy SYSTEM surface exists but cannot be
+    parsed, the duplicate cannot be ruled out, so clock-dependent writes stop.
     """
     home = Path(home).expanduser().resolve()
     config = home / "ENA.yaml"
@@ -60,17 +60,14 @@ def require_initialized_home(home: Path) -> tuple[object, str]:
 
     data = read_control(config)
     name = scalar(data, "canonical_timezone")
-    if not name:
+    if missing(name):
         raise EnaHomeError(
             f"ENA home is not initialized: {config} has no canonical_timezone. {INIT_HINT}"
         )
 
     system = home / "SYSTEM.yaml"
     if system.is_file():
-        try:
-            system_data = read_control(system)
-        except EnaHomeError:
-            system_data = {}
+        system_data = read_control(system)
         system_name = scalar(system_data, "canonical_timezone")
         if not missing(system_name) and system_name != name:
             raise EnaHomeError(
