@@ -11,5 +11,12 @@
   ],
   "candidate": "Replace this text with one bounded improvement candidate.",
   "reality_check": "Replace this text with the concrete observation or trial that could support or reject the candidate.",
+  "actor": {
+    "executor": "UNKNOWN",
+    "initiated_by": "UNKNOWN",
+    "channel": "UNKNOWN",
+    "correlation_id": "UNKNOWN",
+    "attribution_confidence": "UNKNOWN"
+  },
   "outcome": null
 }

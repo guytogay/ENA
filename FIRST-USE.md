@@ -153,6 +153,8 @@ After the minimum is working, inspect additional areas as they become relevant i
 
 When configuring A2A, identify and verify the real two-way path, Agent Card/discovery record, transport/authentication, permissions and reachable peers. Reuse the existing A2A identity mechanism. See `A2A.md`.
 
+If a remote peer can dispatch work that may create or change durable ENA state, also verify the action-attribution handoff from **inside the dispatched session**: the bridge should propagate `ENA_PEER_CALLER` and `ENA_PEER_TASK_ID`, and `python tools/ena_actor.py` should resolve the expected peer initiator, `a2a` channel and correlation id. This is an adopted-capability check, not part of the universal minimum First Use gate. If it is not wired yet, keep the resulting attribution `UNKNOWN` rather than inventing a local initiator or claiming cross-Agent attribution is available.
+
 ### Memory / evolution
 
 Before enabling Sleep/Dream, identify durable memory sources, experience/history, retrieval/indexing, write/update method, reversible history/snapshot, scheduler/idle/event triggers, and excluded sensitive sources. Do not create a second ENA memory database when the Host already has a suitable memory system.

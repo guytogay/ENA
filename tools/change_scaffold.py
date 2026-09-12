@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from ena_actor import actor_yaml_block, resolve_actor
 from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 from ena_text import EnaTextWriteError, write_text
 from timezone_utils import TimezoneUnavailable, load_timezone
@@ -72,7 +73,8 @@ def main() -> int:
             f"updated_at: {now.isoformat(timespec='microseconds')}\n"
             "previous_state: null\n"
             "last_evidence: null\n"
-            f"timezone: {tz_name}\n",
+            f"timezone: {tz_name}\n"
+            + actor_yaml_block(resolve_actor()),
         )
         write_text(
             package / "change.md",

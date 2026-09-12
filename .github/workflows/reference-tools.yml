@@ -29,4 +29,5 @@ jobs:
       - run: python tools/test_freshness_scan.py
       - run: python tools/test_home_boundary_matrix.py
       - run: python tools/test_output_write_boundary.py
+      - run: python tools/test_actor_attribution.py
       - run: python tools/self_test.py

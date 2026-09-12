@@ -29,6 +29,31 @@ When the Host provides enough capability and a real collaboration need exists:
 
 If the Host does not support a practical A2A path, record the limitation and continue using human/Host recovery rather than blocking the rest of ENA.
 
+## Preserve attribution across dispatched work
+
+A2A identity/discovery and durable action attribution are different concerns. An Agent Card can identify a reachable peer while a later ENA artifact can still lose the fact that the peer initiated the work.
+
+When an A2A bridge can dispatch a child/headless session that may create or change durable ENA state, the bridge should propagate the peer caller and transport task/correlation id into that child session using:
+
+```text
+ENA_PEER_CALLER
+ENA_PEER_TASK_ID
+```
+
+The Host/runtime should also provide `ENA_ACTOR_EXECUTOR` when it can identify the session/process that actually performs the work. `tools/ena_actor.py` derives `initiated_by: peer:<caller>`, `channel: a2a`, and the correlation id from the peer variables without turning any of them into an authorization claim.
+
+Verify the propagation **from inside the dispatched session**, not only in the bridge parent. Run:
+
+```text
+python tools/ena_actor.py
+```
+
+and confirm the expected `initiated_by`, `channel` and `correlation_id` before claiming that cross-Agent action attribution is available on that Host.
+
+Do not rely on a Host runtime's private namespace for this contract. A real Linux session Host silently filtered `DSH_PEER_CALLER` / `DSH_PEER_TASK_ID` before the child session saw them; `ENA_PEER_*` passed through. The reference helper accepts `DSH_PEER_*` only as a compatibility fallback, not as evidence that the bridge is correctly wired.
+
+If a bridge cannot currently propagate caller/task identity, the A2A path may still be usable for communication. Durable ENA artifacts must then keep the missing attribution as `UNKNOWN`; do not infer a local initiator or treat transport identity as authority.
+
 ## Use a rescue peer when A2A is part of recovery
 
 For a risky self-change, an A2A peer can receive the recovery package before live state is modified.

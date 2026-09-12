@@ -11,6 +11,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from ena_actor import actor_block, resolve_actor
 from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 from ena_text import read_text
 
@@ -142,6 +143,7 @@ def main() -> int:
             "reference": source.relative_to(home).as_posix(),
             "sha256": digest,
         },
+        "actor": actor_block(resolve_actor()),
         "candidate_snapshot": snapshot,
     }
 

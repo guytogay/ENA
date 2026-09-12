@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from control_yaml import missing, scalar
+from ena_actor import actor_block, actor_yaml_block, resolve_actor
 from ena_home import EnaHomeError, home_of_package, read_control, require_initialized_home
 from ena_text import read_text
 
@@ -164,8 +165,16 @@ def rollback_problems(
 
 
 def write_status(
-    path: Path, state: str, profile: str, previous: str, evidence: str | None, tz, tz_name: str
+    path: Path,
+    state: str,
+    profile: str,
+    previous: str,
+    evidence: str | None,
+    tz,
+    tz_name: str,
+    actor,
 ) -> str:
+    """Write the current state snapshot and attribute this snapshot write."""
     now = datetime.now(tz).isoformat(timespec="seconds")
     text = (
         "schema_version: '0.3'\n"
@@ -175,6 +184,7 @@ def write_status(
         f"previous_state: {previous}\n"
         f"last_evidence: {evidence if evidence else 'null'}\n"
         f"timezone: {tz_name}\n"
+        + actor_yaml_block(actor)
     )
     temp = path.with_suffix(".yaml.tmp")
     temp.write_text(text, encoding="utf-8")
@@ -245,6 +255,7 @@ def main() -> int:
             print(f"- {item}", file=sys.stderr)
         return 2
 
+    actor = resolve_actor()
     now = write_status(
         status_path,
         args.to_state,
@@ -253,6 +264,7 @@ def main() -> int:
         args.evidence,
         tz,
         tz_name,
+        actor,
     )
     transition = {
         "at": now,
@@ -260,6 +272,7 @@ def main() -> int:
         "to": args.to_state,
         "evidence": args.evidence,
         "timezone": tz_name,
+        "actor": actor_block(actor),
     }
     if args.to_state == "armed":
         transition["rollback_mode"] = rollback_mode
