@@ -44,6 +44,25 @@ def load_source(path: Path, home: Path) -> tuple[dict[str, object], str, Path]:
     return record, hashlib.sha256(text.encode("utf-8")).hexdigest(), source
 
 
+def existing_decision(home: Path, candidate_id: str) -> Path | None:
+    for bucket in ("selected", "outcomes"):
+        directory = home / "evolution" / "candidates" / bucket
+        if not directory.is_dir():
+            continue
+        for path in directory.glob("*.json"):
+            try:
+                record = json.loads(read_text(path))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise ValueError(f"cannot safely inspect existing candidate decision {path}: {exc}") from exc
+            if not isinstance(record, dict):
+                raise ValueError(f"existing candidate decision is not a JSON object: {path}")
+            recorded = record.get("candidate_id")
+            legacy_selected = bucket == "selected" and record.get("id") == candidate_id
+            if recorded == candidate_id or legacy_selected:
+                return path
+    return None
+
+
 def main() -> int:
     p = argparse.ArgumentParser(description="Record a candidate outcome already decided elsewhere.")
     p.add_argument("source", type=Path)
@@ -68,8 +87,15 @@ def main() -> int:
 
     try:
         candidate, digest, source = load_source(args.source, home)
+        prior = existing_decision(home, str(candidate["id"]))
     except ValueError as exc:
         print(f"ENA candidate outcome: ERROR: {exc}", file=sys.stderr)
+        return 2
+    if prior is not None:
+        print(
+            f"ENA candidate outcome: ERROR: candidate already has a recorded outcome: {prior}",
+            file=sys.stderr,
+        )
         return 2
 
     now = datetime.now(tz)
