@@ -112,7 +112,17 @@ python tools/safe_change_state.py CHANGE_PACKAGE retained --evidence VALIDATION_
 
 The gate requires an initialized ENA home (the package must live under `<ENA home>/changes/`), records transitions on the home's confirmed timezone, requires evidence for `retained`, `restored`, and `failed`, and writes transition history to `transitions.jsonl`.
 
-When the package cannot execute an automatic rollback — `rollback.py` is still the scaffolded placeholder, is missing, or cannot be read — the gate requires the package to declare it: `automatic_rollback: false` for a manual or Host-native rollback, or a real `rollback.py`. Claiming `automatic_rollback: true` while no executable rollback exists is rejected. The recorded transition carries the result as `rollback_mode` (`executable_script` or `declared_no_automatic_rollback`), so history shows which kind of recovery was actually prepared.
+When the package cannot show a configured rollback artifact — `rollback.py` is still the scaffolded placeholder, is missing, or cannot be read — the gate requires the recovery declaration to be explicit. `automatic_rollback` accepts exactly `true` or `false`; any other scalar (`flase`, `maybe`, `yes`) blocks instead of being read as "not true, therefore manual".
+
+| `rescue.yaml` | meaning | package-local `rollback.py` |
+| --- | --- | --- |
+| `automatic_rollback: false` | manual or Host-triggered recovery | placeholder/absent is fine |
+| `automatic_rollback: true` + `automatic_rollback_reference: <timer/scheduler/supervisor>` | a real Host-native automatic rollback | not required |
+| `automatic_rollback: true` without a reference | blocked | — |
+| `automatic_rollback: false` with a reference | blocked as contradictory | — |
+| `automatic_rollback` unresolved | only a configured package-local script may arm | required |
+
+The armed transition records two orthogonal facts instead of one claim: `rollback_mode` (`not_declared`, `declared_manual_or_host_triggered`, `declared_automatic`) and `rollback_artifact` (`configured_script`, `placeholder`, `absent`, `unreadable`); a declared automatic rollback also records `automatic_rollback_reference`. `configured_script` means the artifact is readable and is no longer the placeholder — it does **not** mean the script runs, succeeds, or restores anything. Actual recovery usability still requires Host/external verification evidence.
 
 This is reference enforcement, not magical interception. A Host must actually route state transitions through this tool (or an equivalent native hook/permission boundary) for the gate to prevent bypass.
 

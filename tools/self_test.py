@@ -102,7 +102,8 @@ def main() -> int:
             for line in (package / "transitions.jsonl").read_text(encoding="utf-8").splitlines()
             if line.strip()
         ]
-        assert armed[-1]["rollback_mode"] == "declared_no_automatic_rollback"
+        assert armed[-1]["rollback_mode"] == "declared_manual_or_host_triggered"
+        assert armed[-1]["rollback_artifact"] == "placeholder"
         assert armed[-1]["timezone"] == "Etc/UTC"
         run(tools / "safe_change_state.py", package, "applied")
         no_evidence = raw(tools / "safe_change_state.py", package, "retained")

@@ -92,6 +92,7 @@ def main() -> int:
         "known_good: UNKNOWN\n"
         "rollback_action: UNKNOWN\n"
         "automatic_rollback: null\n"
+        "automatic_rollback_reference: null\n"
         "restart_or_new_session: UNKNOWN\n"
         "verify_operation: UNKNOWN\n"
         "verify_communication: UNKNOWN\n"

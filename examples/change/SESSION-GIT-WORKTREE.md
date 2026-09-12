@@ -36,7 +36,9 @@ restore_only: EXACT_CHANGE_SCOPE
 fallback: REAL_ESCALATION_PATH
 ```
 
-`automatic_rollback: false` records that recovery is this repository action rather than an executable `rollback.py`. The gate requires that declaration while the scaffolded placeholder is still in place, so the package cannot look like prepared automatic recovery when none exists.
+`automatic_rollback: false` records that recovery is this repository action rather than a package-local rollback script. The gate requires that declaration while the scaffolded placeholder is still in place, so the package cannot look like prepared automatic recovery when none exists.
+
+A resident Host with an external timer, scheduler or supervisor instead declares `automatic_rollback: true` together with `automatic_rollback_reference: REAL_HOST_NATIVE_MECHANISM`; a package-local `rollback.py` is then not required. A reference recorded under `automatic_rollback: false` is rejected as contradictory, and a configured package-local script may arm with the declaration left unresolved (recorded as `not_declared`).
 
 Keep the actual Git commands appropriate to the repository in `change.md` / `rescue.yaml`. Prefer recovery that reverses only the intended change and preserves unrelated later history.
 

@@ -39,10 +39,23 @@ REQUIRED_FOR_ARM = (
 )
 
 PLACEHOLDER_MARKER = "UNCONFIGURED_ROLLBACK"
-ROLLBACK_EXECUTABLE = "executable_script"
-ROLLBACK_DECLARED_MANUAL = "declared_no_automatic_rollback"
 
-ROLLBACK_DESCRIPTIONS = {
+# `rollback_mode` is what the package *declared*; `rollback_artifact` is what the
+# package can actually show. They are recorded separately because neither one
+# implies the other: a configured script is still not proof that recovery works,
+# and a Host-native timer is real automatic recovery without any local script.
+ROLLBACK_MODE_NOT_DECLARED = "not_declared"
+ROLLBACK_MODE_MANUAL = "declared_manual_or_host_triggered"
+ROLLBACK_MODE_AUTOMATIC = "declared_automatic"
+
+ROLLBACK_ARTIFACT_LABELS = {
+    "configured": "configured_script",
+    "placeholder": "placeholder",
+    "absent": "absent",
+    "unreadable": "unreadable",
+}
+
+ROLLBACK_ARTIFACT_DESCRIPTIONS = {
     "placeholder": "rollback.py is still the unconfigured placeholder",
     "absent": "the package has no rollback.py",
     "unreadable": "rollback.py cannot be read",
@@ -54,9 +67,16 @@ ROLLBACK_CLAIM_CONFLICTS = {
     "unreadable": "rollback_action points at rollback.py, which cannot be read",
 }
 
+AUTOMATIC_ROLLBACK_VALUES = {"true": True, "false": False}
+
 
 def rollback_state(package: Path) -> str:
-    """Report what the package can actually execute right now."""
+    """Report what the package can actually show right now.
+
+    `configured` means the artifact is readable and is no longer the scaffolded
+    placeholder. It does not mean the script runs, succeeds, or restores
+    anything: that still requires Host/external verification evidence.
+    """
     script = package / "rollback.py"
     if not script.is_file():
         return "absent"
@@ -64,42 +84,83 @@ def rollback_state(package: Path) -> str:
         text = read_text(script)
     except (OSError, UnicodeError):
         return "unreadable"
-    return "placeholder" if PLACEHOLDER_MARKER in text else "executable"
+    return "placeholder" if PLACEHOLDER_MARKER in text else "configured"
 
 
-def rollback_problems(rescue: dict[str, object], state: str) -> tuple[list[str], str | None]:
-    """Require the recovery declaration to match what the package can execute.
+def rollback_declaration(rescue: dict[str, object]) -> tuple[bool | None, str | None, list[str]]:
+    """Read the recovery declaration, refusing anything that is not a declaration.
 
-    `tools/README.md` and `SAFE-CHANGE.md` both say the scaffolded `rollback.py`
-    must be replaced *or* a verified Host-native recovery action recorded before
-    arming. The gate previously checked only that `rollback_action` was non-empty
-    and, additionally, only when that text happened to contain the literal
-    `rollback.py`, so an undeclared placeholder reached `armed`, `applied` and
-    `retained` looking exactly like prepared recovery.
+    `automatic_rollback` accepts exactly `true` or `false`, or stays unresolved.
+    Treating every other scalar as "not true, therefore manual" would let a typo
+    such as `flase` arm a package as if manual recovery had been declared.
     """
     problems: list[str] = []
-    declared = scalar(rescue, "automatic_rollback")
-    mode: str | None = None
+    raw = scalar(rescue, "automatic_rollback")
+    reference = scalar(rescue, "automatic_rollback_reference")
+    has_reference = not missing(reference)
 
-    if state == "executable":
-        mode = ROLLBACK_EXECUTABLE
+    if missing(raw):
+        declared: bool | None = None
+    elif raw.strip().lower() in AUTOMATIC_ROLLBACK_VALUES:
+        declared = AUTOMATIC_ROLLBACK_VALUES[raw.strip().lower()]
     else:
-        description = ROLLBACK_DESCRIPTIONS.get(state, "rollback.py is not executable")
-        if missing(declared):
-            problems.append(
-                f"{description}: provide an executable rollback or declare automatic_rollback: false "
-                "to record that rollback is manual/Host-native"
-            )
-        elif declared.strip().lower() == "true":
-            problems.append(f"rescue.yaml automatic_rollback is true but {description}")
-        else:
-            mode = ROLLBACK_DECLARED_MANUAL
+        declared = None
+        problems.append(
+            f"rescue.yaml automatic_rollback is {raw!r}, which is not a declaration: "
+            "use exactly true or false, or leave it unresolved"
+        )
+
+    if declared is True and not has_reference:
+        problems.append(
+            "rescue.yaml automatic_rollback is true but automatic_rollback_reference is unresolved: "
+            "name the Host-native timer/scheduler/supervisor that performs the rollback, "
+            "or declare automatic_rollback: false"
+        )
+    if declared is False and has_reference:
+        problems.append(
+            "rescue.yaml automatic_rollback is false but automatic_rollback_reference is recorded: "
+            "remove the reference or declare automatic_rollback: true"
+        )
+    if declared is None and has_reference and missing(raw):
+        problems.append(
+            "rescue.yaml records automatic_rollback_reference but automatic_rollback is not declared: "
+            "declare automatic_rollback: true"
+        )
+
+    return declared, reference, problems
+
+
+def rollback_problems(
+    rescue: dict[str, object], artifact: str
+) -> tuple[list[str], str | None, str, str | None]:
+    """Require the recovery declaration to match what the package can show."""
+    problems: list[str] = []
+    artifact_label = ROLLBACK_ARTIFACT_LABELS[artifact]
+    declared, reference, declaration_problems = rollback_declaration(rescue)
+    problems.extend(declaration_problems)
+
+    mode: str | None = None
+    if declared is True:
+        mode = ROLLBACK_MODE_AUTOMATIC
+    elif declared is False:
+        mode = ROLLBACK_MODE_MANUAL
+    elif not declaration_problems and artifact == "configured":
+        # A configured package-local script may arm without declaring
+        # automaticity; the gate records that it was not declared instead of
+        # inventing a declaration for the operator.
+        mode = ROLLBACK_MODE_NOT_DECLARED
+    elif not declaration_problems:
+        problems.append(
+            f"{ROLLBACK_ARTIFACT_DESCRIPTIONS[artifact]}: configure rollback.py, declare "
+            "automatic_rollback: false for manual/Host-triggered recovery, or declare "
+            "automatic_rollback: true with an automatic_rollback_reference"
+        )
 
     rollback_action = scalar(rescue, "rollback_action") or ""
-    if "rollback.py" in rollback_action and state in ROLLBACK_CLAIM_CONFLICTS:
-        problems.append(ROLLBACK_CLAIM_CONFLICTS[state])
+    if "rollback.py" in rollback_action and artifact in ROLLBACK_CLAIM_CONFLICTS:
+        problems.append(ROLLBACK_CLAIM_CONFLICTS[artifact])
 
-    return problems, mode
+    return problems, mode, artifact_label, reference
 
 
 def write_status(
@@ -159,6 +220,8 @@ def main() -> int:
 
     problems: list[str] = []
     rollback_mode: str | None = None
+    rollback_artifact: str | None = None
+    rollback_reference: str | None = None
     if args.to_state == "armed":
         if profile not in {"resident", "session"}:
             problems.append("status.yaml host_profile must be resident or session")
@@ -168,7 +231,9 @@ def main() -> int:
             if missing(scalar(rescue, key)):
                 problems.append(f"rescue.yaml {key} is unresolved")
 
-        recovery_problems, rollback_mode = rollback_problems(rescue, rollback_state(package))
+        recovery_problems, rollback_mode, rollback_artifact, rollback_reference = rollback_problems(
+            rescue, rollback_state(package)
+        )
         problems.extend(recovery_problems)
 
     if args.to_state in {"retained", "restored", "failed"} and not args.evidence:
@@ -198,6 +263,9 @@ def main() -> int:
     }
     if args.to_state == "armed":
         transition["rollback_mode"] = rollback_mode
+        transition["rollback_artifact"] = rollback_artifact
+        if rollback_mode == ROLLBACK_MODE_AUTOMATIC:
+            transition["automatic_rollback_reference"] = rollback_reference
     with (package / "transitions.jsonl").open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(transition) + "\n")
 
