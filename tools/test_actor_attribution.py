@@ -95,6 +95,15 @@ class ResolveActorTests(unittest.TestCase):
         self.assertNotIn("null", text)
         self.assertIn(UNKNOWN, text)
 
+    def test_json_block_writes_unknown_rather_than_null(self):
+        block = actor_block(resolve_actor({}))
+        self.assertEqual(block["executor"], UNKNOWN)
+        self.assertEqual(block["initiated_by"], UNKNOWN)
+        self.assertEqual(block["channel"], UNKNOWN)
+        self.assertEqual(block["correlation_id"], UNKNOWN)
+        self.assertEqual(block["attribution_confidence"], UNKNOWN)
+        self.assertNotIn(None, block.values())
+
 
 class ArtifactAttributionTests(unittest.TestCase):
     def setUp(self):
