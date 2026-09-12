@@ -54,7 +54,7 @@ class RollbackDeclarationTests(unittest.TestCase):
         self._tmp.cleanup()
 
     def run_tool(self, *args):
-        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True)
+        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True, encoding="utf-8", errors="replace")
 
     def write_rescue(
         self,

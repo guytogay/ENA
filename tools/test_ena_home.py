@@ -48,7 +48,7 @@ ALTERNATE_ZONE = alternate_zone()
 
 class HomeBoundaryTests(unittest.TestCase):
     def run_tool(self, *args):
-        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True)
+        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True, encoding="utf-8", errors="replace")
 
     def init_home(self, home: Path, zone: str = "Etc/UTC") -> Path:
         result = self.run_tool(

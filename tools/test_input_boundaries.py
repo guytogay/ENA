@@ -18,7 +18,7 @@ class InputBoundaryTests(unittest.TestCase):
         cls.examples = cls.repo / "examples" / "evolution"
 
     def run_tool(self, *args):
-        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True)
+        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True, encoding="utf-8", errors="replace")
 
     def test_declared_missing_jsonl_sources_fail_closed(self):
         with tempfile.TemporaryDirectory() as tmpdir:

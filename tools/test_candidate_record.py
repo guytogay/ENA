@@ -31,7 +31,7 @@ class CandidateRecordTests(unittest.TestCase):
             text=True,
             capture_output=True,
             env=env,
-        )
+        encoding="utf-8", errors="replace")
 
     def test_rapid_candidates_are_all_preserved(self):
         with tempfile.TemporaryDirectory() as tmpdir:
