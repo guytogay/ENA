@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from control_yaml import missing, scalar
+from ena_actor import actor_block, resolve_actor
 from ena_home import EnaHomeError, home_of_package, read_control, require_initialized_home
 from ena_text import read_text
 
@@ -261,6 +262,7 @@ def main() -> int:
         "evidence": args.evidence,
         "timezone": tz_name,
     }
+    transition["actor"] = actor_block(resolve_actor())
     if args.to_state == "armed":
         transition["rollback_mode"] = rollback_mode
         transition["rollback_artifact"] = rollback_artifact

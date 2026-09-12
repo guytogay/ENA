@@ -13,6 +13,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from ena_actor import actor_block, resolve_actor
 from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 
 
@@ -103,6 +104,7 @@ def main() -> int:
         "note": args.note,
         "stdout_sha256": digest(stdout),
         "stderr_sha256": digest(stderr),
+        "actor": actor_block(resolve_actor()),
     }
     if args.include_output:
         record["stdout_tail"] = stdout[-4000:]

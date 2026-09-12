@@ -6,6 +6,7 @@ These scripts use only the Python standard library. An Agent can run them as exa
 ena_init.py                 create ENA.yaml, SYSTEM.yaml and working directories
 ena_preflight.py            fail fast when First Use is missing/not ready/stale
 fact_authority.py           report stable/live fact authority in existing schema-0.2 homes
+ena_actor.py                resolve who executed an action and who initiated it
 change_scaffold.py          create a timestamped safe-change package skeleton
 safe_change_state.py        gate SAFE-CHANGE state transitions and evidence
 validate_change.py          run one deterministic check and record PASS/FAIL experience
@@ -28,6 +29,41 @@ self_test.py                verify the reference tools against included sample d
 
 `timezone_utils.py` keeps UTC usable without an external timezone database and gives an actionable error when another IANA timezone is unavailable. Some Windows Python installations need the optional `tzdata` package before zones such as `Asia/Shanghai` can be resolved.
 
+`ena_actor.py` resolves attribution for durable artifacts: who acted on this Host (`executor`), who asked (`initiated_by`), through which channel, and with which transport correlation id. It exists because a Host can be worked on by a local conversation, by a scheduled job, and by another Agent that reached it over A2A — and without attribution a later reader cannot tell those apart. Three distinctions are deliberate:
+
+```text
+executor != initiated_by != authority     (this module never records authority)
+supplied value = SELF_ASSERTED            (never claim a verified identity)
+nothing supplied = UNKNOWN                (never default to "local agent")
+```
+
+## Attribution on durable artifacts
+
+`change_scaffold.py` (package `status.yaml`), `safe_change_state.py` (every `transitions.jsonl` line), `validate_change.py` (validation events), `candidate_record.py` and `candidate_outcome.py` (candidate and decision records) all record an `actor` block:
+
+```json
+"actor": {
+  "executor": "lxc-dsh/session-3d75c2ad",
+  "initiated_by": "peer:pc-dsh",
+  "channel": "a2a",
+  "correlation_id": "f86dd28e-d931-42f2-861f-e25efe66f773",
+  "attribution_confidence": "SELF_ASSERTED"
+}
+```
+
+The Host integration supplies it through the environment; `python tools/ena_actor.py` prints what would currently be resolved.
+
+```text
+ENA_ACTOR_EXECUTOR      who is acting here
+ENA_INITIATED_BY        who asked (e.g. owner, peer:pc-dsh)
+ENA_CHANNEL             chat | cli | cron | a2a | api
+ENA_CORRELATION_ID      Host/transport correlation id
+DSH_PEER_CALLER         set by a local peer bridge that dispatches this session
+DSH_PEER_TASK_ID        set by a local peer bridge that dispatches this session
+```
+
+If a peer bridge dispatches a headless session **without** passing the caller and task id, the dispatched session cannot know who asked and will honestly record `UNKNOWN` — the chain breaks at dispatch, not in the artifact. `candidate_outcome.py` keeps its operator-supplied `decided_by` next to the resolved `actor` block: the decision-maker and the initiator are different facts.
+
 ## Verify the tools
 
 ```bash
@@ -39,8 +75,12 @@ python tools/test_candidate_record.py
 python tools/test_candidate_outcome.py
 python tools/test_fact_authority.py
 python tools/test_ena_home.py
+python tools/test_path_authority.py
 python tools/test_safe_change_gate.py
 python tools/test_freshness_scan.py
+python tools/test_home_boundary_matrix.py
+python tools/test_output_write_boundary.py
+python tools/test_actor_attribution.py
 python tools/self_test.py
 ```
 

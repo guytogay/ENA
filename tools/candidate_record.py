@@ -8,6 +8,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+from ena_actor import actor_block, resolve_actor
 from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 
 
@@ -48,6 +49,7 @@ def main() -> int:
         "source_fragments": args.source,
         "candidate": args.candidate,
         "reality_check": args.reality_check,
+        "actor": actor_block(resolve_actor()),
         "outcome": None,
     }
 
