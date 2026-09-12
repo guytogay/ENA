@@ -19,7 +19,7 @@ This unreleased line contains a breaking persisted-state readiness change. Under
 
 ### Breaking / migration
 - A home that was `minimum_ready: true` under the v1.0.0-era predicate but lacks recovery/rescuer verification provenance now fails closed as `REFRESH REQUIRED`. This is intentional; the old READY claim is no longer sufficient evidence under the strengthened contract.
-- Do **not** fabricate provenance or blindly grandfather old values. Re-check the existing recovery path and rescuer, then re-assert each fact once through `ena_first_use.py` with a durable evidence reference. See `FIRST-USE.md` for the exact migration command.
+- Do **not** fabricate provenance or blindly grandfather old values. Re-check the existing recovery path and rescuer, then re-assert each fact once through `ena_first_use.py` with a durable evidence reference. See `UPGRADING.md` for the exact migration command.
 - The machine-readable control format remains readable; the incompatibility is the readiness predicate and required provenance for a READY claim.
 
 ## 1.0.0 — 2026-09-12
