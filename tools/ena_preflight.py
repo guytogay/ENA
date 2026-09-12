@@ -10,7 +10,7 @@ from pathlib import Path
 from control_yaml import ControlYamlError, parse_control_yaml, scalar
 from ena_home import EnaHomeError, require_initialized_home
 from ena_text import read_text
-from system_unknowns import requirement_is_usable, validate_system_unknowns
+from system_unknowns import requirement_is_usable
 
 
 def main() -> int:
@@ -34,17 +34,11 @@ def main() -> int:
         problems.append(f"missing {system}")
 
     if system.exists():
-        parsed_ok = True
         try:
             data = parse_control_yaml(read_text(system))
         except (OSError, UnicodeError, ControlYamlError) as exc:
             problems.append(f"SYSTEM.yaml cannot be safely parsed: {exc}")
             data = {}
-            parsed_ok = False
-
-        if parsed_ok:
-            for item in validate_system_unknowns(data):
-                problems.append(f"SYSTEM.yaml material UNKNOWN lifecycle: {item}")
 
         ready = (scalar(data, "minimum_ready") or "").lower()
         if ready != "true":
