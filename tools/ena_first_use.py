@@ -15,11 +15,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from control_yaml import scalar
+from control_yaml import missing, scalar
 from ena_home import EnaHomeError, read_control, require_initialized_home
 from language_tag import language_tag_problem
 from minimum_readiness import preflight_problems
-from system_unknowns import initial_material_unknowns, requirement_is_usable, unknown_entries
+from system_unknowns import canonical_token, initial_material_unknowns, requirement_is_usable, unknown_entries
 from timezone_utils import TimezoneUnavailable, load_timezone
 
 
@@ -193,32 +193,49 @@ def _update_existing(args: argparse.Namespace, home: Path) -> int:
 
     now = datetime.now(tz)
     valid_until = now + timedelta(hours=args.system_valid_hours)
+
+    # Normalize an absent/null minimum fact to the one canonical unresolved fact
+    # value. Established non-ready states (UNAVAILABLE/NOT_NEEDED/etc.) remain
+    # distinct and do not receive UNKNOWN lifecycle entries.
+    for section in (recovery, rescue):
+        raw = section.get("primary")
+        if not isinstance(raw, str) or missing(raw):
+            if raw != "UNKNOWN":
+                section["primary"] = "UNKNOWN"
+                changed = True
+
+    recovery_value = recovery.get("primary")
+    rescuer_value = rescue.get("primary")
+    if canonical_token(recovery_value if isinstance(recovery_value, str) else None) == "STALLED_UNKNOWN":
+        print("ENA First Use: ERROR: recovery.primary must stay UNKNOWN; STALLED_UNKNOWN belongs in lifecycle metadata", file=sys.stderr)
+        return 2
+    if canonical_token(rescuer_value if isinstance(rescuer_value, str) else None) == "STALLED_UNKNOWN":
+        print("ENA First Use: ERROR: rescue.primary must stay UNKNOWN; STALLED_UNKNOWN belongs in lifecycle metadata", file=sys.stderr)
+        return 2
+
+    seed_entries = initial_material_unknowns(
+        recovery=(recovery_value if isinstance(recovery_value, str) else "UNKNOWN"),
+        rescuer=(rescuer_value if isinstance(rescuer_value, str) else "UNKNOWN"),
+        checked_at=now,
+        revisit_by=valid_until,
+    )
     values = {
-        "recovery.primary": recovery.get("primary"),
-        "rescue.primary": rescue.get("primary"),
+        "recovery.primary": recovery_value,
+        "rescue.primary": rescuer_value,
     }
     for path, value in values.items():
-        if isinstance(value, str) and requirement_is_usable(value):
-            if path in entries:
-                del entries[path]
+        if canonical_token(value if isinstance(value, str) else None) == "UNKNOWN":
+            if path not in entries and path in seed_entries:
+                entries[path] = seed_entries[path]
                 changed = True
-        elif path not in entries:
-            # Running First Use against the currently supplied/recorded surface is
-            # a bounded feasibility contact: no verified value is available yet.
-            entries.update(
-                initial_material_unknowns(
-                    recovery=(str(value) if path == "recovery.primary" and isinstance(value, str) else "UNKNOWN"),
-                    rescuer=(str(value) if path == "rescue.primary" and isinstance(value, str) else "UNKNOWN"),
-                    checked_at=now,
-                    revisit_by=valid_until,
-                )
-            )
+        elif path in entries:
+            del entries[path]
             changed = True
 
     system["unknowns"] = entries if entries else "[]"
 
-    ready_facts = requirement_is_usable(recovery.get("primary") if isinstance(recovery.get("primary"), str) else None) and requirement_is_usable(
-        rescue.get("primary") if isinstance(rescue.get("primary"), str) else None
+    ready_facts = requirement_is_usable(recovery_value if isinstance(recovery_value, str) else None) and requirement_is_usable(
+        rescuer_value if isinstance(rescuer_value, str) else None
     )
     rescuer_type = rescue.get("type")
     should_mark_ready = bool(ready_facts and rescuer_type in RESCUER_TYPES)
