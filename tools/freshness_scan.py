@@ -9,17 +9,12 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from ena_text import EnaTextWriteError, write_text
 from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
 def parse_time(value: object) -> tuple[datetime | None, bool]:
-    """Return `(timestamp, declared_but_unreadable)`.
-
-    An absent value is not a defect: the caller never declared freshness. A value
-    that is present and cannot be read is a defect, and has to stay
-    distinguishable from the absent case instead of being reported as "no
-    policy". A value without an offset is read as UTC, as before.
-    """
+    """Return `(timestamp, declared_but_unreadable)`."""
     if value is None or not str(value).strip():
         return None, False
     try:
@@ -92,8 +87,6 @@ def main() -> int:
                 freshness = "fresh" if now <= valid_until else "stale"
                 reason = "explicit_valid_until"
             elif valid_unreadable:
-                # A declared deadline that cannot be read must not silently become
-                # the caller's generic max-age policy either.
                 freshness = "unknown"
                 reason = "unparseable_valid_until"
             elif checked_at is not None and args.max_age_hours is not None:
@@ -132,8 +125,11 @@ def main() -> int:
         "invalid_timestamps": invalid_timestamps,
         "records": results,
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    try:
+        write_text(args.output, json.dumps(report, indent=2, ensure_ascii=False))
+    except EnaTextWriteError as exc:
+        print(f"ENA freshness scan: ERROR: {exc}", file=sys.stderr)
+        return 2
     print(args.output)
 
     if args.fail_on_unparseable and invalid_timestamps:
