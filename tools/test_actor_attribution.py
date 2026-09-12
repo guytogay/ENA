@@ -166,7 +166,7 @@ class ArtifactAttributionTests(unittest.TestCase):
         self.assertEqual(record["actor"]["executor"], "lxc-dsh/s1")
         self.assertEqual(record["actor"]["initiated_by"], "peer:pc-dsh")
 
-    def test_transition_records_actor(self):
+    def test_transition_records_actor_and_status_keeps_latest_writer(self):
         package = self.home / "changes" / "20260912T000000+0800__gate"
         (package / "backup").mkdir(parents=True)
         (package / "status.yaml").write_text(
@@ -185,6 +185,11 @@ class ArtifactAttributionTests(unittest.TestCase):
         self.assertEqual(transition["actor"]["channel"], "a2a")
         self.assertEqual(transition["from"], "preparing")
         self.assertEqual(transition["to"], "armed")
+
+        status = parse_control_yaml((package / "status.yaml").read_text(encoding="utf-8"))
+        for key, value in transition["actor"].items():
+            self.assertEqual(scalar(status, key, section="actor"), value)
+        self.assertEqual(scalar(status, "state"), "armed")
 
     def test_non_utc_home_without_tzdata_fails_with_guidance(self):
         """Windows CI has no tzdata: a non-UTC zone must fail closed with guidance,
