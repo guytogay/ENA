@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 def raw(*args):
-    return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True)
+    return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True, encoding="utf-8", errors="replace")
 
 
 def run(*args):

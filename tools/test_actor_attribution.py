@@ -45,7 +45,7 @@ def write_home(home: Path) -> Path:
 def run(*args: str, env: dict | None = None) -> subprocess.CompletedProcess:
     base = {k: v for k, v in os.environ.items() if not k.startswith(("DSH_PEER_", "ENA_"))}
     base.update(env or {})
-    return subprocess.run([sys.executable, *args], text=True, capture_output=True, env=base)
+    return subprocess.run([sys.executable, *args], text=True, capture_output=True, env=base, encoding="utf-8", errors="replace")
 
 
 class ResolveActorTests(unittest.TestCase):

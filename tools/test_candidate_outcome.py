@@ -40,7 +40,7 @@ class CandidateOutcomeTests(unittest.TestCase):
             text=True,
             capture_output=True,
             env=env,
-        )
+        encoding="utf-8", errors="replace")
 
     def record_candidate(self, *, reality_check: str = "run bounded trial") -> Path:
         result = self.run_tool(

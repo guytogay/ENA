@@ -43,7 +43,7 @@ class FreshnessScanTests(unittest.TestCase):
             ],
             text=True,
             capture_output=True,
-        )
+        encoding="utf-8", errors="replace")
         report = json.loads(self.report_path.read_text(encoding="utf-8")) if self.report_path.is_file() else None
         return result, report
 

@@ -181,7 +181,7 @@ class FactAuthorityTests(unittest.TestCase):
             ],
             text=True,
             capture_output=True,
-        )
+        encoding="utf-8", errors="replace")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         ena_text = (home / "ENA.yaml").read_text(encoding="utf-8")
         system_text = (home / "SYSTEM.yaml").read_text(encoding="utf-8")
