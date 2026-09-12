@@ -77,6 +77,46 @@ class FactAuthorityTests(unittest.TestCase):
         self.assertEqual(item["ena"]["value"], "legacy-snapshot")
         self.assertEqual(item["conflict"], "legacy_needs_reconfirmation")
 
+    def test_annotated_unknown_is_not_promoted_to_live_truth(self):
+        home = self.fixture(ena_backup="UNKNOWN", system_backup="UNKNOWN")
+        system = home / "SYSTEM.yaml"
+        system.write_text(
+            system.read_text(encoding="utf-8")
+            + "communication:\n  human: UNKNOWN - pending owner confirmation\n",
+            encoding="utf-8",
+        )
+        item = fact(build_report(home, now=NOW), "communication.human")
+        self.assertFalse(item["system"]["known"])
+        self.assertEqual(item["effective"]["status"], "unknown")
+        self.assertIsNone(item["effective"]["value"])
+
+    def test_configured_agent_card_and_live_a2a_reachability_are_separate_facts(self):
+        home = self.fixture(ena_backup="UNKNOWN", system_backup="UNKNOWN")
+        ena = home / "ENA.yaml"
+        system = home / "SYSTEM.yaml"
+        ena.write_text(
+            ena.read_text(encoding="utf-8")
+            + "communication:\n  a2a:\n    agent_card: configured-card-ref\n",
+            encoding="utf-8",
+        )
+        system.write_text(
+            system.read_text(encoding="utf-8")
+            + "communication:\n  a2a_reachability: verified-two-way\n",
+            encoding="utf-8",
+        )
+        report = build_report(home, now=NOW)
+        card = fact(report, "a2a.agent_card")
+        reachability = fact(report, "a2a.reachability")
+        self.assertEqual(card["authority"], "ENA.yaml")
+        self.assertEqual(card["effective"]["value"], "configured-card-ref")
+        self.assertEqual(card["conflict"], "none")
+        self.assertIsNone(reachability["ena"]["path"])
+        self.assertEqual(reachability["system"]["path"], "communication.a2a_reachability")
+        self.assertEqual(reachability["authority"], "SYSTEM.yaml")
+        self.assertEqual(reachability["effective"]["status"], "known")
+        self.assertEqual(reachability["effective"]["value"], "verified-two-way")
+        self.assertEqual(reachability["conflict"], "none")
+
     def test_fresh_system_known_wins_while_conflict_stays_visible(self):
         home = self.fixture(ena_backup="legacy-snapshot", system_backup="verified-snapshot")
         report = build_report(home, now=NOW)
@@ -113,6 +153,12 @@ class FactAuthorityTests(unittest.TestCase):
         self.assertEqual(item["effective"]["value"], "Asia/Shanghai")
         self.assertEqual(item["conflict"], "duplicate_value_conflict")
         with self.assertRaisesRegex(EnaHomeError, "canonical_timezone conflict"):
+            require_initialized_home(home)
+
+    def test_unreadable_system_blocks_clock_dependent_home_boundary(self):
+        home = self.fixture(ena_backup="UNKNOWN", system_backup="UNKNOWN")
+        (home / "SYSTEM.yaml").write_text("broken: [control\n  yaml\n", encoding="utf-8")
+        with self.assertRaisesRegex(EnaHomeError, "SYSTEM.yaml cannot be safely parsed"):
             require_initialized_home(home)
 
     def test_report_is_read_only(self):
