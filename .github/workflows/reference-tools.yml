@@ -22,6 +22,7 @@ jobs:
       - run: python tools/test_input_boundaries.py
       - run: python tools/test_candidate_record.py
       - run: python tools/test_candidate_outcome.py
+      - run: python tools/test_fact_authority.py
       - run: python tools/test_ena_home.py
       - run: python tools/test_safe_change_gate.py
       - run: python tools/test_freshness_scan.py

@@ -5,29 +5,13 @@ canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
 canonical_language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
 text_encoding: UTF-8
 
-runtime:
-  host: UNKNOWN
-  agent: UNKNOWN
-  startup: UNKNOWN
-  restart: UNKNOWN
-  clock_sync: UNKNOWN
-
 communication:
-  human: UNKNOWN
   a2a:
     agent_card: UNKNOWN
     rescue_peers: []
 
-survival:
-  host_profile: UNKNOWN   # resident | session
-  supervisor: UNKNOWN
-  communication_probe: UNKNOWN
-  external_escalation: UNKNOWN
-
 recovery:
   changes: ~/.ena/changes
-  rollback_scheduler: UNKNOWN
-  backup_or_snapshot: UNKNOWN
 
 evolution:
   records: ~/.ena/evolution

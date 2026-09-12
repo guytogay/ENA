@@ -9,9 +9,12 @@ A2A is a collaboration and recovery capability, not a universal installation gat
 1. Find the Agent Card or discovery record used by the implementation.
 2. Verify the advertised endpoint, capabilities and authentication requirements against reality.
 3. Complete a real two-way exchange with another Agent.
-4. Save stable references in `ENA.yaml`.
+4. Save stable discovery/config references in `ENA.yaml`.
+5. Save current reachability / last-verified state in `SYSTEM.yaml` when that live fact matters to the Host.
 
 Do not create a second ENA identity system when the A2A implementation already provides identity/discovery.
+
+A configured Agent Card reference and a currently working A2A path are different facts. `ENA.yaml` owns the stable configured reference. `SYSTEM.yaml` owns freshness-bounded current reachability/verification. Do not mirror an Agent Card URI into `SYSTEM.yaml` and treat its presence as proof that the peer is live.
 
 ## If A2A does not exist
 
@@ -22,7 +25,7 @@ When the Host provides enough capability and a real collaboration need exists:
 3. configure authentication and authorization without writing plaintext secrets into ENA records;
 4. establish at least one reachable peer;
 5. prove a real two-way exchange works;
-6. save stable references in `ENA.yaml`.
+6. save stable references in `ENA.yaml` and current verification state in `SYSTEM.yaml` when useful.
 
 If the Host does not support a practical A2A path, record the limitation and continue using human/Host recovery rather than blocking the rest of ENA.
 
@@ -55,6 +58,8 @@ See `SAFE-CHANGE.md` for resident versus session/coding Host profiles and human/
 
 ## Configuration example
 
+Stable configured discovery references belong in `ENA.yaml`:
+
 ```yaml
 communication:
   a2a:
@@ -62,6 +67,13 @@ communication:
     rescue_peers:
       - agent_card: https://peer.example.com/.well-known/agent-card.json
         access: configured
+```
+
+Current live verification belongs in the freshness-bounded system map, for example:
+
+```yaml
+communication:
+  a2a_reachability: verified-two-way
 ```
 
 Use the discovery form supported by the actual A2A implementation. Do not store credentials/private keys in `ENA.yaml` merely to make the reference self-contained.

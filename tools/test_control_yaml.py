@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from control_yaml import ControlYamlError, parse_control_yaml, scalar
+from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
 
 
 class ControlYamlTests(unittest.TestCase):
@@ -28,6 +28,19 @@ class ControlYamlTests(unittest.TestCase):
     def test_colon_in_unquoted_value_is_preserved(self) -> None:
         data = parse_control_yaml("target: repo:path:with:colons\n")
         self.assertEqual(scalar(data, "target"), "repo:path:with:colons")
+
+    def test_missing_accepts_annotated_unknown_but_not_prefix_lookalikes(self) -> None:
+        for value in (
+            "UNKNOWN",
+            "unknown",
+            "UNKNOWN - pending owner confirmation",
+            "Unknown: pending owner confirmation",
+            "UNKNOWN (draft)",
+        ):
+            with self.subTest(value=value):
+                self.assertTrue(missing(value))
+        self.assertFalse(missing("unknownstash-backup"))
+        self.assertFalse(missing("known-unknown-boundary"))
 
     def test_duplicate_key_fails_closed(self) -> None:
         with self.assertRaises(ControlYamlError):

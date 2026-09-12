@@ -2,19 +2,18 @@ schema_version: '0.2'
 checked_at: 2026-09-12T02:00:00+08:00
 valid_until: 2026-09-19T02:00:00+08:00
 minimum_ready: false
-canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
 
 runtime:
   host: UNKNOWN
   agent_runtime: UNKNOWN
-  host_profile: UNKNOWN   # resident | session
+  host_profile: UNKNOWN
   startup: UNKNOWN
   restart: UNKNOWN
   supervision: UNKNOWN
 
 communication:
   human: UNKNOWN
-  a2a_agent_card: UNKNOWN
+  a2a_reachability: UNKNOWN
 
 recovery:
   primary: UNKNOWN
@@ -23,7 +22,7 @@ recovery:
 
 rescue:
   primary: UNKNOWN
-  type: UNKNOWN   # human | agent | host
+  type: UNKNOWN
 
 memory:
   sources: []

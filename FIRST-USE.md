@@ -74,6 +74,23 @@ The dates above are only an example. Choose a freshness window appropriate to th
 
 Set `minimum_ready: true` only after shared settings, one recovery path, and one rescuer are recorded. If no usable recovery path or rescuer exists, leave it false and record the gap.
 
+#### One authority per fact class
+
+Do not keep the same live fact independently in both files.
+
+- `ENA.yaml` owns stable configuration and pointers: ENA home, canonical timezone/language, text encoding, evolution/change paths, and configured A2A discovery references.
+- `SYSTEM.yaml` owns facts that can drift and need freshness: runtime/Host state, current communication reachability, current recovery/rescuer status, mutable capability/memory/change-surface facts, `checked_at`, `valid_until`, and `minimum_ready`.
+- A configured reference is not a live capability. For example, keep an Agent Card URI in `ENA.yaml`; keep whether the peer is currently reachable/verified in `SYSTEM.yaml`.
+- `canonical_timezone` has one authority: `ENA.yaml`. New homes do not duplicate it into `SYSTEM.yaml`.
+
+Older schema-0.2 homes may still contain duplicated live facts. Inspect them explicitly with:
+
+```text
+python tools/fact_authority.py --home ~/.ena
+```
+
+The report is read-only. For duplicated live facts, a fresh known `SYSTEM.yaml` value is current; `SYSTEM` `UNKNOWN`, absent, or stale never borrows an old `ENA.yaml` value as current truth. The legacy value remains visible as input that needs reconfirmation. If an old `SYSTEM.yaml` also declares a different `canonical_timezone`, clock-dependent reference tools fail closed until the duplicate is reconciled.
+
 ### 5. Make the record expire
 
 `SYSTEM.yaml` is not timeless truth.
