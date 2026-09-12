@@ -7,11 +7,8 @@ import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from system_unknowns import initial_material_unknowns, render_unknowns_yaml, requirement_is_usable
 from timezone_utils import TimezoneUnavailable, load_timezone
-
-
-def known(value: str | None) -> bool:
-    return bool(value and value.strip() and value.strip().upper() != "UNKNOWN")
 
 
 def main() -> int:
@@ -40,10 +37,13 @@ def main() -> int:
         raise SystemExit("--system-valid-hours must be > 0")
 
     if args.verified_minimum and not (
-        known(args.recovery) and known(args.rescuer) and args.rescuer_type != "UNKNOWN"
+        requirement_is_usable(args.recovery)
+        and requirement_is_usable(args.rescuer)
+        and args.rescuer_type != "UNKNOWN"
     ):
         raise SystemExit(
-            "--verified-minimum requires non-UNKNOWN --recovery, --rescuer and --rescuer-type"
+            "--verified-minimum requires real --recovery and --rescuer references plus a non-UNKNOWN --rescuer-type; "
+            "UNKNOWN/UNAVAILABLE/NOT_NEEDED/NOT_APPLICABLE/DEFERRED do not satisfy the minimum"
         )
 
     try:
@@ -92,7 +92,13 @@ def main() -> int:
     checked = datetime.now(tz)
     valid_until = checked + timedelta(hours=args.system_valid_hours)
     ready = "true" if args.verified_minimum else "false"
-    system.write_text(
+    unknowns = initial_material_unknowns(
+        recovery=args.recovery,
+        rescuer=args.rescuer,
+        checked_at=checked,
+        revisit_by=valid_until,
+    )
+    system_text = (
         "schema_version: '0.2'\n"
         f"checked_at: {checked.isoformat()}\n"
         f"valid_until: {valid_until.isoformat()}\n"
@@ -120,9 +126,9 @@ def main() -> int:
         "  retrieval_or_index: UNKNOWN\n"
         "  write_method: UNKNOWN\n"
         "change_surfaces: []\n"
-        "unknowns: []\n",
-        encoding="utf-8",
+        + render_unknowns_yaml(unknowns)
     )
+    system.write_text(system_text, encoding="utf-8")
 
     print(config)
     print(system)

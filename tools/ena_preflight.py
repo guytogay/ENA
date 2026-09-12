@@ -7,9 +7,10 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
-from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
+from control_yaml import ControlYamlError, parse_control_yaml, scalar
 from ena_home import EnaHomeError, require_initialized_home
 from ena_text import read_text
+from system_unknowns import requirement_is_usable
 
 
 def main() -> int:
@@ -44,11 +45,11 @@ def main() -> int:
             problems.append("SYSTEM.yaml minimum_ready is not true")
 
         recovery = scalar(data, "primary", section="recovery")
-        if missing(recovery):
+        if not requirement_is_usable(recovery):
             problems.append("SYSTEM.yaml has no real recovery.primary")
 
         rescuer = scalar(data, "primary", section="rescue")
-        if missing(rescuer):
+        if not requirement_is_usable(rescuer):
             problems.append("SYSTEM.yaml has no real rescue.primary")
 
         valid_until = scalar(data, "valid_until")

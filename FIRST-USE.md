@@ -63,25 +63,70 @@ evolution:
 
 Machine-used ENA-owned paths are relative to the active ENA home, not the process working directory. Keep writable ENA state inside that home. Older schema-0.2 homes may contain absolute pointers; maintaining tools accept them only while they still resolve inside the same active home. If a copied or moved home still declares a different `ena_home`, reconcile the stable pointers before allowing new durable writes rather than following stale paths back to the old location.
 
-`SYSTEM.yaml` is the current system map. At minimum record:
+`SYSTEM.yaml` is the current system map. A not-yet-ready minimum may look like:
 
 ```yaml
 checked_at: 2026-09-12T02:00:00+08:00
 valid_until: 2026-09-19T02:00:00+08:00
-minimum_ready: true
+minimum_ready: false
 runtime:
   host: UNKNOWN
   agent_runtime: UNKNOWN
 recovery:
-  primary: REPLACE_WITH_REAL_RECOVERY_PATH_OR_UNKNOWN
+  primary: UNKNOWN
 rescue:
-  primary: REPLACE_WITH_HUMAN_AGENT_OR_HOST_RESCUER
-unknowns: []
+  primary: UNKNOWN
+unknowns:
+  recovery.primary:
+    state: UNKNOWN
+    reason: "No verified recovery path was supplied to First Use."
+    resolution_path: "Inspect or establish one external recovery mechanism, verify it, then update recovery.primary."
+    owner: "agent"
+    revisit_by: "2026-09-19T02:00:00+08:00"
+    last_attempt_at: "2026-09-12T02:00:00+08:00"
+  rescue.primary:
+    state: UNKNOWN
+    reason: "No verified rescuer was supplied to First Use."
+    resolution_path: "Identify a human, Agent, or Host rescuer, verify reachability, then update rescue.primary."
+    owner: "agent"
+    revisit_by: "2026-09-19T02:00:00+08:00"
+    last_attempt_at: "2026-09-12T02:00:00+08:00"
 ```
 
 The dates above are only an example. Choose a freshness window appropriate to the Host. The reference initializer starts with seven days; shorten or lengthen it when the environment changes at a different rate.
 
 Set `minimum_ready: true` only after shared settings, one recovery path, and one rescuer are recorded. If no usable recovery path or rescuer exists, leave it false and record the gap.
+
+#### Material UNKNOWN lifecycle
+
+Not every `UNKNOWN` needs responsibility metadata. `runtime.host` may remain a harmless unknown while a capability is unused. An unknown becomes **material** when it affects the First Use minimum, an adopted capability, recovery, communication, or another current operational claim that the Agent is relying on. Register only those material facts under `unknowns.<fact-path>`.
+
+The current fact value stays exactly `UNKNOWN`. Its lifecycle entry carries:
+
+```text
+state
+reason
+resolution_path
+owner
+revisit_by
+last_attempt_at
+```
+
+`state` is `UNKNOWN` or `STALLED_UNKNOWN`. `STALLED_UNKNOWN` is lifecycle metadata only; never replace the fact itself with `STALLED_UNKNOWN`, because that would make an unresolved fact look known to ordinary readers.
+
+A material UNKNOWN must record a real resolution attempt. If the attempt could not be performed, record why it was impossible and the next real path instead of pretending the fact was resolved. If `revisit_by` passes while the same fact is still `UNKNOWN` and no newer attempt has established a new revisit point, mark the lifecycle `STALLED_UNKNOWN`.
+
+When the fact becomes known, or is positively established as another state such as `UNAVAILABLE`, `NOT_NEEDED`, `NOT_APPLICABLE`, or `DEFERRED`, remove its entry from `unknowns`; `SYSTEM.yaml` is the current snapshot, not a second history ledger. Those states are distinct and must not be used merely to avoid UNKNOWN metadata.
+
+ENA gives control semantics only to its documented state tokens. Strings such as `unset`, `n/a`, or `TBD` are ordinary literal strings, not an ever-growing global synonym list. A field with a stricter enum should validate that enum itself; do not expand `control_yaml.missing()` into natural-language guesswork.
+
+Validate the current lifecycle with:
+
+```text
+python tools/system_unknowns.py --home ~/.ena
+```
+
+A correctly recorded `STALLED_UNKNOWN` is a valid lifecycle state; it does not by itself turn every unrelated task into a blocker. Missing/inconsistent metadata is a contract error, and First Use minimum facts still fail preflight until a real recovery path and rescuer exist.
 
 #### One authority per fact class
 

@@ -5,6 +5,7 @@ These scripts use only the Python standard library. An Agent can run them as exa
 ```text
 ena_init.py                 create ENA.yaml, SYSTEM.yaml and working directories
 ena_preflight.py            fail fast when First Use is missing/not ready/stale
+system_unknowns.py          validate lifecycle metadata for material SYSTEM UNKNOWNs
 fact_authority.py           report stable/live fact authority in existing schema-0.2 homes
 ena_actor.py                resolve who executed an action and who initiated it
 change_scaffold.py          create a timestamped safe-change package skeleton
@@ -87,6 +88,7 @@ python tools/test_freshness_scan.py
 python tools/test_home_boundary_matrix.py
 python tools/test_output_write_boundary.py
 python tools/test_actor_attribution.py
+python tools/test_system_unknowns.py
 python tools/self_test.py
 ```
 
@@ -142,6 +144,14 @@ python tools/ena_preflight.py
 ```
 
 Configure the Host to run this before ordinary Agent work when a startup/session hook exists. Exit code `2` means First Use must be completed/refreshed before continuing.
+
+## Validate material UNKNOWN lifecycle
+
+```text
+python tools/system_unknowns.py --home ~/.ena
+```
+
+This check is read-only. It validates lifecycle metadata for facts already registered as material in `SYSTEM.yaml`; it does not guess that every bare `UNKNOWN` matters and it does not create a second history ledger. The fact itself remains `UNKNOWN`; `STALLED_UNKNOWN` is lifecycle metadata only. A valid stalled material fact does not automatically block unrelated startup work. See `FIRST-USE.md` for the contract and materiality boundary.
 
 ## Create and arm a safe-change package
 
