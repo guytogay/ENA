@@ -120,13 +120,32 @@ reject   current evidence does not justify it
 restore  return to the previous state because the trial regressed
 ```
 
-A candidate that survives reality contact may be recorded under:
+The surrounding Agent/user/Host makes this judgment. The reference tool does not decide whether evidence is sufficient. `tools/candidate_outcome.py` only persists an outcome that has already been decided, together with explicit evidence references and any residual boundary.
+
+For a speculative artifact that has completed reality contact:
+
+```text
+python tools/candidate_outcome.py SPECULATIVE_CANDIDATE \
+  --outcome retain|revise|reject|restore \
+  --evidence REAL_TRIAL_OR_VALIDATION_REFERENCE \
+  --decided-by REAL_DECISION_ACTOR_OR_WORKFLOW
+```
+
+The source speculative artifact remains immutable occurrence history. The decision record carries its reference + digest and a compact snapshot of the candidate/provenance. One speculative candidate receives one recorded outcome: a revised idea should become a new candidate, and a later reversal of a retained production change is new change/experience evidence rather than a second decision on the old speculative artifact.
+
+A retained candidate is recorded under:
 
 ```text
 ~/.ena/evolution/candidates/selected/
 ```
 
-with the evidence and outcome that justified selection.
+with the evidence and outcome that justified selection. `revise`, `reject`, and `restore` are still durable evidence, but they are recorded under:
+
+```text
+~/.ena/evolution/candidates/outcomes/
+```
+
+so negative/null results do not disappear merely because they were not selected.
 
 **Selected does not necessarily mean already in production.**
 
@@ -158,6 +177,7 @@ A minimal layout is:
   candidates/
     speculative/
     selected/
+    outcomes/
   runs/
 ```
 
