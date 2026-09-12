@@ -8,6 +8,7 @@ import json
 import sys
 from pathlib import Path
 
+from ena_text import EnaTextWriteError, write_text
 from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
@@ -51,10 +52,11 @@ def main() -> int:
         seen.add(record_id)
 
     out = Path(args.output)
-    out.write_text(
-        "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in records),
-        encoding="utf-8",
-    )
+    try:
+        write_text(out, "".join(json.dumps(item, ensure_ascii=False) + "\n" for item in records))
+    except EnaTextWriteError as exc:
+        print(f"ENA Dream material: ERROR: {exc}", file=sys.stderr)
+        return 2
     print(out)
     return 0
 
