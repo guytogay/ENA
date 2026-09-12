@@ -131,7 +131,7 @@ python tools/candidate_outcome.py SPECULATIVE_CANDIDATE \
   --decided-by REAL_DECISION_ACTOR_OR_WORKFLOW
 ```
 
-The source speculative artifact remains immutable occurrence history. The decision record carries its reference + digest and a compact snapshot of the candidate/provenance.
+The source speculative artifact remains immutable occurrence history. The decision record carries its reference + digest and a compact snapshot of the candidate/provenance. One speculative candidate receives one recorded outcome: a revised idea should become a new candidate, and a later reversal of a retained production change is new change/experience evidence rather than a second decision on the old speculative artifact.
 
 A retained candidate is recorded under:
 
