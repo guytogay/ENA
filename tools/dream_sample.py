@@ -12,6 +12,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from ena_text import EnaTextWriteError, write_text
 from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
@@ -100,7 +101,6 @@ def main() -> int:
     if len(records) < 2:
         raise SystemExit("Need at least two memory records")
 
-    # Always make the effective seed explicit so every produced Dream set can be replayed.
     seed = args.seed if args.seed is not None else secrets.randbits(64)
     rng = random.Random(seed)
 
@@ -166,8 +166,13 @@ def main() -> int:
         "truth_status": "speculative_input",
         "fragments": selected,
     }
-    Path(args.output).write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(args.output)
+    target = Path(args.output)
+    try:
+        write_text(target, json.dumps(output, indent=2, ensure_ascii=False))
+    except EnaTextWriteError as exc:
+        print(f"ENA Dream sampler: ERROR: {exc}", file=sys.stderr)
+        return 2
+    print(target)
     return 0
 
 
