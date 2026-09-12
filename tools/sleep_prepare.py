@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ena_text import EnaTextWriteError, write_text
 from jsonl_source import JsonlSourceError, load_jsonl_source
 
 
@@ -69,8 +70,13 @@ def main() -> int:
         "experience": experience,
         "memory": memory,
     }
-    Path(args.output).write_text(json.dumps(bundle, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(args.output)
+    target = Path(args.output)
+    try:
+        write_text(target, json.dumps(bundle, indent=2, ensure_ascii=False))
+    except EnaTextWriteError as exc:
+        print(f"ENA Sleep input: ERROR: {exc}", file=sys.stderr)
+        return 2
+    print(target)
     return 0
 
 
