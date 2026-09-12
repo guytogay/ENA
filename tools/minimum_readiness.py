@@ -72,6 +72,33 @@ def verification_problems(system: dict[str, object], section: str) -> list[str]:
     return problems
 
 
+def legacy_ready_without_provenance(system: dict[str, object]) -> bool:
+    """Recognize the exact old READY shape that predates verification provenance.
+
+    This is diagnostic only. It does not grandfather the old claim or manufacture
+    evidence. Partial/malformed provenance is not called legacy; it keeps the
+    ordinary field-specific validation errors.
+    """
+    if scalar(system, "minimum_ready") != "true":
+        return False
+    recovery = scalar(system, "primary", section="recovery")
+    rescuer = scalar(system, "primary", section="rescue")
+    rescuer_type = scalar(system, "type", section="rescue")
+    if not requirement_is_usable(recovery) or not requirement_is_usable(rescuer):
+        return False
+    if rescuer_type not in RESCUER_TYPES:
+        return False
+    provenance = (
+        scalar(system, "verification_confidence", section="recovery"),
+        scalar(system, "verification_evidence", section="recovery"),
+        scalar(system, "verified_at", section="recovery"),
+        scalar(system, "verification_confidence", section="rescue"),
+        scalar(system, "verification_evidence", section="rescue"),
+        scalar(system, "verified_at", section="rescue"),
+    )
+    return all(value is None for value in provenance)
+
+
 def minimum_fact_problems(system: dict[str, object]) -> list[str]:
     problems: list[str] = []
     recovery = scalar(system, "primary", section="recovery")
@@ -171,6 +198,11 @@ def preflight_problems(home: Path, *, now: datetime | None = None) -> list[str]:
         else:
             problems.append("SYSTEM.yaml minimum_ready is not true")
     problems.extend(minimum_lifecycle_problems(system))
-    problems.extend(minimum_fact_problems(system))
+    if legacy_ready_without_provenance(system):
+        problems.append(
+            "SYSTEM.yaml matches a pre-provenance READY home; re-verify and re-assert recovery and rescuer with ena_first_use.py --verified-* plus evidence"
+        )
+    else:
+        problems.extend(minimum_fact_problems(system))
     problems.extend(freshness_problems(system, now=now))
     return problems
