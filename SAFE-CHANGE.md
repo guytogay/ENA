@@ -68,11 +68,13 @@ Before changing live state, create a package such as:
 
 Use the timezone confirmed in `ENA.yaml`. Store the package somewhere that survives failure of the changed component/current session.
 
-`tools/change_scaffold.py` creates a conservative skeleton. Its generated `rollback.py` is intentionally an unconfigured placeholder that exits rather than pretending recovery exists. Replace it or record a verified Host-native rollback action before arming the change.
+`tools/change_scaffold.py` creates a conservative skeleton. Its generated `rollback.py` is intentionally an unconfigured placeholder that exits rather than pretending recovery exists. Replace it or record a verified Host-native rollback action before arming the change. The reference gate enforces that choice: with no configured package-local script, `rescue.yaml` must declare either `automatic_rollback: false` (manual / Host-triggered recovery) or `automatic_rollback: true` together with `automatic_rollback_reference` naming the Host-native timer, scheduler or supervisor that performs the rollback. The recorded transition separates `rollback_mode` (what was declared) from `rollback_artifact` (what the package can show), and neither one is proof that recovery has actually been exercised.
 
 ## Reference state gate
 
 `tools/safe_change_state.py` is the reference executable gate for the state machine below. It rejects malformed control files, unresolved recovery fields and invalid transitions. It also requires an evidence reference before `retained`, `restored`, or `failed`, updates `status.yaml`, and appends transition history to `transitions.jsonl`.
+
+The gate only accepts a package inside an initialized ENA home (`<ENA home>/changes/<package>`), and it timestamps the transition with that home's confirmed timezone. A package whose home cannot be read, or that sits outside a home, is refused instead of being recorded on a guessed clock.
 
 Example:
 

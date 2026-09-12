@@ -104,13 +104,15 @@ For volatile records, preserve an authoritative source reference plus `checked_a
 
 During Sleep:
 
-1. identify records whose explicit freshness window expired or is unknown;
+1. identify records whose explicit freshness window expired, is unknown, or was declared but cannot be read;
 2. refresh them from the authoritative source when the Agent is authorized and a practical refresh path exists;
 3. if refresh is not possible, keep the record but mark current validity as stale/unknown rather than strengthening it as current truth;
 4. preserve the historical value when it is still useful as past experience;
 5. let a changed capability/document become new experience instead of silently overwriting the fact that drift occurred.
 
 `SYSTEM.yaml` has its own expiry/preflight path. `tools/freshness_scan.py` is a reference reporter for JSONL knowledge/capability records; it does not invent a universal TTL.
+
+An unreadable deadline is not the same fact as an absent one. A record whose `checked_at`/`valid_until` was declared but cannot be parsed is reported with an `unparseable_*` reason and listed under `invalid_timestamps`, and it must not silently become the caller's generic max-age policy; `--fail-on-unparseable` turns that into a non-zero exit so a typo cannot quietly disable a staleness check.
 
 ## 5. Dream
 

@@ -88,6 +88,7 @@ def main() -> int:
             "changed: UNKNOWN": "changed: config-file",
             "known_good: UNKNOWN": "known_good: git-base-commit",
             "rollback_action: UNKNOWN": "rollback_action: git-revert-change",
+            "automatic_rollback: null": "automatic_rollback: false",
             "restart_or_new_session: UNKNOWN": "restart_or_new_session: new-session",
             "verify_operation: UNKNOWN": "verify_operation: reference-self-test",
         }
@@ -96,6 +97,14 @@ def main() -> int:
         rescue.write_text(rescue_text, encoding="utf-8")
 
         run(tools / "safe_change_state.py", package, "armed")
+        armed = [
+            json.loads(line)
+            for line in (package / "transitions.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        assert armed[-1]["rollback_mode"] == "declared_manual_or_host_triggered"
+        assert armed[-1]["rollback_artifact"] == "placeholder"
+        assert armed[-1]["timezone"] == "Etc/UTC"
         run(tools / "safe_change_state.py", package, "applied")
         no_evidence = raw(tools / "safe_change_state.py", package, "retained")
         assert no_evidence.returncode == 2

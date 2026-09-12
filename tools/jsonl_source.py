@@ -8,6 +8,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from ena_text import read_text
+
 
 class JsonlSourceError(ValueError):
     """Raised when a declared JSONL source cannot be safely consumed."""
@@ -30,7 +32,7 @@ def load_jsonl_source(path: str | Path) -> JsonlSource:
         raise JsonlSourceError(f"input source is not a file: {p}")
 
     try:
-        text = p.read_text(encoding="utf-8")
+        text = read_text(p)
     except (OSError, UnicodeError) as exc:
         raise JsonlSourceError(f"cannot read input source {p}: {exc}") from exc
 

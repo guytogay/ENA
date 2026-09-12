@@ -7,11 +7,12 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 
-from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
-from timezone_utils import TimezoneUnavailable, load_timezone
+from control_yaml import missing, scalar
+from ena_home import EnaHomeError, home_of_package, read_control, require_initialized_home
+from ena_text import read_text
 
 
 ALLOWED = {
@@ -37,32 +38,134 @@ REQUIRED_FOR_ARM = (
     "verify_operation",
 )
 
+PLACEHOLDER_MARKER = "UNCONFIGURED_ROLLBACK"
 
-def read_control(path: Path) -> dict[str, object]:
+# `rollback_mode` is what the package *declared*; `rollback_artifact` is what the
+# package can actually show. They are recorded separately because neither one
+# implies the other: a configured script is still not proof that recovery works,
+# and a Host-native timer is real automatic recovery without any local script.
+ROLLBACK_MODE_NOT_DECLARED = "not_declared"
+ROLLBACK_MODE_MANUAL = "declared_manual_or_host_triggered"
+ROLLBACK_MODE_AUTOMATIC = "declared_automatic"
+
+ROLLBACK_ARTIFACT_LABELS = {
+    "configured": "configured_script",
+    "placeholder": "placeholder",
+    "absent": "absent",
+    "unreadable": "unreadable",
+}
+
+ROLLBACK_ARTIFACT_DESCRIPTIONS = {
+    "placeholder": "rollback.py is still the unconfigured placeholder",
+    "absent": "the package has no rollback.py",
+    "unreadable": "rollback.py cannot be read",
+}
+
+ROLLBACK_CLAIM_CONFLICTS = {
+    "placeholder": "rollback_action points at rollback.py, which is still the unconfigured placeholder",
+    "absent": "rollback_action points at rollback.py, but the package has no rollback.py",
+    "unreadable": "rollback_action points at rollback.py, which cannot be read",
+}
+
+AUTOMATIC_ROLLBACK_VALUES = {"true": True, "false": False}
+
+
+def rollback_state(package: Path) -> str:
+    """Report what the package can actually show right now.
+
+    `configured` means the artifact is readable and is no longer the scaffolded
+    placeholder. It does not mean the script runs, succeeds, or restores
+    anything: that still requires Host/external verification evidence.
+    """
+    script = package / "rollback.py"
+    if not script.is_file():
+        return "absent"
     try:
-        return parse_control_yaml(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, ControlYamlError) as exc:
-        raise ValueError(f"{path.name}: {exc}") from exc
+        text = read_text(script)
+    except (OSError, UnicodeError):
+        return "unreadable"
+    return "placeholder" if PLACEHOLDER_MARKER in text else "configured"
 
 
-def configured_timezone(package: Path):
-    try:
-        ena = package.parents[1] / "ENA.yaml"
-    except IndexError:
-        return timezone.utc
-    if not ena.is_file():
-        return timezone.utc
-    try:
-        data = read_control(ena)
-        name = scalar(data, "canonical_timezone")
-        if not name:
-            return timezone.utc
-        return load_timezone(name)
-    except (ValueError, TimezoneUnavailable):
-        return timezone.utc
+def rollback_declaration(rescue: dict[str, object]) -> tuple[bool | None, str | None, list[str]]:
+    """Read the recovery declaration, refusing anything that is not a declaration.
+
+    `automatic_rollback` accepts exactly `true` or `false`, or stays unresolved.
+    Treating every other scalar as "not true, therefore manual" would let a typo
+    such as `flase` arm a package as if manual recovery had been declared.
+    """
+    problems: list[str] = []
+    raw = scalar(rescue, "automatic_rollback")
+    reference = scalar(rescue, "automatic_rollback_reference")
+    has_reference = not missing(reference)
+
+    if missing(raw):
+        declared: bool | None = None
+    elif raw.strip().lower() in AUTOMATIC_ROLLBACK_VALUES:
+        declared = AUTOMATIC_ROLLBACK_VALUES[raw.strip().lower()]
+    else:
+        declared = None
+        problems.append(
+            f"rescue.yaml automatic_rollback is {raw!r}, which is not a declaration: "
+            "use exactly true or false, or leave it unresolved"
+        )
+
+    if declared is True and not has_reference:
+        problems.append(
+            "rescue.yaml automatic_rollback is true but automatic_rollback_reference is unresolved: "
+            "name the Host-native timer/scheduler/supervisor that performs the rollback, "
+            "or declare automatic_rollback: false"
+        )
+    if declared is False and has_reference:
+        problems.append(
+            "rescue.yaml automatic_rollback is false but automatic_rollback_reference is recorded: "
+            "remove the reference or declare automatic_rollback: true"
+        )
+    if declared is None and has_reference and missing(raw):
+        problems.append(
+            "rescue.yaml records automatic_rollback_reference but automatic_rollback is not declared: "
+            "declare automatic_rollback: true"
+        )
+
+    return declared, reference, problems
 
 
-def write_status(path: Path, state: str, profile: str, previous: str, evidence: str | None, tz) -> str:
+def rollback_problems(
+    rescue: dict[str, object], artifact: str
+) -> tuple[list[str], str | None, str, str | None]:
+    """Require the recovery declaration to match what the package can show."""
+    problems: list[str] = []
+    artifact_label = ROLLBACK_ARTIFACT_LABELS[artifact]
+    declared, reference, declaration_problems = rollback_declaration(rescue)
+    problems.extend(declaration_problems)
+
+    mode: str | None = None
+    if declared is True:
+        mode = ROLLBACK_MODE_AUTOMATIC
+    elif declared is False:
+        mode = ROLLBACK_MODE_MANUAL
+    elif not declaration_problems and artifact == "configured":
+        # A configured package-local script may arm without declaring
+        # automaticity; the gate records that it was not declared instead of
+        # inventing a declaration for the operator.
+        mode = ROLLBACK_MODE_NOT_DECLARED
+    elif not declaration_problems:
+        problems.append(
+            f"{ROLLBACK_ARTIFACT_DESCRIPTIONS[artifact]}: configure rollback.py, declare "
+            "automatic_rollback: false for manual/Host-triggered recovery, or declare "
+            "automatic_rollback: true with an automatic_rollback_reference"
+        )
+
+    rollback_action = scalar(rescue, "rollback_action") or ""
+    if "rollback.py" in rollback_action and artifact in ROLLBACK_CLAIM_CONFLICTS:
+        problems.append(ROLLBACK_CLAIM_CONFLICTS[artifact])
+
+    return problems, mode, artifact_label, reference
+
+
+def write_status(
+    path: Path, state: str, profile: str, previous: str, evidence: str | None, tz, tz_name: str
+) -> str:
     now = datetime.now(tz).isoformat(timespec="seconds")
     text = (
         "schema_version: '0.3'\n"
@@ -71,6 +174,7 @@ def write_status(path: Path, state: str, profile: str, previous: str, evidence: 
         f"updated_at: {now}\n"
         f"previous_state: {previous}\n"
         f"last_evidence: {evidence if evidence else 'null'}\n"
+        f"timezone: {tz_name}\n"
     )
     temp = path.with_suffix(".yaml.tmp")
     temp.write_text(text, encoding="utf-8")
@@ -93,10 +197,16 @@ def main() -> int:
         return 2
 
     try:
+        tz, tz_name = require_initialized_home(home_of_package(package))
+    except EnaHomeError as exc:
+        print(f"SAFE-CHANGE gate: {exc}", file=sys.stderr)
+        return 2
+
+    try:
         status = read_control(status_path)
         rescue = read_control(rescue_path)
-    except ValueError as exc:
-        print(f"SAFE-CHANGE gate: cannot safely parse control file: {exc}", file=sys.stderr)
+    except EnaHomeError as exc:
+        print(f"SAFE-CHANGE gate: {exc}", file=sys.stderr)
         return 2
 
     current = scalar(status, "state")
@@ -109,6 +219,9 @@ def main() -> int:
         return 2
 
     problems: list[str] = []
+    rollback_mode: str | None = None
+    rollback_artifact: str | None = None
+    rollback_reference: str | None = None
     if args.to_state == "armed":
         if profile not in {"resident", "session"}:
             problems.append("status.yaml host_profile must be resident or session")
@@ -118,14 +231,10 @@ def main() -> int:
             if missing(scalar(rescue, key)):
                 problems.append(f"rescue.yaml {key} is unresolved")
 
-        rollback_action = scalar(rescue, "rollback_action") or ""
-        placeholder = package / "rollback.py"
-        if "rollback.py" in rollback_action and placeholder.is_file():
-            try:
-                if "UNCONFIGURED_ROLLBACK" in placeholder.read_text(encoding="utf-8"):
-                    problems.append("rollback.py is still the unconfigured placeholder")
-            except OSError as exc:
-                problems.append(f"cannot inspect rollback.py: {exc}")
+        recovery_problems, rollback_mode, rollback_artifact, rollback_reference = rollback_problems(
+            rescue, rollback_state(package)
+        )
+        problems.extend(recovery_problems)
 
     if args.to_state in {"retained", "restored", "failed"} and not args.evidence:
         problems.append(f"{args.to_state} requires --evidence")
@@ -142,10 +251,23 @@ def main() -> int:
         profile or "UNKNOWN",
         current,
         args.evidence,
-        configured_timezone(package),
+        tz,
+        tz_name,
     )
+    transition = {
+        "at": now,
+        "from": current,
+        "to": args.to_state,
+        "evidence": args.evidence,
+        "timezone": tz_name,
+    }
+    if args.to_state == "armed":
+        transition["rollback_mode"] = rollback_mode
+        transition["rollback_artifact"] = rollback_artifact
+        if rollback_mode == ROLLBACK_MODE_AUTOMATIC:
+            transition["automatic_rollback_reference"] = rollback_reference
     with (package / "transitions.jsonl").open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps({"at": now, "from": current, "to": args.to_state, "evidence": args.evidence}) + "\n")
+        fh.write(json.dumps(transition) + "\n")
 
     print(f"SAFE-CHANGE gate: {current} -> {args.to_state}")
     return 0
