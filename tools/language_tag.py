@@ -34,9 +34,11 @@ _RESERVED = {
 
 
 def language_tag_problem(value: object) -> str | None:
-    if not isinstance(value, str) or not value.strip():
+    if not isinstance(value, str) or not value:
         return "language tag is empty or not a string"
-    tag = value.strip()
+    if value != value.strip():
+        return "language tag has leading or trailing whitespace"
+    tag = value
     if len(tag) > 255:
         return "language tag is longer than 255 characters"
     if tag.upper() in _RESERVED:
@@ -53,4 +55,4 @@ def require_language_tag(value: object) -> str:
     problem = language_tag_problem(value)
     if problem:
         raise ValueError(problem)
-    return str(value).strip()
+    return str(value)
