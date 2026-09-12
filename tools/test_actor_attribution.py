@@ -162,7 +162,7 @@ class ArtifactAttributionTests(unittest.TestCase):
         (package / "backup").mkdir(parents=True)
         (package / "status.yaml").write_text(
             "schema_version: '0.3'\nhost_profile: session\nstate: preparing\nupdated_at: x\n"
-            "previous_state: null\nlast_evidence: null\ntimezone: Asia/Shanghai\n", encoding="utf-8")
+            "previous_state: null\nlast_evidence: null\ntimezone: UTC\n", encoding="utf-8")
         (package / "rescue.yaml").write_text(
             "schema_version: '0.3'\nhost_profile: session\ntarget: t\nrecovery_actor: human\n"
             "where_to_act: w\nchanged: c\nknown_good: k\nrollback_action: r\n"
@@ -176,6 +176,19 @@ class ArtifactAttributionTests(unittest.TestCase):
         self.assertEqual(transition["actor"]["channel"], "a2a")
         self.assertEqual(transition["from"], "preparing")
         self.assertEqual(transition["to"], "armed")
+
+    def test_non_utc_home_without_tzdata_fails_with_guidance(self):
+        """Windows CI has no tzdata: a non-UTC zone must fail closed with guidance,
+        not silently fall back to another clock."""
+        home = Path(self.tmp.name) / "ena-zoned"
+        home.mkdir(parents=True)
+        (home / "ENA.yaml").write_text(
+            "canonical_timezone: Asia/Shanghai\n", encoding="utf-8")
+        r = run(str(TOOLS / "change_scaffold.py"), "--home", str(home),
+                "--name", "zoned", "--profile", "session")
+        if r.returncode == 0:
+            self.skipTest("this Host has tzdata; the failure path is not reachable here")
+        self.assertIn("tzdata", r.stderr)
 
     def test_actor_helper_prints_resolved_block(self):
         r = run(str(TOOLS / "ena_actor.py"), env=PEER_ENV)
