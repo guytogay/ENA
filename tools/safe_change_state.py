@@ -14,6 +14,7 @@ from control_yaml import missing, scalar
 from ena_actor import actor_block, actor_yaml_block, resolve_actor
 from ena_home import EnaHomeError, home_of_package, read_control, require_initialized_home
 from ena_text import read_text
+from safe_change_rescue import armed_rescue_declarations
 
 
 ALLOWED = {
@@ -236,6 +237,7 @@ def main() -> int:
     rollback_mode: str | None = None
     rollback_artifact: str | None = None
     rollback_reference: str | None = None
+    armed_declarations: dict[str, object] = {}
     if args.to_state == "armed":
         if profile not in {"resident", "session"}:
             problems.append("status.yaml host_profile must be resident or session")
@@ -244,6 +246,9 @@ def main() -> int:
         for key in REQUIRED_FOR_ARM:
             if missing(scalar(rescue, key)):
                 problems.append(f"rescue.yaml {key} is unresolved")
+
+        armed_declarations, declaration_problems = armed_rescue_declarations(rescue)
+        problems.extend(declaration_problems)
 
         recovery_problems, rollback_mode, rollback_artifact, rollback_reference = rollback_problems(
             rescue, rollback_state(package)
@@ -281,6 +286,7 @@ def main() -> int:
     if args.to_state == "armed":
         transition["rollback_mode"] = rollback_mode
         transition["rollback_artifact"] = rollback_artifact
+        transition.update(armed_declarations)
         if rollback_mode == ROLLBACK_MODE_AUTOMATIC:
             transition["automatic_rollback_reference"] = rollback_reference
     with (package / "transitions.jsonl").open("a", encoding="utf-8") as fh:
