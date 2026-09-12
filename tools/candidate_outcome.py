@@ -33,7 +33,13 @@ def candidate_dirs(home: Path) -> tuple[Path, Path, Path]:
         "evolution.selected_candidates",
         default_relative="evolution/candidates/selected",
     )
-    outcomes = selected.parent / "outcomes"
+    outcomes = (selected.parent / "outcomes").resolve()
+    try:
+        outcomes.relative_to(home.resolve())
+    except ValueError as exc:
+        raise EnaHomeError(
+            f"derived candidate outcomes path resolves outside the active ENA home: {outcomes}"
+        ) from exc
     return speculative, selected, outcomes
 
 
