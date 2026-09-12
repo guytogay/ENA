@@ -160,6 +160,6 @@ def home_of_package(package: Path) -> Path:
             )
         return candidate.resolve()
     raise EnaHomeError(
-        f"{package} is not a SAFE-CHANGE package: no initialized ENA home is an ancestor. "
-        f"{PACKAGE_LAYOUT_HINT}"
+        f"{package} is not a SAFE-CHANGE package because its ENA home is not initialized: "
+        f"no ENA.yaml ancestor was found. {PACKAGE_LAYOUT_HINT}"
     )
