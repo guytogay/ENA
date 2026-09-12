@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from control_yaml import ControlYamlError, parse_control_yaml, scalar
+from control_yaml import ControlYamlError, missing, parse_control_yaml, scalar
 from ena_text import read_text
 from timezone_utils import TimezoneUnavailable, load_timezone
 
@@ -47,9 +47,11 @@ def read_control(path: Path) -> dict[str, object]:
 def require_initialized_home(home: Path) -> tuple[object, str]:
     """Return `(tzinfo, canonical_name)` for an initialized home, or fail closed.
 
-    Failing closed is deliberate. The alternative used to be an implicit UTC
-    clock, which records a transition at a time the home never confirmed, and a
-    package whose directory timestamp and transition history disagree.
+    `ENA.yaml` is the sole authority for the canonical timezone. Older schema-0.2
+    homes may also carry a duplicate `SYSTEM.yaml canonical_timezone`; when that
+    duplicate is known and disagrees, clock-dependent tools stop rather than
+    silently choosing one side. A matching legacy duplicate is tolerated until
+    explicit migration removes it.
     """
     home = Path(home).expanduser().resolve()
     config = home / "ENA.yaml"
@@ -62,6 +64,21 @@ def require_initialized_home(home: Path) -> tuple[object, str]:
         raise EnaHomeError(
             f"ENA home is not initialized: {config} has no canonical_timezone. {INIT_HINT}"
         )
+
+    system = home / "SYSTEM.yaml"
+    if system.is_file():
+        try:
+            system_data = read_control(system)
+        except EnaHomeError:
+            system_data = {}
+        system_name = scalar(system_data, "canonical_timezone")
+        if not missing(system_name) and system_name != name:
+            raise EnaHomeError(
+                "canonical_timezone conflict: ENA.yaml is authoritative but SYSTEM.yaml "
+                f"declares {system_name!r} while ENA.yaml declares {name!r}; reconcile the "
+                "legacy duplicate before running a clock-dependent ENA tool"
+            )
+
     try:
         return load_timezone(name), name
     except TimezoneUnavailable as exc:
