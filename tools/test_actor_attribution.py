@@ -28,7 +28,8 @@ from ena_actor import (  # noqa: E402
     resolve_actor,
 )
 
-PEER_ENV = {"DSH_PEER_CALLER": "pc-dsh", "DSH_PEER_TASK_ID": "task-abc-1"}
+PEER_ENV = {"ENA_PEER_CALLER": "pc-dsh", "ENA_PEER_TASK_ID": "task-abc-1"}
+LEGACY_PEER_ENV = {"DSH_PEER_CALLER": "pc-dsh", "DSH_PEER_TASK_ID": "task-abc-1"}
 
 
 def write_home(home: Path) -> Path:
@@ -62,6 +63,13 @@ class ResolveActorTests(unittest.TestCase):
         self.assertEqual(a.channel, "a2a")
         self.assertEqual(a.correlation_id, "task-abc-1")
         self.assertEqual(a.attribution_confidence, SELF_ASSERTED)
+
+    def test_host_namespace_variables_are_accepted_as_fallback(self):
+        # A Host runtime may filter its own namespace (DSH_*) before the dispatched
+        # session sees it; the ENA_* names are primary, these are accepted when present.
+        a = resolve_actor(LEGACY_PEER_ENV)
+        self.assertEqual(a.initiated_by, "peer:pc-dsh")
+        self.assertEqual(a.channel, "a2a")
 
     def test_explicit_values_win_over_peer_bridge(self):
         a = resolve_actor({**PEER_ENV, "ENA_INITIATED_BY": "owner", "ENA_CHANNEL": "chat"})

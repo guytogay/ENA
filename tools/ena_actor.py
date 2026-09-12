@@ -23,9 +23,17 @@ ENA_ACTOR_EXECUTOR      who is acting here (e.g. lxc-dsh/session-3d75c2ad)
 ENA_INITIATED_BY        who asked (e.g. owner, peer:pc-dsh)
 ENA_CHANNEL             how it arrived (chat | cli | cron | a2a | api)
 ENA_CORRELATION_ID      Host/transport correlation id (e.g. a peer taskId)
-DSH_PEER_CALLER         set by a local peer bridge that dispatches this session
-DSH_PEER_TASK_ID        set by a local peer bridge that dispatches this session
+ENA_PEER_CALLER         set by a local peer bridge that dispatches this session
+ENA_PEER_TASK_ID        set by a local peer bridge that dispatches this session
 ```
+
+Namespace note (field finding, Linux session Host 2026-09-12): a first implementation
+used `DSH_PEER_CALLER` / `DSH_PEER_TASK_ID` and both were **silently dropped** before
+reaching the dispatched session, because the Host runtime filters environment variables
+in its own namespace (`DSH_*`). The dispatched artifact then recorded `channel: a2a`
+and an executor but no initiator — provenance lost with no error. Attribution variables
+therefore use a prefix the Host does not manage; the `DSH_*` names are still accepted as
+a fallback for bridges that use them.
 """
 from __future__ import annotations
 
@@ -42,8 +50,13 @@ ENV_EXECUTOR = "ENA_ACTOR_EXECUTOR"
 ENV_INITIATED_BY = "ENA_INITIATED_BY"
 ENV_CHANNEL = "ENA_CHANNEL"
 ENV_CORRELATION_ID = "ENA_CORRELATION_ID"
-ENV_PEER_CALLER = "DSH_PEER_CALLER"
-ENV_PEER_TASK_ID = "DSH_PEER_TASK_ID"
+ENV_PEER_CALLER = "ENA_PEER_CALLER"
+ENV_PEER_TASK_ID = "ENA_PEER_TASK_ID"
+# Fallback for bridges that use the Host runtime namespace. On at least one real Host
+# those variables never reached the dispatched session (silently filtered), so they are
+# not the primary contract.
+ENV_PEER_CALLER_FALLBACK = "DSH_PEER_CALLER"
+ENV_PEER_TASK_ID_FALLBACK = "DSH_PEER_TASK_ID"
 
 
 @dataclass(frozen=True)
@@ -72,8 +85,8 @@ def resolve_actor(env: Mapping[str, str] | None = None) -> Actor:
 
     # A local peer bridge that dispatches a headless session can say who called it.
     # Without that, the dispatched session would have no way to know.
-    caller = _clean(env.get(ENV_PEER_CALLER))
-    task_id = _clean(env.get(ENV_PEER_TASK_ID))
+    caller = _clean(env.get(ENV_PEER_CALLER)) or _clean(env.get(ENV_PEER_CALLER_FALLBACK))
+    task_id = _clean(env.get(ENV_PEER_TASK_ID)) or _clean(env.get(ENV_PEER_TASK_ID_FALLBACK))
     if initiated_by is None and caller:
         initiated_by = f"peer:{caller}"
     if channel is None and caller:

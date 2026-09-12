@@ -58,9 +58,15 @@ ENA_ACTOR_EXECUTOR      who is acting here
 ENA_INITIATED_BY        who asked (e.g. owner, peer:pc-dsh)
 ENA_CHANNEL             chat | cli | cron | a2a | api
 ENA_CORRELATION_ID      Host/transport correlation id
-DSH_PEER_CALLER         set by a local peer bridge that dispatches this session
-DSH_PEER_TASK_ID        set by a local peer bridge that dispatches this session
+ENA_PEER_CALLER         set by a local peer bridge that dispatches this session
+ENA_PEER_TASK_ID        set by a local peer bridge that dispatches this session
 ```
+
+Use a namespace the Host runtime does not itself manage: on one real Host the first
+attempt used `DSH_PEER_*` and both values were **silently filtered** before reaching the
+dispatched session, so the artifact recorded `channel: a2a` with `initiated_by: UNKNOWN`
+and no error was raised. `DSH_PEER_CALLER` / `DSH_PEER_TASK_ID` are accepted as a
+fallback, not as the primary contract.
 
 If a peer bridge dispatches a headless session **without** passing the caller and task id, the dispatched session cannot know who asked and will honestly record `UNKNOWN` — the chain breaks at dispatch, not in the artifact. `candidate_outcome.py` keeps its operator-supplied `decided_by` next to the resolved `actor` block: the decision-maker and the initiator are different facts.
 
