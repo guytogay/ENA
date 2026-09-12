@@ -48,11 +48,20 @@ Human recovery is a valid first-class path. A2A is useful when supported, but it
 Minimum shape:
 
 ```yaml
-ena_home: ~/.ena
+ena_home: .
 canonical_timezone: REPLACE_WITH_CONFIRMED_IANA_TIMEZONE
 canonical_language: REPLACE_WITH_CONFIRMED_LANGUAGE_TAG
 text_encoding: UTF-8
+recovery:
+  changes: changes
+evolution:
+  records: evolution
+  experience_inbox: evolution/experience
+  speculative_candidates: evolution/candidates/speculative
+  selected_candidates: evolution/candidates/selected
 ```
+
+Machine-used ENA-owned paths are relative to the active ENA home, not the process working directory. Keep writable ENA state inside that home. Older schema-0.2 homes may contain absolute pointers; maintaining tools accept them only while they still resolve inside the same active home. If a copied or moved home still declares a different `ena_home`, reconcile the stable pointers before allowing new durable writes rather than following stale paths back to the old location.
 
 `SYSTEM.yaml` is the current system map. At minimum record:
 

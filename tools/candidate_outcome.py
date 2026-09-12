@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from ena_home import EnaHomeError, require_initialized_home
+from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 from ena_text import read_text
 
 OUTCOMES = ("retain", "revise", "reject", "restore")
@@ -22,11 +22,31 @@ def unresolved(value: object) -> bool:
     return not isinstance(value, str) or value.strip().lower() in UNRESOLVED
 
 
-def load_source(path: Path, home: Path) -> tuple[dict[str, object], str, Path]:
+def candidate_dirs(home: Path) -> tuple[Path, Path, Path]:
+    speculative = resolve_home_path(
+        home,
+        "evolution.speculative_candidates",
+        default_relative="evolution/candidates/speculative",
+    )
+    selected = resolve_home_path(
+        home,
+        "evolution.selected_candidates",
+        default_relative="evolution/candidates/selected",
+    )
+    outcomes = (selected.parent / "outcomes").resolve()
+    try:
+        outcomes.relative_to(home.resolve())
+    except ValueError as exc:
+        raise EnaHomeError(
+            f"derived candidate outcomes path resolves outside the active ENA home: {outcomes}"
+        ) from exc
+    return speculative, selected, outcomes
+
+
+def load_source(path: Path, speculative: Path) -> tuple[dict[str, object], str, Path]:
     source = path.expanduser().resolve()
-    expected = (home / "evolution" / "candidates" / "speculative").resolve()
-    if source.parent != expected:
-        raise ValueError(f"source candidate must be directly under {expected}")
+    if source.parent != speculative.resolve():
+        raise ValueError(f"source candidate must be directly under {speculative.resolve()}")
     if not source.is_file():
         raise ValueError(f"source candidate not found: {source}")
     try:
@@ -44,9 +64,8 @@ def load_source(path: Path, home: Path) -> tuple[dict[str, object], str, Path]:
     return record, hashlib.sha256(text.encode("utf-8")).hexdigest(), source
 
 
-def existing_decision(home: Path, candidate_id: str) -> Path | None:
-    for bucket in ("selected", "outcomes"):
-        directory = home / "evolution" / "candidates" / bucket
+def existing_decision(selected: Path, outcomes: Path, candidate_id: str) -> Path | None:
+    for bucket, directory in (("selected", selected), ("outcomes", outcomes)):
         if not directory.is_dir():
             continue
         for path in directory.glob("*.json"):
@@ -76,6 +95,7 @@ def main() -> int:
     home = Path(args.home).expanduser().resolve()
     try:
         tz, tz_name = require_initialized_home(home)
+        speculative, selected, outcomes = candidate_dirs(home)
     except EnaHomeError as exc:
         print(f"ENA candidate outcome: ERROR: {exc}", file=sys.stderr)
         return 2
@@ -86,8 +106,8 @@ def main() -> int:
         return 2
 
     try:
-        candidate, digest, source = load_source(args.source, home)
-        prior = existing_decision(home, str(candidate["id"]))
+        candidate, digest, source = load_source(args.source, speculative)
+        prior = existing_decision(selected, outcomes, str(candidate["id"]))
     except ValueError as exc:
         print(f"ENA candidate outcome: ERROR: {exc}", file=sys.stderr)
         return 2
@@ -100,8 +120,7 @@ def main() -> int:
 
     now = datetime.now(tz)
     decision_id = f"decision-{uuid.uuid4().hex[:12]}"
-    bucket = "selected" if args.outcome == "retain" else "outcomes"
-    out_dir = home / "evolution" / "candidates" / bucket
+    out_dir = selected if args.outcome == "retain" else outcomes
     out_dir.mkdir(parents=True, exist_ok=True)
     target = out_dir / f"{now.strftime('%Y%m%dT%H%M%S%f%z')}__{decision_id}.json"
 

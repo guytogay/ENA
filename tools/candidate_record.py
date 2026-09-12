@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from ena_home import EnaHomeError, require_initialized_home
+from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 
 
 def main() -> int:
@@ -23,11 +23,15 @@ def main() -> int:
     home = Path(args.home).expanduser().resolve()
     try:
         tz, tz_name = require_initialized_home(home)
+        out_dir = resolve_home_path(
+            home,
+            "evolution.speculative_candidates",
+            default_relative="evolution/candidates/speculative",
+        )
     except EnaHomeError as exc:
         print(f"ENA candidate: ERROR: {exc}", file=sys.stderr)
         return 2
 
-    out_dir = home / "evolution" / "candidates" / "speculative"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     now = datetime.now(tz)

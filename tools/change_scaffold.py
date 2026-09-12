@@ -9,7 +9,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from ena_home import EnaHomeError, require_initialized_home
+from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 from timezone_utils import TimezoneUnavailable, load_timezone
 
 
@@ -50,13 +50,14 @@ def main() -> int:
     home = Path(args.home).expanduser().resolve()
     try:
         tz, tz_name = package_timezone(home, args.timezone)
+        changes = resolve_home_path(home, "recovery.changes", default_relative="changes")
     except EnaHomeError as exc:
         print(f"ENA change scaffold: ERROR: {exc}", file=sys.stderr)
         return 2
 
     now = datetime.now(tz)
     stamp = now.strftime("%Y%m%dT%H%M%S%z")
-    package = home / "changes" / f"{stamp}__{clean(args.name)}"
+    package = changes / f"{stamp}__{clean(args.name)}"
     (package / "backup").mkdir(parents=True, exist_ok=False)
 
     (package / "status.yaml").write_text(

@@ -71,7 +71,7 @@ def main() -> int:
 
     config.write_text(
         "schema_version: '0.2'\n"
-        f"ena_home: {home}\n"
+        "ena_home: .\n"
         f"canonical_timezone: {args.timezone}\n"
         f"canonical_language: {args.language}\n"
         "text_encoding: UTF-8\n"
@@ -80,12 +80,12 @@ def main() -> int:
         "    agent_card: UNKNOWN\n"
         "    rescue_peers: []\n"
         "\nrecovery:\n"
-        f"  changes: {home / 'changes'}\n"
+        "  changes: changes\n"
         "\nevolution:\n"
-        f"  records: {home / 'evolution'}\n"
-        f"  experience_inbox: {home / 'evolution/experience'}\n"
-        f"  speculative_candidates: {home / 'evolution/candidates/speculative'}\n"
-        f"  selected_candidates: {home / 'evolution/candidates/selected'}\n",
+        "  records: evolution\n"
+        "  experience_inbox: evolution/experience\n"
+        "  speculative_candidates: evolution/candidates/speculative\n"
+        "  selected_candidates: evolution/candidates/selected\n",
         encoding="utf-8",
     )
 

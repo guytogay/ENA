@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from ena_home import EnaHomeError, require_initialized_home
+from ena_home import EnaHomeError, require_initialized_home, resolve_home_path
 
 
 def digest(text: str) -> str:
@@ -43,8 +43,14 @@ def main() -> int:
     if not command:
         p.error("provide a check command after --")
 
+    home = args.home.expanduser().resolve()
     try:
-        tz, tz_name = require_initialized_home(args.home)
+        tz, tz_name = require_initialized_home(home)
+        experience = resolve_home_path(
+            home,
+            "evolution.experience_inbox",
+            default_relative="evolution/experience",
+        )
     except EnaHomeError as exc:
         print(f"ENA validation: ERROR: {exc}", file=sys.stderr)
         return 2
@@ -102,7 +108,6 @@ def main() -> int:
         record["stdout_tail"] = stdout[-4000:]
         record["stderr_tail"] = stderr[-4000:]
 
-    experience = args.home / "evolution" / "experience"
     experience.mkdir(parents=True, exist_ok=True)
     log = experience / "validation-events.jsonl"
     with log.open("a", encoding="utf-8") as fh:
