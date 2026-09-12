@@ -33,5 +33,6 @@ jobs:
       - run: python tools/test_actor_attribution.py
       - run: python tools/test_system_unknowns.py
       - run: python tools/test_first_use.py
+      - run: python tools/test_upgrade_migration.py
       - run: python tools/test_doc_control_yaml.py
       - run: python tools/self_test.py

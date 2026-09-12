@@ -19,6 +19,8 @@ Read and apply these in order:
 5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it while retaining useful validation/repair evidence.
 6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism, including freshness/drift handling for long-lived knowledge and capability records.
 
+**Upgrading an existing ENA home from an earlier release? Read `UPGRADING.md` before treating a new preflight refusal as an environment failure.**
+
 For a cold or incremental First Use, make the state location explicit and run:
 
 ```bash
@@ -126,6 +128,7 @@ Verify the reference tools with the repository tests, including:
 python tools/test_control_yaml.py
 python tools/test_language_tag.py
 python tools/test_first_use.py
+python tools/test_upgrade_migration.py
 python tools/test_doc_control_yaml.py
 python tools/self_test.py
 ```
