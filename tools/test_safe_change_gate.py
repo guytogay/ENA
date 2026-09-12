@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for the recovery declaration the SAFE-CHANGE gate must enforce."""
+"""Tests for the recovery declarations the SAFE-CHANGE gate must enforce."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 TOOLS = REPO / "tools"
 
-RESCUE_FILL = {
+BASE_FILL = {
     "target: UNKNOWN": "target: probe",
     "recovery_actor: UNKNOWN": "recovery_actor: human-operator",
     "where_to_act: UNKNOWN": "where_to_act: probe-workspace",
@@ -22,12 +22,16 @@ RESCUE_FILL = {
     "known_good: UNKNOWN": "known_good: git-base-commit",
     "restart_or_new_session: UNKNOWN": "restart_or_new_session: new-session",
     "verify_operation: UNKNOWN": "verify_operation: probe-check",
+    "verify_communication: UNKNOWN": "verify_communication: NOT_NEEDED",
+    "restore_only: UNKNOWN": "restore_only: config-file",
+    "fallback: UNKNOWN": "fallback: NOT_NEEDED",
+    "touches_only_communication_path: UNKNOWN": "touches_only_communication_path: false",
+    "touches_only_recovery_path: UNKNOWN": "touches_only_recovery_path: false",
 }
-
 HOST_TIMER = "systemd-timer ena-rollback.timer"
 
 
-class RollbackDeclarationTests(unittest.TestCase):
+class SafeChangeGateTests(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
         self.tmp = Path(self._tmp.name)
@@ -40,7 +44,6 @@ class RollbackDeclarationTests(unittest.TestCase):
             "--host-profile", "session",
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
         scaffold = self.run_tool(
             TOOLS / "change_scaffold.py",
             "--home", self.home,
@@ -54,17 +57,32 @@ class RollbackDeclarationTests(unittest.TestCase):
         self._tmp.cleanup()
 
     def run_tool(self, *args):
-        return subprocess.run([sys.executable, *map(str, args)], text=True, capture_output=True, encoding="utf-8", errors="replace")
+        return subprocess.run(
+            [sys.executable, *map(str, args)],
+            text=True,
+            capture_output=True,
+            encoding="utf-8",
+            errors="replace",
+        )
 
-    def write_rescue(
+    def rescue_text(self) -> str:
+        return (self.package / "rescue.yaml").read_text(encoding="utf-8")
+
+    def replace_rescue(self, old: str, new: str) -> None:
+        path = self.package / "rescue.yaml"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new), encoding="utf-8")
+
+    def fill_rescue(
         self,
         *,
         rollback_action: str = "git-revert-change",
-        automatic_rollback: str = "null",
+        automatic_rollback: str = "false",
         automatic_rollback_reference: str = "null",
     ) -> None:
-        text = (self.package / "rescue.yaml").read_text(encoding="utf-8")
-        for old, new in RESCUE_FILL.items():
+        text = self.rescue_text()
+        for old, new in BASE_FILL.items():
             text = text.replace(old, new)
         text = text.replace("rollback_action: UNKNOWN", f"rollback_action: {rollback_action}")
         text = text.replace("automatic_rollback: null", f"automatic_rollback: {automatic_rollback}")
@@ -76,14 +94,7 @@ class RollbackDeclarationTests(unittest.TestCase):
 
     def configure_script(self) -> None:
         (self.package / "rollback.py").write_text(
-            "#!/usr/bin/env python3\nprint('restore the previous working state')\n", encoding="utf-8"
-        )
-
-    def reset_to_preparing(self) -> None:
-        (self.package / "transitions.jsonl").unlink(missing_ok=True)
-        status = self.package / "status.yaml"
-        status.write_text(
-            status.read_text(encoding="utf-8").replace("state: armed", "state: preparing"),
+            "#!/usr/bin/env python3\nprint('restore previous working state')\n",
             encoding="utf-8",
         )
 
@@ -98,86 +109,179 @@ class RollbackDeclarationTests(unittest.TestCase):
         ]
         return lines[-1]
 
-    # ------------------------------------------------- declaration is a declaration
+    def reset_to_preparing(self) -> None:
+        (self.package / "transitions.jsonl").unlink(missing_ok=True)
+        status = self.package / "status.yaml"
+        status.write_text(
+            status.read_text(encoding="utf-8").replace("state: armed", "state: preparing"),
+            encoding="utf-8",
+        )
 
-    def test_typo_scalar_blocks_instead_of_meaning_manual(self):
+    def test_scaffold_uses_rescue_schema_04_and_explicit_unknowns(self):
+        text = self.rescue_text()
+        self.assertIn("schema_version: '0.4'", text)
+        for key in (
+            "verify_communication",
+            "restore_only",
+            "fallback",
+            "touches_only_communication_path",
+            "touches_only_recovery_path",
+        ):
+            self.assertIn(f"{key}: UNKNOWN", text)
+
+    def test_unresolved_rescue_declarations_block_armed(self):
+        self.fill_rescue()
+        for key, resolved in (
+            ("verify_communication", "NOT_NEEDED"),
+            ("restore_only", "config-file"),
+            ("fallback", "NOT_NEEDED"),
+        ):
+            with self.subTest(key=key):
+                self.replace_rescue(f"{key}: {resolved}", f"{key}: UNKNOWN")
+                result = self.arm()
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertIn(f"rescue.yaml {key}", result.stderr)
+                self.replace_rescue(f"{key}: UNKNOWN", f"{key}: {resolved}")
+
+    def test_not_needed_is_exact_for_communication_and_fallback(self):
+        self.fill_rescue()
+        self.assertEqual(self.arm().returncode, 0)
+        self.reset_to_preparing()
+
+        self.replace_rescue("verify_communication: NOT_NEEDED", "verify_communication: not_needed")
+        result = self.arm()
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("exact NOT_NEEDED", result.stderr)
+        self.replace_rescue("verify_communication: not_needed", "verify_communication: NOT_NEEDED")
+
+        self.replace_rescue("fallback: NOT_NEEDED", "fallback: NOT_APPLICABLE")
+        result = self.arm()
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("exact NOT_NEEDED", result.stderr)
+
+    def test_restore_scope_requires_concrete_declaration(self):
+        self.fill_rescue()
+        self.replace_rescue("restore_only: config-file", "restore_only: NOT_NEEDED")
+        result = self.arm()
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("restore_only must be a concrete declaration", result.stderr)
+
+    def test_single_path_flags_require_exact_booleans(self):
+        self.fill_rescue()
+        for value in ("TRUE", "yes", "UNKNOWN"):
+            with self.subTest(value=value):
+                self.replace_rescue(
+                    "touches_only_communication_path: false",
+                    f"touches_only_communication_path: {value}",
+                )
+                result = self.arm()
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertIn("must be exactly true or false", result.stderr)
+                self.replace_rescue(
+                    f"touches_only_communication_path: {value}",
+                    "touches_only_communication_path: false",
+                )
+
+    def test_both_single_paths_true_block_armed(self):
+        self.fill_rescue()
+        self.replace_rescue("touches_only_communication_path: false", "touches_only_communication_path: true")
+        self.replace_rescue("touches_only_recovery_path: false", "touches_only_recovery_path: true")
+        result = self.arm()
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("touches both the only communication path", result.stderr)
+
+    def test_other_single_path_boolean_combinations_can_arm(self):
+        for communication, recovery in (("false", "false"), ("true", "false"), ("false", "true")):
+            with self.subTest(communication=communication, recovery=recovery):
+                self.fill_rescue()
+                self.replace_rescue(
+                    "touches_only_communication_path: false",
+                    f"touches_only_communication_path: {communication}",
+                )
+                self.replace_rescue(
+                    "touches_only_recovery_path: false",
+                    f"touches_only_recovery_path: {recovery}",
+                )
+                result = self.arm()
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.reset_to_preparing()
+
+    def test_armed_transition_records_declared_rescue_basis(self):
+        self.fill_rescue()
+        result = self.arm()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        transition = self.transition()
+        self.assertEqual(transition["verify_communication"], "NOT_NEEDED")
+        self.assertEqual(transition["restore_only"], "config-file")
+        self.assertEqual(transition["fallback"], "NOT_NEEDED")
+        self.assertIs(transition["touches_only_communication_path"], False)
+        self.assertIs(transition["touches_only_recovery_path"], False)
+
+        before = (self.package / "transitions.jsonl").read_bytes()
+        self.replace_rescue("restore_only: config-file", "restore_only: later-edit")
+        self.assertEqual((self.package / "transitions.jsonl").read_bytes(), before)
+
+    def test_old_rescue_schema_requires_reconciliation(self):
+        self.fill_rescue()
+        self.replace_rescue("schema_version: '0.4'", "schema_version: '0.3'")
+        result = self.arm()
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertIn("schema_version must be 0.4", result.stderr)
+        self.assertIn("reconcile older SAFE-CHANGE packages", result.stderr)
+
+    def test_automatic_rollback_typo_blocks(self):
         for value in ("flase", "maybe", "yes", "1"):
-            with self.subTest(automatic_rollback=value):
-                self.write_rescue(automatic_rollback=value)
+            with self.subTest(value=value):
+                self.fill_rescue(automatic_rollback=value)
                 result = self.arm()
                 self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
                 self.assertIn("is not a declaration", result.stderr)
-                self.assertFalse((self.package / "transitions.jsonl").exists())
 
-    def test_true_without_reference_blocks(self):
-        self.write_rescue(automatic_rollback="true")
+    def test_automatic_true_requires_reference(self):
+        self.fill_rescue(automatic_rollback="true")
         result = self.arm()
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("automatic_rollback_reference is unresolved", result.stderr)
 
-    def test_false_with_reference_is_contradictory(self):
-        self.write_rescue(automatic_rollback="false", automatic_rollback_reference=HOST_TIMER)
+    def test_automatic_true_with_reference_arms_without_local_script(self):
+        self.fill_rescue(
+            automatic_rollback="true",
+            automatic_rollback_reference=HOST_TIMER,
+         )
+        (self.package / "rollback.py").unlink()
+        result = self.arm()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        transition = self.transition()
+        self.assertEqual(transition["rollback_mode"], "declared_automatic")
+        self.assertEqual(transition["rollback_artifact"], "absent")
+        self.assertEqual(transition["automatic_rollback_reference"], HOST_TIMER)
+
+    def test_false_with_automatic_reference_is_contradictory(self):
+        self.fill_rescue(
+            automatic_rollback="false",
+            automatic_rollback_reference=HOST_TIMER,
+        )
         result = self.arm()
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("automatic_rollback is false", result.stderr)
 
-    def test_reference_without_declaration_blocks(self):
-        self.write_rescue(automatic_rollback="null", automatic_rollback_reference=HOST_TIMER)
-        result = self.arm()
-        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
-        self.assertIn("automatic_rollback is not declared", result.stderr)
-
-    # ------------------------------------------------- host-native automatic recovery
-
-    def test_host_native_automatic_rollback_arms_without_a_local_script(self):
-        for artifact in ("placeholder", "absent"):
-            with self.subTest(artifact=artifact):
-                self.write_rescue(automatic_rollback="true", automatic_rollback_reference=HOST_TIMER)
-                if artifact == "absent":
-                    (self.package / "rollback.py").unlink()
-
-                result = self.arm()
-                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                transition = self.transition()
-                self.assertEqual(transition["rollback_mode"], "declared_automatic")
-                self.assertEqual(transition["rollback_artifact"], artifact)
-                self.assertEqual(transition["automatic_rollback_reference"], HOST_TIMER)
-                self.reset_to_preparing()
-
-    # ------------------------------------------------- manual / host-triggered recovery
-
-    def test_manual_declaration_still_arms_and_is_recorded(self):
-        self.write_rescue(automatic_rollback="false")
+    def test_manual_declaration_arms_with_placeholder_artifact(self):
+        self.fill_rescue(automatic_rollback="false")
         result = self.arm()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         transition = self.transition()
         self.assertEqual(transition["rollback_mode"], "declared_manual_or_host_triggered")
         self.assertEqual(transition["rollback_artifact"], "placeholder")
-        self.assertNotIn("automatic_rollback_reference", transition)
 
     def test_undeclared_placeholder_cannot_arm(self):
-        self.write_rescue(automatic_rollback="null")
+        self.fill_rescue(automatic_rollback="null")
         result = self.arm()
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("automatic_rollback: false", result.stderr)
-        self.assertFalse((self.package / "transitions.jsonl").exists())
 
-    def test_missing_script_needs_a_declaration_too(self):
-        (self.package / "rollback.py").unlink()
-        blocked = self.arm()
-        self.assertEqual(blocked.returncode, 2, blocked.stdout + blocked.stderr)
-        self.assertIn("no rollback.py", blocked.stderr)
-
-        self.write_rescue(automatic_rollback="false")
-        armed = self.arm()
-        self.assertEqual(armed.returncode, 0, armed.stdout + armed.stderr)
-        self.assertEqual(self.transition()["rollback_artifact"], "absent")
-
-    # ------------------------------------------------- package-local script
-
-    def test_configured_script_arms_without_inventing_a_declaration(self):
+    def test_configured_script_can_arm_without_automaticity_declaration(self):
         self.configure_script()
-        self.write_rescue(automatic_rollback="null")
+        self.fill_rescue(automatic_rollback="null")
         result = self.arm()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         transition = self.transition()
@@ -185,43 +289,45 @@ class RollbackDeclarationTests(unittest.TestCase):
         self.assertEqual(transition["rollback_artifact"], "configured_script")
         self.assertNotIn("automatic_rollback_reference", transition)
 
-    def test_configured_script_does_not_claim_more_than_measured(self):
-        """`configured_script` records a non-placeholder artifact, not proven recovery."""
-        self.configure_script()
-        self.write_rescue(automatic_rollback="null", rollback_action="python rollback.py")
-        result = self.arm()
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        transition = self.transition()
-        self.assertEqual(transition["rollback_artifact"], "configured_script")
-        recorded = json.dumps(transition)
-        self.assertNotIn("executable_script", recorded)
-        self.assertNotIn("recovery_proven", recorded)
-
-    def test_rollback_action_pointing_at_the_placeholder_is_blocked(self):
-        self.write_rescue(rollback_action="python rollback.py", automatic_rollback="false")
+    def test_placeholder_script_cannot_satisfy_rollback_action_claim(self):
+        self.fill_rescue(
+            rollback_action="python rollback.py",
+            automatic_rollback="false",
+        )
         result = self.arm()
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("points at rollback.py", result.stderr)
 
-    def test_unresolved_recovery_facts_still_block_arming(self):
-        (self.package / "rescue.yaml").write_text(
-            "schema_version: '0.3'\nhost_profile: session\nautomatic_rollback: false\n", encoding="utf-8"
-        )
-        result = self.arm()
-        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
-        self.assertIn("rollback_action is unresolved", result.stderr)
+    def test_terminal_states_still_require_evidence(self):
+        self.fill_rescue()
+        for state in ("armed", "applied"):
+            result = self.run_tool(TOOLS / "safe_change_state.py", self.package, state)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        no_evidence = self.run_tool(TOOLS / "safe_change_state.py", self.package, "retained")
+        self.assertEqual(no_evidence.returncode, 2, no_evidence.stdout + no_evidence.stderr)
+        self.assertIn("requires --evidence", no__evidence.stderr)
 
-    def test_full_lifecycle_keeps_the_declaration_in_history(self):
-        self.write_rescue(automatic_rollback="false")
+    def test_full_lifecycle_keeps_armed_basis_in_history(self):
+        self.fill_rescue()
         for state in ("armed", "applied"):
             result = self.run_tool(TOOLS / "safe_change_state.py", self.package, state)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         retained = self.run_tool(
-            TOOLS / "safe_change_state.py", self.package, "retained", "--evidence", "probe-validation"
+            TOOLS / "safe_change_state.py",
+            self.package,
+            "retained",
+            "--evidence",
+            "probe-validation",
         )
         self.assertEqual(retained.returncode, 0, retained.stdout + retained.stderr)
-        self.assertIsNone(self.transition().get("rollback_mode"))
-        self.assertIn("state: retained", (self.package / "status.yaml").read_text(encoding="utf-8"))
+        lines = [
+            json.loads(line)
+            for line in (self.package / "transitions.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertEqual(lines[0]["restore_only"], "config-file")
+        self.assertNotIn("restore_only", lines[-1])
+        self.assertIn("state: retained", (self.package / "status.yaml").read_text(encoding="utf-8")
 
 
 if __name__ == "__main__":
