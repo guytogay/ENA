@@ -27,4 +27,5 @@ jobs:
       - run: python tools/test_path_authority.py
       - run: python tools/test_safe_change_gate.py
       - run: python tools/test_freshness_scan.py
+      - run: python tools/test_home_boundary_matrix.py
       - run: python tools/self_test.py
