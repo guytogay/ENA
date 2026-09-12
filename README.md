@@ -1,5 +1,7 @@
 # ENA
 
+Release: v1.0.0 — first stable clean-product baseline. See `CHANGELOG.md` and `RELEASE-NOTES.md`.
+
 ENA helps an Agent add runtime capabilities that reasoning alone does not provide: grounded self-inspection, external recovery, reversible self-change, cross-session memory maintenance, idea variation, and evidence-backed evolution.
 
 ENA does not replace the model's ordinary judgment or add a second reasoning bureaucracy around it.
