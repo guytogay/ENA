@@ -74,7 +74,10 @@ class CandidateOutcomeTests(unittest.TestCase):
         result = self.decide(source, "retain", "--boundary", "production value not yet measured")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         target = Path(result.stdout.strip())
-        self.assertEqual(target.parent, self.home / "evolution" / "candidates" / "selected")
+        self.assertEqual(
+            target.parent.resolve(),
+            (self.home / "evolution" / "candidates" / "selected").resolve(),
+        )
         self.assertTrue(source.exists(), "the speculative occurrence must remain immutable")
 
         decision = json.loads(target.read_text(encoding="utf-8"))
@@ -97,7 +100,10 @@ class CandidateOutcomeTests(unittest.TestCase):
                 result = self.decide(source, outcome)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 target = Path(result.stdout.strip())
-                self.assertEqual(target.parent, self.home / "evolution" / "candidates" / "outcomes")
+                self.assertEqual(
+                    target.parent.resolve(),
+                    (self.home / "evolution" / "candidates" / "outcomes").resolve(),
+                )
                 decision = json.loads(target.read_text(encoding="utf-8"))
                 self.assertEqual(decision["outcome"], outcome)
                 self.assertEqual(decision["selection_status"], "not_selected")
