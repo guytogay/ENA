@@ -15,17 +15,25 @@ Discipline — keep these apart:
   do not have.
 - When nothing is supplied the answer is `UNKNOWN`. Never default to "local agent":
   an unrecorded initiator is exactly the case that has to stay visible.
+- Durable actor blocks are total: every field is present and unresolved values are
+  written as `UNKNOWN`, never JSON/YAML null.
 
 Environment:
 
 ```text
 ENA_ACTOR_EXECUTOR      who is acting here (e.g. lxc-dsh/session-3d75c2ad)
 ENA_INITIATED_BY        who asked (e.g. owner, peer:pc-dsh)
-ENA_CHANNEL             how it arrived (chat | cli | cron | a2a | api)
+ENA_CHANNEL             how it arrived (common values: chat | cli | cron | a2a | api)
 ENA_CORRELATION_ID      Host/transport correlation id (e.g. a peer taskId)
 ENA_PEER_CALLER         set by a local peer bridge that dispatches this session
 ENA_PEER_TASK_ID        set by a local peer bridge that dispatches this session
 ```
+
+`ENA_CHANNEL` is an open Host/integration token rather than a closed enum; the common
+values above are conventions. `attribution_confidence` is currently the small enum
+`SELF_ASSERTED | UNKNOWN`. `SELF_ASSERTED` means that one or more populated values came
+from an unverified process-environment / Host-integration assertion; it does not make
+remaining `UNKNOWN` fields known and it is not an authorization claim.
 
 Namespace note (field finding, Linux session Host 2026-09-12): a first implementation
 used `DSH_PEER_CALLER` / `DSH_PEER_TASK_ID` and both were **silently dropped** before
@@ -105,12 +113,12 @@ def resolve_actor(env: Mapping[str, str] | None = None) -> Actor:
 
 
 def actor_block(actor: Actor) -> dict[str, object]:
-    """JSON-friendly block for record artifacts."""
+    """Return the total durable actor block; unresolved fields are `UNKNOWN`, never null."""
     return {
         "executor": actor.executor,
         "initiated_by": actor.initiated_by,
         "channel": actor.channel,
-        "correlation_id": actor.correlation_id,
+        "correlation_id": actor.correlation_id or UNKNOWN,
         "attribution_confidence": actor.attribution_confidence,
     }
 
@@ -126,18 +134,19 @@ def _yaml_scalar(value: object) -> str:
 
 def actor_yaml_block(actor: Actor) -> str:
     """Nested `actor:` section for the strict control subset (one mapping level)."""
+    block = actor_block(actor)
     return (
         "actor:\n"
-        f"  executor: {_yaml_scalar(actor.executor)}\n"
-        f"  initiated_by: {_yaml_scalar(actor.initiated_by)}\n"
-        f"  channel: {_yaml_scalar(actor.channel)}\n"
-        f"  correlation_id: {_yaml_scalar(actor.correlation_id)}\n"
-        f"  attribution_confidence: {_yaml_scalar(actor.attribution_confidence)}\n"
+        f"  executor: {_yaml_scalar(block['executor'])}\n"
+        f"  initiated_by: {_yaml_scalar(block['initiated_by'])}\n"
+        f"  channel: {_yaml_scalar(block['channel'])}\n"
+        f"  correlation_id: {_yaml_scalar(block['correlation_id'])}\n"
+        f"  attribution_confidence: {_yaml_scalar(block['attribution_confidence'])}\n"
     )
 
 
 def main() -> int:
-    """Print the resolved attribution (small Host-integration helper)."""
+    """Print the resolved durable attribution block (small Host-integration helper)."""
     actor = resolve_actor()
     print(json.dumps(actor_block(actor), ensure_ascii=False, indent=2))
     return 0
