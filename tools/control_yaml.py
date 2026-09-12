@@ -18,7 +18,7 @@ class ControlYamlError(ValueError):
 
 
 _KEY = re.compile(r"^[A-Za-z0-9_.-]+$")
-_UNKNOWN_PREFIX = re.compile(r"^unknown\b", re.IGNORECASE)
+_UNKNOWN_PREFIX = re.compile(r"^unknown(?![A-Za-z0-9])", re.IGNORECASE)
 
 
 def _clean_scalar(raw: str) -> str:
@@ -94,7 +94,8 @@ def missing(value: str | None) -> bool:
     normalized = value.strip()
     if normalized.lower() in {"", "null", "none", "~", "[]"}:
         return True
-    # `UNKNOWN` may carry a human explanation while remaining explicitly
-    # unresolved. Match only the token at the start; values such as
-    # `unknownstash-backup` are ordinary known strings.
+    # `UNKNOWN` may carry a human- or machine-style explanation while remaining
+    # explicitly unresolved. Treat it as a leading token when the next character
+    # is not alphanumeric; values such as `UNKNOWNX` and `unknownstash-backup`
+    # remain ordinary known strings.
     return bool(_UNKNOWN_PREFIX.match(normalized))

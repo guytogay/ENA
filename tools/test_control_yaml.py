@@ -36,11 +36,18 @@ class ControlYamlTests(unittest.TestCase):
             "UNKNOWN - pending owner confirmation",
             "Unknown: pending owner confirmation",
             "UNKNOWN (draft)",
+            "UNKNOWN_BACKUP",
+            "UNKNOWN_NOT_CONFIGURED",
         ):
             with self.subTest(value=value):
                 self.assertTrue(missing(value))
-        self.assertFalse(missing("unknownstash-backup"))
-        self.assertFalse(missing("known-unknown-boundary"))
+        for value in (
+            "unknownstash-backup",
+            "UNKNOWNX",
+            "known-unknown-boundary",
+        ):
+            with self.subTest(value=value):
+                self.assertFalse(missing(value))
 
     def test_duplicate_key_fails_closed(self) -> None:
         with self.assertRaises(ControlYamlError):
