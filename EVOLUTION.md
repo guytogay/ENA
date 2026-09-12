@@ -26,8 +26,10 @@ Before reality contact, keep it under:
 
 Dream-generated candidates always start with:
 
-```yaml
-truth_status: speculative
+```json
+{
+  "truth_status": "speculative"
+}
 ```
 
 Record only what is needed to test the candidate:
@@ -40,7 +42,7 @@ Record only what is needed to test the candidate:
 - components or durable memories that would change;
 - any tool/skill/connector/API that must be installed, enabled or authorized first.
 
-`tools/candidate_record.py` provides a reference writer for initial speculative candidates.
+`tools/candidate_record.py` provides a reference writer for initial speculative candidates. It writes JSON artifacts; `examples/evolution/CANDIDATE.example.json` shows the machine artifact shape emitted by that tool.
 
 ## 2. Capture the relevant baseline
 
