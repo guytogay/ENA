@@ -15,6 +15,7 @@ from ena_text import read_text
 FACTS = (
     ("canonical_timezone", "ena", "canonical_timezone", "canonical_timezone"),
     ("a2a.agent_card", "ena", "communication.a2a.agent_card", "communication.a2a_agent_card"),
+    ("a2a.reachability", "system", None, "communication.a2a_reachability"),
     ("runtime.host", "system", "runtime.host", "runtime.host"),
     ("runtime.agent_runtime", "system", "runtime.agent", "runtime.agent_runtime"),
     ("runtime.host_profile", "system", "survival.host_profile", "runtime.host_profile"),
@@ -25,6 +26,7 @@ FACTS = (
     ("recovery.scheduler_or_timer", "system", "recovery.rollback_scheduler", "recovery.scheduler_or_timer"),
     ("rescue.primary", "system", "survival.external_escalation", "rescue.primary"),
 )
+
 
 class FactAuthorityError(ValueError):
     pass
@@ -39,7 +41,9 @@ def read_control(path: Path) -> dict[str, Any]:
         raise FactAuthorityError(f"{path.name} cannot be safely parsed: {exc}") from exc
 
 
-def value_at(data: dict[str, Any], dotted: str) -> str | None:
+def value_at(data: dict[str, Any], dotted: str | None) -> str | None:
+    if dotted is None:
+        return None
     current: Any = data
     for part in dotted.split("."):
         if not isinstance(current, dict):
@@ -77,12 +81,11 @@ def system_freshness(system: dict[str, Any], *, now: datetime | None = None) -> 
     if instant.tzinfo is None:
         raise FactAuthorityError("comparison time must include a timezone offset")
     if instant > valid:
-        return {"status": "stale", "checked_at": checked_raw, "valid_until": valid_raw,
-                "reason": "expired"}
+        return {"status": "stale", "checked_at": checked_raw, "valid_until": valid_raw, "reason": "expired"}
     return {"status": "fresh", "checked_at": checked_raw, "valid_until": valid_raw, "reason": None}
 
 
-def fact_report(name: str, authority: str, ena_path: str, system_path: str,
+def fact_report(name: str, authority: str, ena_path: str | None, system_path: str | None,
                 ena: dict[str, Any], system: dict[str, Any], freshness: dict[str, Any]) -> dict[str, Any]:
     ena_value = value_at(ena, ena_path)
     system_value = value_at(system, system_path)
@@ -164,6 +167,7 @@ def main() -> int:
         return 2
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
