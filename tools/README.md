@@ -5,6 +5,7 @@ These scripts use only the Python standard library. An Agent can run them as exa
 ```text
 ena_init.py                 create ENA.yaml, SYSTEM.yaml and working directories
 ena_preflight.py            fail fast when First Use is missing/not ready/stale
+fact_authority.py           report stable/live fact authority in existing schema-0.2 homes
 change_scaffold.py          create a timestamped safe-change package skeleton
 safe_change_state.py        gate SAFE-CHANGE state transitions and evidence
 validate_change.py          run one deterministic check and record PASS/FAIL experience
@@ -13,6 +14,7 @@ sleep_prepare.py            build a bounded Sleep input bundle from JSONL record
 combine_dream_material.py   combine memory + knowledge + capability material
 dream_sample.py             sample a Dream set with biased randomness / distance
 candidate_record.py         write new candidates only into the speculative path
+candidate_outcome.py        persist an already-made reality-contact outcome
 self_test.py                verify the reference tools against included sample data
 ```
 
@@ -34,6 +36,8 @@ python tools/test_timezone_utils.py
 python tools/test_jsonl_source.py
 python tools/test_input_boundaries.py
 python tools/test_candidate_record.py
+python tools/test_candidate_outcome.py
+python tools/test_fact_authority.py
 python tools/test_ena_home.py
 python tools/test_safe_change_gate.py
 python tools/test_freshness_scan.py
@@ -74,6 +78,16 @@ python tools/ena_init.py \
 ```
 
 `--verified-minimum` is not automatic proof. The caller is asserting that the supplied recovery path and rescuer were actually verified. Missing policy values should remain unresolved rather than being filled with product defaults.
+
+## Inspect fact authority in an existing home
+
+Older schema-0.2 homes may contain live recovery/runtime/communication facts in both `ENA.yaml` and `SYSTEM.yaml`. Inspect the overlap without rewriting either file:
+
+```text
+python tools/fact_authority.py --home ~/.ena
+```
+
+The report follows the First Use authority split: stable configuration and pointers are ENA-owned; freshness-bounded live facts are SYSTEM-owned. A fresh known SYSTEM live value is current while a conflicting legacy ENA value remains visible. SYSTEM `UNKNOWN`, absent, or stale never borrows a legacy ENA live value as current truth. `canonical_timezone` remains ENA-owned; a conflicting known legacy SYSTEM duplicate makes clock-dependent reference tools fail closed until reconciled.
 
 ## Preflight at session/startup time
 
@@ -184,7 +198,7 @@ python tools/sleep_prepare.py \
 
 The bundle records when it was prepared plus, for each input source, its reference, SHA-256 digest, total source record count, selected record count, and the bounded tail-selection policy. This lets a later Agent tell which exact source state a Sleep run was based on even if the source files have since changed.
 
-The reference tool's `tail` selection is only a conservative bounded transport example for recent records. It is **not** the full Sleep retrieval policy described in `SLEEP-DREAM.md`: a real Host should also retrieve or preselect older memory/knowledge when it is needed to resolve duplication, contradiction, staleness, boundaries, reusable procedures, or missing links. Do not infer “Sleep = summarize the last N records” from this helper.
+The reference tool's `tail` selection is only a conservative bounded transport example for recent records. It is **not** the full Sleep retrieval policy described in `SLEEP-DREAM.md`: a real Host should also retrieve or preselect older memory/knowledge when it is needed to resolve duplication, contradiction, staleness, boundaries, reusable procedures, or missing links. Do not infer “Sleep = summarize the last N records.”
 
 Validation/repair events are also useful Sleep material. `examples/evolution/VALIDATION-TRAJECTORY.example.jsonl` shows the minimal shape.
 
@@ -220,9 +234,9 @@ In `free` mode, `anchor_id` is `null` and the internally selected starting fragm
 ```bash
 python tools/dream_sample.py \
   --memory dream-material.jsonl \
+  --output dream-set.json \
   --mode problem-guided \
   --anchor-id m4 \
-  --output dream-set.json \
   --seed 42
 ```
 
