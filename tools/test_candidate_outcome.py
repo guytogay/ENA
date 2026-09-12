@@ -94,9 +94,9 @@ class CandidateOutcomeTests(unittest.TestCase):
         )
 
     def test_non_retained_outcomes_are_durable_but_not_selected(self):
-        source = self.record_candidate()
         for outcome in ("revise", "reject", "restore"):
             with self.subTest(outcome=outcome):
+                source = self.record_candidate()
                 result = self.decide(source, outcome)
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 target = Path(result.stdout.strip())
@@ -145,15 +145,17 @@ class CandidateOutcomeTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("must be resolved", result.stderr)
 
-    def test_rapid_repeated_decisions_do_not_overwrite(self):
+    def test_second_outcome_for_same_candidate_blocks(self):
         source = self.record_candidate()
-        first = self.decide(source, "reject")
+        first = self.decide(source, "retain")
         second = self.decide(source, "reject")
         self.assertEqual(first.returncode, 0, first.stdout + first.stderr)
-        self.assertEqual(second.returncode, 0, second.stdout + second.stderr)
-        self.assertNotEqual(first.stdout.strip(), second.stdout.strip())
-        files = list((self.home / "evolution" / "candidates" / "outcomes").glob("*.json"))
-        self.assertEqual(len(files), 2)
+        self.assertEqual(second.returncode, 2, second.stdout + second.stderr)
+        self.assertIn("already has a recorded outcome", second.stderr)
+        selected = list((self.home / "evolution" / "candidates" / "selected").glob("*.json"))
+        outcomes = list((self.home / "evolution" / "candidates" / "outcomes").glob("*.json"))
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(outcomes, [])
 
     def test_canonical_home_timezone_wins_over_process_timezone(self):
         source = self.record_candidate()
