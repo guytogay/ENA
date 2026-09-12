@@ -35,7 +35,7 @@ LEGACY_PEER_ENV = {"DSH_PEER_CALLER": "pc-dsh", "DSH_PEER_TASK_ID": "task-abc-1"
 def write_home(home: Path) -> Path:
     home.mkdir(parents=True, exist_ok=True)
     (home / "ENA.yaml").write_text(
-        "schema_version: '0.2'\nena_home: .\ncanonical_timezone: Asia/Shanghai\n"
+        "schema_version: '0.2'\nena_home: .\ncanonical_timezone: UTC\n"
         "canonical_language: zh-CN\ntext_encoding: UTF-8\n",
         encoding="utf-8",
     )
