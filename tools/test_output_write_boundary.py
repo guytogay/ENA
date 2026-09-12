@@ -26,6 +26,8 @@ def run_tool(*args: str) -> subprocess.CompletedProcess[str]:
         [PYTHON, *args],
         cwd=ROOT,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         capture_output=True,
         check=False,
     )
