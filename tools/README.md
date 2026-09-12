@@ -146,6 +146,8 @@ python tools/ena_init.py \
 
 `--verified-minimum` is not automatic proof. It records `verification_confidence: SELF_ASSERTED`, the caller-supplied evidence references, and `verified_at`. ENA is recording the caller/integration's verification claim, not authenticating an arbitrary external mechanism.
 
+`verification_evidence` is itself a caller-supplied `SELF_ASSERTED` reference. The reference tools require it to be present/non-empty and require `verified_at` to be offset-aware, but they do not authenticate the evidence content, enforce evidence freshness, or cryptographically bind the reference to one ENA home. Use a durable reference that another operator or Agent can actually inspect.
+
 For incremental adoption, `ena_first_use.py` requires evidence whenever a minimum fact is submitted as verified:
 
 ```text
@@ -236,6 +238,8 @@ python tools/validate_change.py \
 ```
 
 The wrapper preserves the check command's exit status and appends a validation event inside the selected initialized ENA home. If `ENA.yaml` is absent, it fails instead of silently creating a new home. Use `--repair-of PRIOR_VALIDATION_EVENT_ID` to link a repair to a failed event. Raw stdout/stderr is not persisted unless `--include-output` is explicitly used.
+
+For a compact example of linked validation/repair events, see `examples/evolution/VALIDATION-TRAJECTORY.example.jsonl`.
 
 ## Report stale knowledge/capability records
 
