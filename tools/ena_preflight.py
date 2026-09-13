@@ -18,12 +18,14 @@ def main() -> int:
     problems = preflight_problems(home)
     if problems:
         print("ENA preflight: REFRESH REQUIRED")
+        print(f"Checked home: {home}")
         for item in problems:
             print(f"- {item}")
         print("Apply FIRST-USE.md before ordinary work.")
         return 2
 
     print("ENA preflight: OK")
+    print(f"Checked home: {home}")
     return 0
 
 
