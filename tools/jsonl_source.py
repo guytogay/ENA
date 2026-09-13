@@ -32,6 +32,7 @@ def load_jsonl_source(path: str | Path) -> JsonlSource:
         raise JsonlSourceError(f"input source is not a file: {p}")
 
     try:
+        raw_bytes = p.read_bytes()
         text = read_text(p)
     except (OSError, UnicodeError) as exc:
         raise JsonlSourceError(f"cannot read input source {p}: {exc}") from exc
@@ -54,5 +55,5 @@ def load_jsonl_source(path: str | Path) -> JsonlSource:
         text=text,
         records=records,
         line_numbers=line_numbers,
-        sha256=hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        sha256=hashlib.sha256(raw_bytes).hexdigest(),
     )

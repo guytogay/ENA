@@ -23,7 +23,7 @@ candidate_outcome.py        persist an already-made reality-contact outcome
 self_test.py                verify the reference tools against included sample data
 ```
 
-Shared modules are part of the reference implementation too: `control_yaml.py` is the strict mapping/scalar reader; `ena_home.py` resolves initialized-home and canonical-clock boundaries; `ena_text.py` handles ENA-owned UTF-8 text; `jsonl_source.py` validates declared JSONL inputs; `timezone_utils.py` resolves the canonical clock; `language_tag.py` validates the bounded language-tag syntax; and `minimum_readiness.py` is the single readiness predicate shared by First Use and preflight.
+Shared modules are part of the reference implementation too: `control_yaml.py` is the strict mapping/scalar reader; `safe_change_rescue.py` validates the explicit rescue declarations `armed` requires; `ena_home.py` resolves initialized-home and canonical-clock boundaries; `ena_text.py` handles ENA-owned UTF-8 text; `jsonl_source.py` validates declared JSONL inputs; `timezone_utils.py` resolves the canonical clock; `language_tag.py` validates the bounded language-tag syntax; and `minimum_readiness.py` is the single readiness predicate shared by First Use and preflight.
 
 `control_yaml.py` intentionally supports only ENA's mapping/scalar control subset and fails closed on unsupported YAML features such as block sequences and multiline scalars. A document example intended to be copied into a control file must stay inside that subset.
 
@@ -260,7 +260,7 @@ python tools/sleep_prepare.py \
   --output sleep-input.json
 ```
 
-The bundle records input references, SHA-256 digests, source/selected counts and bounded selection policy. The reference `tail` policy is only a conservative transport example, not the complete retrieval semantics in `SLEEP-DREAM.md`.
+The bundle records input references, raw-byte SHA-256 digests, source/selected counts and bounded selection policy. The digest is over the exact file bytes supplied, so standard Host tools such as `sha256sum` or `Get-FileHash` can reproduce it; BOM and CRLF differences remain visible even though JSONL parsing tolerates them. The reference `tail` policy is only a conservative transport example, not the complete retrieval semantics in `SLEEP-DREAM.md`.
 
 Combine authorized sources before sampling when needed:
 
@@ -277,7 +277,7 @@ python tools/dream_sample.py \
   --seed 42
 ```
 
-The sampler records its effective seed and exact input reference/digest so the sampling decision can be replayed. Advertised/catalog capabilities remain distinct from installed/verified abilities.
+The sampler records its effective seed and exact input reference/raw-byte SHA-256 digest so the sampling decision can be replayed. Advertised/catalog capabilities remain distinct from installed/verified abilities.
 
 ## Record a speculative candidate
 
