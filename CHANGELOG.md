@@ -5,6 +5,7 @@ All notable changes to the clean ENA product line are recorded here.
 ## Unreleased
 
 ### Fixed
+- Corrected a documentation/behaviour mismatch on `automatic_rollback`: `tools/README.md` and the `safe_change_state.py` docstring both said the field "accepts exactly `true` or `false`", but the comparison has always been case-insensitive, so `True` and `FALSE` arm normally. The wrong wording invited a later "fix" that would have started refusing declarations adopters already use. The accepted spellings are now asserted by a test, and both texts state the behaviour and list what actually blocks (`flase`, `maybe`, `yes`, `1`).
 - `ena_preflight.py` no longer prints an unparsable `SYSTEM.yaml` twice, and no longer nests the message inside a second copy of its own prefix. Two checks read the same control file (`require_initialized_home` and the dedicated `SYSTEM.yaml` check), so the same failure was reported by both, and the second report re-wrapped an exception that already named the file. The problem list now collapses repeated lines while preserving order. Exit codes, artifacts and documented contracts are unchanged; only the operator-facing diagnostic is corrected.
 
 ### Added
