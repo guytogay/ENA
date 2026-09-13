@@ -4,6 +4,9 @@ All notable changes to the clean ENA product line are recorded here.
 
 ## Unreleased
 
+### Fixed
+- `ena_preflight.py` no longer prints an unparsable `SYSTEM.yaml` twice, and no longer nests the message inside a second copy of its own prefix. Two checks read the same control file (`require_initialized_home` and the dedicated `SYSTEM.yaml` check), so the same failure was reported by both, and the second report re-wrapped an exception that already named the file. The problem list now collapses repeated lines while preserving order. Exit codes, artifacts and documented contracts are unchanged; only the operator-facing diagnostic is corrected.
+
 ### Added
 - `tools/test_doc_interface_surface.py`, a narrow documentation/interface regression guarded in CI on both platforms: every documented `python ... tools/<tool>.py` example must name a tool that ships and pass only flags that tool's own `--help` accepts, the reference-tool inventory in `tools/README.md` must list every entry point that actually ships and nothing that is absent, and literal `tools/<module>.py` references in adopter-facing prose must resolve to a real file. It reads only literal `tools/` paths, so a package-local name such as `rollback.py` is not reinterpreted as a tool path, and it executes nothing but `--help`.
 

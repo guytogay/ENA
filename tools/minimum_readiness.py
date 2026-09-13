@@ -161,6 +161,21 @@ def freshness_problems(system: dict[str, object], *, now: datetime | None = None
     return []
 
 
+def unique_problems(problems: list[str]) -> list[str]:
+    """Drop repeated problem lines while preserving order.
+
+    More than one check can read the same control file: the initialization check reads it, and the
+    dedicated `SYSTEM.yaml` check reads it again. When that file cannot be parsed, each reader sees
+    the same failure, so the operator was shown the identical line twice. Order is preserved because
+    callers match on the first line.
+    """
+    unique: list[str] = []
+    for item in problems:
+        if item not in unique:
+            unique.append(item)
+    return unique
+
+
 def preflight_problems(home: Path, *, now: datetime | None = None) -> list[str]:
     """Return the same problems `ena_preflight.py` exposes to callers."""
     home = Path(home).expanduser().resolve()
@@ -183,13 +198,15 @@ def preflight_problems(home: Path, *, now: datetime | None = None) -> list[str]:
 
     if not system_path.exists():
         problems.append(f"missing {system_path}")
-        return problems
+        return unique_problems(problems)
 
     try:
         system = read_control(system_path)
     except EnaHomeError as exc:
-        problems.append(f"SYSTEM.yaml cannot be safely parsed: {exc}")
-        return problems
+        # `read_control` already names the file, so re-wrapping the message produced
+        # "SYSTEM.yaml cannot be safely parsed: SYSTEM.yaml cannot be safely parsed: ...".
+        problems.append(str(exc))
+        return unique_problems(problems)
 
     ready = scalar(system, "minimum_ready")
     if ready != "true":
@@ -205,4 +222,4 @@ def preflight_problems(home: Path, *, now: datetime | None = None) -> list[str]:
     else:
         problems.extend(minimum_fact_problems(system))
     problems.extend(freshness_problems(system, now=now))
-    return problems
+    return unique_problems(problems)
