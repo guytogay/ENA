@@ -22,9 +22,8 @@ def run(*args):
     return result.stdout.strip()
 
 
-def text_sha256(path: Path) -> str:
-    text = path.read_text(encoding="utf-8")
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+def file_sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def main() -> int:
@@ -165,11 +164,11 @@ def main() -> int:
         assert sleep["input"]["prepared_at"].endswith("Z")
         sleep_sources = {item["role"]: item for item in sleep["input"]["sources"]}
         assert sleep_sources["experience"]["reference"] == str(experience_path)
-        assert sleep_sources["experience"]["sha256"] == text_sha256(experience_path)
+        assert sleep_sources["experience"]["sha256"] == file_sha256(experience_path)
         assert sleep_sources["experience"]["selected_record_count"] == 2
         assert sleep_sources["experience"]["selection"] == {"strategy": "tail", "max_records": 2}
         assert sleep_sources["memory"]["reference"] == str(memory_path)
-        assert sleep_sources["memory"]["sha256"] == text_sha256(memory_path)
+        assert sleep_sources["memory"]["sha256"] == file_sha256(memory_path)
         assert sleep_sources["memory"]["selected_record_count"] == 3
         assert sleep_sources["memory"]["selection"] == {"strategy": "tail", "max_records": 3}
 
@@ -198,7 +197,7 @@ def main() -> int:
         assert dream["seed"] == 42
         assert dream["anchor_id"] is None
         assert dream["sampled_anchor_id"] is not None
-        assert len(dream["input"]["sha256"]) == 64
+        assert dream["input"]["sha256"] == file_sha256(dream_material)
         assert dream["input"]["record_count"] >= 2
         assert len(dream["fragments"]) >= 2
 
