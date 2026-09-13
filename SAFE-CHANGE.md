@@ -131,23 +131,34 @@ A local PASS does not replace the final post-change check. It shortens the lifet
 
 Keep it short and executable. The reference control file intentionally uses a small flat mapping so the gate can fail closed instead of pretending to parse arbitrary YAML. Put longer explanation in `change.md`.
 
-Record what applies on this Host:
+The current reference `rescue.yaml` schema is `0.4`. Existing `0.3` packages must be reconciled before they can arm under this gate.
+
+Record these fields explicitly:
 
 ```text
-host profile
-target Agent/session/repository
-where recovery must run
-recovery actor
-exact components changed
-known-good backup/snapshot/version/commit
-exact rollback action
-automatic rollback reference, if one exists
-restart/reload/new-session action
-operation verification
-communication verification when relevant
-exact restore scope
-fallback/escalation
+host_profile                         Host profile used by the package
+target                               target Agent/session/repository
+where_to_act                         where recovery must run
+recovery_actor                       external recovery actor
+changed                              exact components changed
+known_good                           known-good backup/snapshot/version/commit
+rollback_action                      exact rollback action
+automatic_rollback                   true / false / unresolved when a configured package-local script is used
+automatic_rollback_reference         Host-native rollback mechanism when automatic_rollback is true
+restart_or_new_session               restart/reload/new-session action
+verify_operation                     operation verification
+verify_communication                 concrete two-way check, or exact NOT_NEEDED
+restore_only                         exact restore scope; always concrete
+fallback                             fallback/escalation, or exact NOT_NEEDED
+touches_only_communication_path      exact true or false
+touches_only_recovery_path           exact true or false
 ```
+
+`verify_communication: NOT_NEEDED` and `fallback: NOT_NEEDED` are deliberate escape tokens; variants such as `not_needed` or `NOT_APPLICABLE` are not aliases. `restore_only` has no `NOT_NEEDED` escape because every recovery action has a scope, including the whole target.
+
+The two `touches_only_*` values are caller/operator assertions about the change surface. The gate does not infer topology from `changed` or other prose. If both are `true`, `preparing -> armed` is refused: establish another communication or recovery path, or split the operation, before arming. There is no exception string that bypasses this coupled single-point-of-failure rule.
+
+A successful `armed` transition copies `verify_communication`, `restore_only`, `fallback`, `touches_only_communication_path`, and `touches_only_recovery_path` into `transitions.jsonl`. That preserves the basis the gate admitted at arm time even if `rescue.yaml` is edited later. These declarations remain self-asserted control facts; passing the gate does not prove the communication check, restore scope, fallback, or path topology is correct in reality.
 
 Refer to credentials; do not embed secrets merely for convenience. See `examples/change/RESCUE.example.yaml`.
 
