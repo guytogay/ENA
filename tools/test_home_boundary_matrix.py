@@ -61,7 +61,7 @@ rescue:
 
 CORRUPT = "this is not: [valid\n  control yaml\n"
 
-RESCUE = """schema_version: '0.3'
+RESCUE = """schema_version: '0.4'
 host_profile: session
 target: probe
 recovery_actor: human-operator
@@ -72,6 +72,11 @@ rollback_action: git-revert
 automatic_rollback: false
 restart_or_new_session: new-session
 verify_operation: check
+verify_communication: NOT_NEEDED
+restore_only: config
+fallback: NOT_NEEDED
+touches_only_communication_path: false
+touches_only_recovery_path: false
 """
 
 CANDIDATE = {
