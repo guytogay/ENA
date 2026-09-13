@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
@@ -40,6 +41,16 @@ class JsonlSourceTests(unittest.TestCase):
             source = load_jsonl_source(path)
             self.assertEqual(source.records, [{"id": "a"}, {"id": "b"}])
             self.assertEqual(source.line_numbers, [1, 2])
+
+    def test_sha256_is_digest_of_exact_source_bytes(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            path = Path(tmpdir) / "crlf.jsonl"
+            raw = b'{"id":"a"}\r\n{"id":"b"}\r\n'
+            path.write_bytes(raw)
+            source = load_jsonl_source(path)
+            self.assertEqual(source.records, [{"id": "a"}, {"id": "b"}])
+            self.assertEqual(source.sha256, hashlib.sha256(path.read_bytes()).hexdigest())
+            self.assertNotEqual(source.sha256, hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest())
 
 
 if __name__ == "__main__":
