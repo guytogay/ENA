@@ -4,6 +4,9 @@ All notable changes to the clean ENA product line are recorded here.
 
 ## Unreleased
 
+### Added
+- `tools/test_doc_interface_surface.py`, a narrow documentation/interface regression guarded in CI on both platforms: every documented `python ... tools/<tool>.py` example must name a tool that ships and pass only flags that tool's own `--help` accepts, the reference-tool inventory in `tools/README.md` must list every entry point that actually ships and nothing that is absent, and literal `tools/<module>.py` references in adopter-facing prose must resolve to a real file. It reads only literal `tools/` paths, so a package-local name such as `rollback.py` is not reinterpreted as a tool path, and it executes nothing but `--help`.
+
 ### Documentation
 - Corrected adopter-facing documentation after an independent post-release run on the published v2.0.0 artifact (#80): the scaffold's unresolved marker is `null` for `automatic_rollback` / `automatic_rollback_reference` rather than `UNKNOWN`; the `automatic_rollback` field description now matches measured gate and transition behaviour (including `rollback_mode: not_declared` when a configured `rollback.py` arms without a declaration); `transitions.jsonl` is annotated as created by the first gate transition; `UPGRADING.md` states where a `0.3` package comes from and that the legacy READY-home fragment is abbreviated; `FIRST-USE.md` states who may confirm timezone/language when no human is present; `SURVIVAL.md` records the bare-session-host recovery recipe (archive plus rehearsed restore as the evidence).
 
