@@ -1,6 +1,6 @@
 # ENA
 
-Release: v1.0.0 — first stable clean-product baseline. See `CHANGELOG.md` and `RELEASE-NOTES.md`.
+Release: v2.0.0 — strengthened readiness provenance, SAFE-CHANGE recovery contracts, and evidence reproducibility. See `CHANGELOG.md` and `RELEASE-NOTES.md`.
 
 ENA helps an Agent add runtime capabilities that reasoning alone does not provide: grounded self-inspection, external recovery, reversible self-change, cross-session memory maintenance, idea variation, and evidence-backed evolution.
 
@@ -19,7 +19,7 @@ Read and apply these in order:
 5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it while retaining useful validation/repair evidence.
 6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism, including freshness/drift handling for long-lived knowledge and capability records.
 
-**Upgrading an existing ENA home from an earlier release? Read `UPGRADING.md` before treating a new preflight refusal as an environment failure.**
+**Upgrading an existing ENA home or SAFE-CHANGE package from an earlier release? Read `UPGRADING.md` before treating a new refusal as an environment failure.**
 
 For a cold or incremental First Use, make the state location explicit and run:
 

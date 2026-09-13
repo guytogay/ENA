@@ -2,9 +2,16 @@
 
 This file records adopter-visible migrations between released ENA product versions. It is not a second state ledger; the live authorities remain `ENA.yaml` and `SYSTEM.yaml`.
 
+ENA v2.0.0 has two deliberate breaking migrations from the v1.0.0 product line:
+
+1. a v1.0.0-era READY home must carry explicit recovery/rescuer verification provenance before v2 accepts it as READY;
+2. a SAFE-CHANGE package using `rescue.yaml` schema `0.3` must reconcile the v2 rescue declarations before it can arm under the v2 gate.
+
+Do not treat either refusal as permission to invent data or overwrite live state. Re-contact reality, record the missing basis, and let the normal gate decide.
+
 ## From v1.0.0-era readiness to the provenance-bearing contract
 
-Current `main` strengthens the First Use minimum beyond the v1.0.0-era READY shape. A home that previously had:
+ENA v2.0.0 strengthens the First Use minimum beyond the v1.0.0-era READY shape. A home that previously had:
 
 ```yaml
 minimum_ready: true
@@ -54,6 +61,101 @@ The reference gate recognizes the exact old READY shape when both minimum facts 
 
 Partial or malformed provenance is **not** labeled as a legacy migration case; the ordinary field-specific validation errors remain visible.
 
+## From SAFE-CHANGE `rescue.yaml` 0.3 to 0.4
+
+ENA v2.0.0 strengthens the arm-time recovery contract. A `preparing` package created under the older `rescue.yaml` schema `0.3` is not grandfathered into the v2 gate.
+
+The migration happens **inside that package's `rescue.yaml`**. Do not create a second package merely to make the version number look current, do not rewrite `transitions.jsonl`, and do not edit `status.yaml` to fake a migration.
+
+`rescue.yaml` and `status.yaml` have independent schemas. In v2 the reference scaffold intentionally emits:
+
+```yaml
+# rescue.yaml
+schema_version: '0.4'
+
+# status.yaml
+schema_version: '0.3'
+```
+
+`status.yaml: 0.3` is therefore not evidence that the package is stale. Only the rescue contract moved to `0.4` in this release.
+
+### What changed
+
+Schema `0.4` adds five declarations that the `preparing -> armed` gate consumes:
+
+```text
+verify_communication                 concrete two-way check, or exact NOT_NEEDED
+restore_only                         exact restore scope; always concrete
+fallback                             concrete fallback/escalation, or exact NOT_NEEDED
+touches_only_communication_path      exact true or false
+touches_only_recovery_path           exact true or false
+```
+
+All five must be resolved before arming. Setting one allowed `NOT_NEEDED` token does not make the remaining scaffolded fields optional.
+
+The scaffold uses literal `UNKNOWN` to mean unresolved. The shipped `examples/change/RESCUE.example.yaml` uses readable `REPLACE_WITH_REAL_*` placeholders for exposition; those are instructions to the adopter, not evidence that a real recovery fact has been established.
+
+`verify_communication` and `fallback` accept the exact ENA control token `NOT_NEEDED` when that is genuinely the correct declaration. `restore_only` has no generic escape token because every recovery action has a scope. The two `touches_only_*` fields must be exact YAML booleans `true` or `false`; if both are `true`, the gate refuses arming rather than accepting an exception string.
+
+### Before and after
+
+A simplified older package may contain:
+
+```yaml
+schema_version: '0.3'
+host_profile: session
+target: REAL_TARGET
+recovery_actor: REAL_RESCUER
+where_to_act: REAL_LOCATION
+changed: REAL_CHANGE
+known_good: REAL_KNOWN_GOOD
+rollback_action: REAL_ROLLBACK
+automatic_rollback: false
+automatic_rollback_reference: null
+restart_or_new_session: REAL_RESTART_PATH
+verify_operation: REAL_OPERATION_CHECK
+```
+
+After re-checking the change/recovery reality, reconcile the same package's `rescue.yaml` to:
+
+```yaml
+schema_version: '0.4'
+host_profile: session
+target: REAL_TARGET
+recovery_actor: REAL_RESCUER
+where_to_act: REAL_LOCATION
+changed: REAL_CHANGE
+known_good: REAL_KNOWN_GOOD
+rollback_action: REAL_ROLLBACK
+automatic_rollback: false
+automatic_rollback_reference: null
+restart_or_new_session: REAL_RESTART_PATH
+verify_operation: REAL_OPERATION_CHECK
+verify_communication: NOT_NEEDED
+restore_only: REAL_RESTORE_SCOPE
+fallback: NOT_NEEDED
+touches_only_communication_path: false
+touches_only_recovery_path: false
+```
+
+Those values are examples of **shape**, not defaults. In particular, do not copy `NOT_NEEDED` or `false` unless they are true for the actual Host/change surface.
+
+Then ask the normal gate to evaluate the reconciled package:
+
+```bash
+python tools/safe_change_state.py CHANGE_PACKAGE armed
+```
+
+If it still returns `BLOCKED`, resolve the reported facts instead of editing the state file around the gate.
+
+Historical terminal packages do not need to be cosmetically rewritten merely because v2 exists. The migration is for a package whose recovery contract must be consumed by the v2 arm-time gate.
+
+## Sleep/Dream source digest compatibility
+
+v2 records the generic JSONL `sha256` over the exact source-file bytes. Older experimental bundles generated from CRLF or UTF-8-BOM-bearing inputs may contain the previous text-normalized digest instead.
+
+The old bundle is not retroactively changed. When exact byte-level reproducibility matters, regenerate the experimental bundle from the source under v2 and verify the recorded digest with the Host's normal SHA-256 tool.
+
 ## Versioning consequence
 
-The persisted-state format remains readable, but the meaning of machine-readable READY is not backward compatible: a home accepted as READY under the v1.0.0-era predicate can be refused under the strengthened predicate until migrated. Under ENA's semantic-version policy, this change requires the next formal release to use a new major version. The current release remains v1.0.0 until a release-preparation change updates `VERSION`, README release line, changelog entry, release notes, and tag together.
+The persisted-state files remain readable, but the READY predicate and SAFE-CHANGE arm-time rescue contract are not backward compatible with every state accepted by v1.0.0. That is why this release is v2.0.0 rather than a patch or minor release.

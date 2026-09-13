@@ -57,7 +57,7 @@ Before changing live state, create a package such as:
 
 ```text
 ~/.ena/changes/
-  20260912T011530+0800__fix-channel/
+  20260912T011530123456+0800__fix-channel__a1b2c3d4/
     change.md
     rescue.yaml
     status.yaml
@@ -66,9 +66,13 @@ Before changing live state, create a package such as:
     rollback.py | Host-native recovery reference
 ```
 
+`tools/change_scaffold.py` names a package with the confirmed local timestamp to microsecond precision, the sanitized change name, and an eight-character uniqueness suffix. Treat the directory name as an identifier, not as a fixed-width human template.
+
 Use the timezone confirmed in `ENA.yaml`. Store the package somewhere that survives failure of the changed component/current session.
 
 `tools/change_scaffold.py` creates a conservative skeleton. Its generated `rollback.py` is intentionally an unconfigured placeholder that exits rather than pretending recovery exists. Replace it or record a verified Host-native rollback action before arming the change. The reference gate enforces that choice: with no configured package-local script, `rescue.yaml` must declare either `automatic_rollback: false` (manual / Host-triggered recovery) or `automatic_rollback: true` together with `automatic_rollback_reference` naming the Host-native timer, scheduler or supervisor that performs the rollback. The recorded transition separates `rollback_mode` (what was declared) from `rollback_artifact` (what the package can show), and neither one is proof that recovery has actually been exercised.
+
+The package's machine-readable files have independent schemas. In v2 the scaffold intentionally emits `rescue.yaml` schema `0.4` and `status.yaml` schema `0.3`; the latter is the state-record schema and is not an old `rescue.yaml` version. Do not rewrite `status.yaml` merely to make the two numbers match.
 
 ## Reference state gate
 
@@ -131,7 +135,9 @@ A local PASS does not replace the final post-change check. It shortens the lifet
 
 Keep it short and executable. The reference control file intentionally uses a small flat mapping so the gate can fail closed instead of pretending to parse arbitrary YAML. Put longer explanation in `change.md`.
 
-The current reference `rescue.yaml` schema is `0.4`. Existing `0.3` packages must be reconciled before they can arm under this gate.
+The current reference `rescue.yaml` schema is `0.4`. Existing `0.3` packages that must arm under the v2 gate must be reconciled first; `UPGRADING.md` gives the field-by-field migration and before/after example.
+
+The scaffold writes literal `UNKNOWN` for unresolved declarations. The shipped `examples/change/RESCUE.example.yaml` uses `REPLACE_WITH_REAL_*` placeholders for readability; those are explanatory placeholders, not a second unresolved-state vocabulary and not proof that a real fact has been established.
 
 Record these fields explicitly:
 
@@ -153,6 +159,8 @@ fallback                             fallback/escalation, or exact NOT_NEEDED
 touches_only_communication_path      exact true or false
 touches_only_recovery_path           exact true or false
 ```
+
+All five v2 rescue declarations—`verify_communication`, `restore_only`, `fallback`, `touches_only_communication_path`, and `touches_only_recovery_path`—must be resolved before arming. An escape token on one field does not make the others optional.
 
 `verify_communication: NOT_NEEDED` and `fallback: NOT_NEEDED` are deliberate escape tokens; variants such as `not_needed` or `NOT_APPLICABLE` are not aliases. `restore_only` has no `NOT_NEEDED` escape because every recovery action has a scope, including the whole target.
 
