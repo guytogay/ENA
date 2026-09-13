@@ -18,6 +18,8 @@ This unreleased line contains breaking persisted-state and SAFE-CHANGE contract 
 - First Use inspection no longer promotes existing scalars, rewrites READY state, or deletes lifecycle evidence merely because a value is present (#66).
 - Minimum readiness now accepts only canonical lowercase `true` and requires evidence-bearing provenance for both minimum facts (#66).
 - SAFE-CHANGE `armed` now fails closed while required rescue declarations are unresolved, and refuses an operation declared to touch both the only communication path and the only recovery path (#71).
+- `ena_init.py` now treats caller-state rejection as a controlled refusal with exit `2`, while documented tool-specific semantic result codes remain distinct; see `tools/EXIT-CODES.md` (#64).
+- Initialization validates the target and existing ENA control files before creating working directories, and a regular-file `--home` now fails cleanly without a traceback or filesystem side effect (#72).
 
 ### Breaking / migration
 - A home that was `minimum_ready: true` under the v1.0.0-era predicate but lacks recovery/rescuer verification provenance now fails closed as `REFRESH REQUIRED`. This is intentional; the old READY claim is no longer sufficient evidence under the strengthened contract.
