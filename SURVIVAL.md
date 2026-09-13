@@ -93,6 +93,8 @@ Where possible:
 - keep resident restart/supervisor control outside the Agent process;
 - keep session recovery data on durable disk/repository state outside the current conversation/process;
 - keep recovery packages outside the component being changed;
+- on a bare session host with no supervisor or snapshot service, a durable archive plus a rehearsed restore is a legitimate recovery path: create the archive outside the changed surface, restore it into a throwaway location, and compare the result with the live state (`diff -r`, or a digest of both) before recording it as verified. The drill output is the evidence; the archive alone is only a backup.
+
 - do not modify the only communication path and its only recovery path in one operation;
 - keep at least one human, Agent or Host mechanism able to recover the target.
 

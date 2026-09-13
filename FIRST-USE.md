@@ -18,6 +18,8 @@ Complete these five things before treating ENA as active.
 
 ### 1. Confirm shared settings
 
+When no human is present (unattended bootstrap, or a Host whose owner is not in the session), a detected value may be confirmed only by an explicit policy or authority that names the value for this Host; a bare detection is still a hint, and the honest result is to leave the value unresolved and record it as a material UNKNOWN rather than to promote the detection into a confirmation.
+
 Detect the Host/local timezone when possible, then ask the user to confirm the IANA timezone ENA should use. Do not impose a product default.
 
 Use the current user interaction as a language hint when useful, then ask the user to confirm the working language tag such as `zh-CN` or `en-US`.
