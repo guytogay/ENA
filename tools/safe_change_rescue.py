@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import re
+
 from control_yaml import missing, scalar
 
 RESCUE_SCHEMA_VERSION = "0.4"
@@ -18,12 +20,20 @@ CONTROL_DECLARATION_TOKENS = {
 EXACT_BOOLEAN_VALUES = {"true": True, "false": False}
 
 
+def _control_token_collision(value: str) -> str | None:
+    """Detect near spellings of existing ENA control tokens without accepting them as aliases."""
+    candidate = re.sub(r"[\s-]+", "_", value.strip()).upper()
+    if candidate in CONTROL_DECLARATION_TOKENS:
+        return candidate
+    return None
+
+
 def _declaration_problem(value: str | None, *, allow_not_needed: bool) -> str | None:
     if missing(value):
         return "is unresolved"
     assert value is not None
-    token = value.strip().upper()
-    if token in CONTROL_DECLARATION_TOKENS:
+    collision = _control_token_collision(value)
+    if collision is not None:
         if allow_not_needed and value == NOT_NEEDED:
             return None
         if allow_not_needed:
