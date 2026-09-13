@@ -2,9 +2,9 @@
 
 All notable changes to the clean ENA product line are recorded here.
 
-## Unreleased
+## 2.0.0 — 2026-09-13
 
-This unreleased line contains breaking persisted-state and SAFE-CHANGE contract changes. Under ENA's semantic-version policy it must not be released as `1.0.x` or `1.1.x`; the next release target is **2.0.0**.
+ENA v2.0.0 strengthens machine-readable readiness, SAFE-CHANGE recovery declarations, controlled-refusal behavior, and evidence reproducibility. This is a major release because previously accepted persisted state can require explicit operator migration before the v2 gates accept it again.
 
 ### Added
 - Durable five-field actor attribution on ENA-written change, validation, candidate, and outcome artifacts, including A2A initiator/correlation propagation where the Host supplies it (#57).
@@ -21,13 +21,26 @@ This unreleased line contains breaking persisted-state and SAFE-CHANGE contract 
 - `ena_init.py` now treats caller-state rejection as a controlled refusal with exit `2`, while documented tool-specific semantic result codes remain distinct; see `tools/EXIT-CODES.md` (#64).
 - Initialization validates the target and existing ENA control files before creating working directories, and a regular-file `--home` now fails cleanly without a traceback or filesystem side effect (#72).
 - Sleep/Dream source `sha256` values now hash the exact source-file bytes, so operators can reproduce them with standard Host hashing tools on every platform (#70).
+- `ena_preflight.py` now reports the exact resolved home it checked on both `OK` and `REFRESH REQUIRED` paths without scanning for alternate homes or changing home precedence (#67).
+
+### Documentation and adopter surface
+- Added `UPGRADING.md` with an explicit v1.0.0-era READY-home migration path rather than treating the strengthened readiness refusal as an environment failure.
+- Added an explicit SAFE-CHANGE `rescue.yaml` 0.3 → 0.4 migration path, clarified the independent `status.yaml` / `rescue.yaml` schema versions, the scaffold `UNKNOWN` marker, the five declarations that must all be resolved before arming, and the actual package-name shape (#78).
+- Kept the shared reference-tool inventory aligned with the contract-bearing `safe_change_rescue.py` module (#75).
 
 ### Breaking / migration
 - A home that was `minimum_ready: true` under the v1.0.0-era predicate but lacks recovery/rescuer verification provenance now fails closed as `REFRESH REQUIRED`. This is intentional; the old READY claim is no longer sufficient evidence under the strengthened contract.
 - Do **not** fabricate provenance or blindly grandfather old values. Re-check the existing recovery path and rescuer, then re-assert each fact once through `ena_first_use.py` with a durable evidence reference. See `UPGRADING.md` for the exact migration command.
 - The machine-readable First Use control format remains readable; the incompatibility is the readiness predicate and required provenance for a READY claim.
-- SAFE-CHANGE `rescue.yaml` advances from schema `0.3` to `0.4`. Existing packages must explicitly reconcile `verify_communication`, `restore_only`, `fallback`, `touches_only_communication_path`, and `touches_only_recovery_path` before they can arm under v2 tooling; old packages are not grandfathered (#71).
-- Existing experimental Sleep/Dream bundles produced from CRLF JSONL inputs may contain the former LF-normalized digest; regenerate them when exact source-byte reproducibility matters (#70).
+- SAFE-CHANGE `rescue.yaml` advances from schema `0.3` to `0.4`. Existing packages that must be armed under v2 tooling must explicitly reconcile `verify_communication`, `restore_only`, `fallback`, `touches_only_communication_path`, and `touches_only_recovery_path`; old packages are not grandfathered. See `UPGRADING.md` for the field-by-field migration (#71, #78).
+- Existing experimental Sleep/Dream bundles produced from CRLF or BOM-bearing JSONL inputs may contain the former text-normalized digest; regenerate them when exact source-byte reproducibility matters (#70).
+
+### Evidence boundary
+- Recovery/rescuer `verification_evidence` remains caller-supplied `SELF_ASSERTED` provenance. The reference tools enforce presence and shape; they do not authenticate arbitrary external evidence or prove the mechanism is currently usable.
+- SAFE-CHANGE rescue declarations are machine-gated self-asserted control facts. Passing the gate does not prove the communication check, restore scope, fallback, or path topology is correct in reality.
+- Actor attribution is not authorization.
+- Sleep/Dream remains experimental. Its marginal value over ordinary model reasoning is still `UNMEASURED`; v2.0.0 does not claim otherwise.
+- Reference scripts only enforce boundaries that the Host actually routes through them or equivalent Host-native controls.
 
 ## 1.0.0 — 2026-09-12
 
