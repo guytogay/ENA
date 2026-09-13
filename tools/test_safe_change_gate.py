@@ -205,6 +205,16 @@ class SafeChangeGateTests(unittest.TestCase):
                 result = self.arm()
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.reset_to_preparing()
+                if communication == "true":
+                    self.replace_rescue(
+                        "touches_only_communication_path: true",
+                        "touches_only_communication_path: false",
+                    )
+                if recovery == "true":
+                    self.replace_rescue(
+                        "touches_only_recovery_path: true",
+                        "touches_only_recovery_path: false",
+                    )
 
     def test_armed_transition_records_declared_rescue_basis(self):
         self.fill_rescue()
