@@ -95,11 +95,4 @@ communication:
         access: configured
 ```
 
-Current live verification belongs in the freshness-bounded system map, for example:
-
-```yaml
-communication:
-  a2a_reachability: verified-two-way
-```
-
-Use the discovery form supported by the actual A2A implementation. Do not store credentials/private keys in `ENA.yaml` merely to make the reference self-contained.
+Use the discovery form supported by the actual A2A implementation.

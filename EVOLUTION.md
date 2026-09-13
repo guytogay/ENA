@@ -77,16 +77,7 @@ When the Host provides a deterministic check for the property being changed, run
 
 Examples include parser/schema checks, compilation, type checking, targeted tests, build checks, health probes, access checks and retrieval/readability checks.
 
-A failed check is useful evolution evidence when the repair path is preserved:
-
-```text
-bounded change
-→ deterministic FAIL
-→ bounded repair
-→ deterministic PASS
-```
-
-Record the failed check and the later successful repair as linked experience when practical. `tools/validate_change.py` provides a reference path; Host-native hooks may implement the same behavior.
+A failed check is useful evolution evidence when the repair path is preserved: `SAFE-CHANGE.md` owns the linked `FAIL -> repair -> PASS` shape and the `tools/validate_change.py` wrapper that records it, which Host-native hooks may also implement.
 
 Incremental validation does not prove the candidate improved the intended outcome. It prevents obvious defects from surviving too long and creates better evidence about how the candidate behaved.
 

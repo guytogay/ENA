@@ -10,48 +10,27 @@ New adopters should use this repository. The older `evolution-native-agent-archi
 
 ## Start here
 
-Read and apply these in order:
+Read and apply these four in order:
 
-1. `FIRST-USE.md` — establish the minimum real system map and shared settings. It also explains trusted preset/unattended adoption.
-2. `A2A.md` — reuse or establish a two-way Agent-to-Agent path when the Host can support it.
-3. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
-4. `SAFE-CHANGE.md` — preserve the previous working state, prepare recovery, gate state transitions, and run the smallest relevant deterministic checks close to important changes. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
-5. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it while retaining useful validation/repair evidence.
-6. `SLEEP-DREAM-QUICKSTART.md` — run the first experimental Sleep and Dream cycle. `SLEEP-DREAM.md` contains the full mechanism, including freshness/drift handling for long-lived knowledge and capability records.
+1. `FIRST-USE.md` — establish the minimum real system map and shared settings. It carries the exact commands, the readiness predicate, trusted preset/unattended adoption, and what to do when no human is present.
+2. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
+3. `SAFE-CHANGE.md` — preserve the previous working state, prepare recovery, gate state transitions, and run the smallest relevant deterministic checks close to important changes. Session/coding Agents can start from `examples/change/SESSION-GIT-WORKTREE.md`.
+4. `EVOLUTION.md` — preserve an improvement candidate, test it against reality, and keep/revise/reject/restore it while retaining useful validation/repair evidence.
 
-**Upgrading an existing ENA home or SAFE-CHANGE package from an earlier release? Read `UPGRADING.md` before treating a new refusal as an environment failure.**
+**Read when a capability needs it, not as an adoption step:**
 
-For a cold or incremental First Use, make the state location explicit and run:
+- `A2A.md` — when a two-way Agent-to-Agent path exists or is worth establishing. A2A is a collaboration and recovery capability, **not a universal installation gate**: if the Host cannot support it, record the limitation and continue.
+- `SLEEP-DREAM-QUICKSTART.md` (with `SLEEP-DREAM.md` for the full mechanism) — the experimental Sleep/Dream cycle. Its marginal value over ordinary model reasoning is **unmeasured**, and its sampler parameters are experimental; run it when you want the experiment, not to complete adoption.
+- `tools/README.md` — runnable examples, the reference-tool inventory, and the centralized READY/NOT_READY interaction table. `tools/EXIT-CODES.md` carries the exit-code contract.
+- `UPGRADING.md` — **only** for an existing ENA home or SAFE-CHANGE package from an earlier release. Read it before treating a new refusal as an environment failure.
+
+The first command of a cold or incremental First Use:
 
 ```bash
 python tools/ena_first_use.py --home ~/.ena
 ```
 
-With no confirmed timezone/language authority, the command exits `2` as `NOT_READY` and does not manufacture an initialized home. Confirmed values may then be supplied explicitly, for example:
-
-```bash
-python tools/ena_first_use.py \
-  --home ~/.ena \
-  --timezone CONFIRMED_IANA_TIMEZONE \
-  --language CONFIRMED_LANGUAGE_TAG
-```
-
-A detected Host value is only a hint until a user, policy, or other explicit authority confirms it.
-
-Recovery/rescuer values become readiness evidence only through an explicit verification-bearing update, for example:
-
-```bash
-python tools/ena_first_use.py --home ~/.ena \
-  --verified-recovery REAL_RECOVERY_REFERENCE \
-  --recovery-evidence DURABLE_RECOVERY_CHECK_REFERENCE
-
-python tools/ena_first_use.py --home ~/.ena \
-  --verified-rescuer REAL_RESCUER_REFERENCE \
-  --rescuer-evidence DURABLE_RESCUER_CHECK_REFERENCE \
-  --rescuer-type human
-```
-
-An existing scalar by itself is not promoted into a verified minimum fact. On an existing home, a First Use call without a `--verified-*` update is observational and does not rewrite readiness state merely because it read a value.
+With no confirmed timezone/language authority it exits `2` as `NOT_READY` and does not manufacture an initialized home. `FIRST-USE.md` carries the rest: the confirmed-value flags, the evidence-bearing `--verified-*` updates, and the conditions under which the home becomes READY.
 
 ## Reading is not installation
 
@@ -68,74 +47,24 @@ Reference scripts only enforce what the Host actually routes through them. For e
 
 ## Make First Use happen without a reminder
 
-If the Host supports a session-start, shell-start, Agent-start or workspace-start hook, run:
+If the Host supports a session-start, shell-start, Agent-start or workspace-start hook, run
 
 ```bash
 python tools/ena_preflight.py --home ~/.ena
 ```
 
-before ordinary work.
-
-The preflight fails when the local ENA setup is missing, the strengthened minimum readiness predicate does not pass, or `SYSTEM.yaml` is stale. The `minimum_ready` bit is not sufficient by itself: recovery and rescuer verification provenance must also be present and internally consistent. In that case, run `ena_first_use.py` / refresh `FIRST-USE.md` instead of merely acknowledging the instruction and continuing.
-
-If the Host has no startup hook, run the same preflight at the start of a new working session.
-
-A trusted deployment/workspace policy may pre-provision timezone, language, Host profile, recovery path and rescuer so First Use can run without interactive confirmation. See `FIRST-USE.md` and `tools/README.md`; missing policy values must remain unresolved rather than being replaced by guessed defaults.
+before ordinary work; if it has no startup hook, run the same preflight at the start of a new working session. A non-zero exit means the local setup is missing, the strengthened minimum readiness predicate does not pass, or `SYSTEM.yaml` is stale — run `ena_first_use.py` / refresh First Use instead of merely acknowledging the instruction and continuing. `FIRST-USE.md` states the predicate, the freshness window, and how a trusted deployment policy may pre-provision the values so First Use can run unattended.
 
 ## Local files
 
-A typical installation starts with:
+A typical installation starts with `ENA.yaml`, `SYSTEM.yaml`, `changes/` and `evolution/` under `~/.ena/`; `FIRST-USE.md` gives the minimum shape of both control files. Two rules matter before writing either:
 
-```text
-~/.ena/
-  ENA.yaml
-  SYSTEM.yaml
-  changes/
-  evolution/
-```
-
-`ENA.example.yaml` and `examples/SYSTEM.example.yaml` are templates/examples, not live-state replacement commands. Replace confirmed placeholders before use, and never overwrite an established live `SYSTEM.yaml` with the shipped example: doing so would discard freshness-bounded operational facts and verification evidence outside the reference tools' control.
-
-ENA control files intentionally use a strict mapping/scalar YAML subset. Block sequences (`- item`) and multiline/block scalars are not accepted by `tools/control_yaml.py`; documented machine-read examples must stay inside that subset.
+- `ENA.example.yaml` and `examples/SYSTEM.example.yaml` are templates, not live-state replacement commands. Replace confirmed placeholders before use, and never overwrite an established `SYSTEM.yaml` with the shipped example: doing so would discard freshness-bounded operational facts and verification evidence outside the reference tools' control.
+- Control files use a strict mapping/scalar YAML subset. Block sequences (`- item`) and multiline/block scalars are not accepted by `tools/control_yaml.py`; documented machine-read examples must stay inside that subset.
 
 ## Reference tools
 
-The `tools/` directory contains small standard-library Python examples:
-
-```text
-ena_first_use.py
-ena_init.py
-ena_preflight.py
-system_unknowns.py
-fact_authority.py
-change_scaffold.py
-safe_change_state.py
-validate_change.py
-freshness_scan.py
-sleep_prepare.py
-combine_dream_material.py
-dream_sample.py
-candidate_record.py
-candidate_outcome.py
-self_test.py
-```
-
-Shared helper modules include `language_tag.py` (bounded language-tag syntax checking), `minimum_readiness.py` (the single minimum-readiness predicate set shared by First Use and preflight), `control_yaml.py`, `ena_home.py`, `ena_text.py`, `jsonl_source.py`, `timezone_utils.py`, and `ena_actor.py`.
-
-Verify the reference tools with the repository tests, including:
-
-```bash
-python tools/test_control_yaml.py
-python tools/test_language_tag.py
-python tools/test_first_use.py
-python tools/test_upgrade_migration.py
-python tools/test_doc_control_yaml.py
-python tools/self_test.py
-```
-
-Then see `tools/README.md` for runnable examples and the centralized READY/NOT_READY interaction table. Prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
-
-`ena_home.py` refuses a home without a readable `ENA.yaml` and a resolvable `canonical_timezone` so durable state is never timestamped by an implicit UTC fallback. `ena_text.py` reads ENA-owned text tolerating a leading UTF-8 byte order mark written by some Host-native paths.
+`tools/` holds small standard-library Python examples and the shared helper modules they use. `tools/README.md` is the inventory and the runnable-example surface; prefer stronger Host-native backup, scheduler, snapshot, validation hook, A2A, or memory mechanisms when they already exist.
 
 ## License
 

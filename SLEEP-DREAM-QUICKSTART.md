@@ -41,11 +41,7 @@ Start from `examples/evolution/SLEEP-DREAM.example.yaml` and fill in the actual 
 
 ## 4. Feed useful experience
 
-Preserve concise records for corrections, repeated success/failure, surprising outcomes, unresolved problems, useful procedures, evolution results, and useful validation/repair trajectories when the Host does not already keep equivalent durable records.
-
-When a Host hook can run a deterministic check immediately after an edit/change, `tools/validate_change.py` can record the result into the experience stream. A linked `FAIL -> repair -> PASS` sequence is useful Sleep material.
-
-Do not dump whole conversations or tool logs by default.
+Keep concise records in the Host's existing durable store when it does not already preserve an equivalent; `SLEEP-DREAM.md` §3 lists what is worth keeping and what not to dump. A `FAIL -> repair -> PASS` sequence recorded through `tools/validate_change.py` is useful Sleep material.
 
 ## 5. Check freshness before consolidating current claims
 

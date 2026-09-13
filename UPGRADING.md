@@ -1,5 +1,7 @@
 # Upgrading ENA
 
+**If you are adopting ENA for the first time, skip this file**: it exists only for an existing ENA home or SAFE-CHANGE package created under an earlier release. Start at `FIRST-USE.md`.
+
 This file records adopter-visible migrations between released ENA product versions. It is not a second state ledger; the live authorities remain `ENA.yaml` and `SYSTEM.yaml`.
 
 ENA v2.0.0 has two deliberate breaking migrations from the v1.0.0 product line:
