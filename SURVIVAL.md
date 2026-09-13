@@ -96,6 +96,8 @@ Where possible:
 - do not modify the only communication path and its only recovery path in one operation;
 - keep at least one human, Agent or Host mechanism able to recover the target.
 
+For consequential changes using the SAFE-CHANGE reference package, do not infer the fourth rule from prose. `rescue.yaml` carries explicit `touches_only_communication_path` and `touches_only_recovery_path` booleans. The `armed` gate requires exact `true|false` declarations and refuses the transition when both are `true`. If both really are the only paths, establish another communication or recovery path, or split the change, before proceeding.
+
 ## Keep `SYSTEM.yaml` fresh
 
 Record the recovery mechanisms currently available and the Host profile in use.
