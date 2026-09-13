@@ -247,7 +247,7 @@ class SafeChangeGateTests(unittest.TestCase):
         self.fill_rescue(
             automatic_rollback="true",
             automatic_rollback_reference=HOST_TIMER,
-         )
+        )
         (self.package / "rollback.py").unlink()
         result = self.arm()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -305,7 +305,7 @@ class SafeChangeGateTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         no_evidence = self.run_tool(TOOLS / "safe_change_state.py", self.package, "retained")
         self.assertEqual(no_evidence.returncode, 2, no_evidence.stdout + no_evidence.stderr)
-        self.assertIn("requires --evidence", no__evidence.stderr)
+        self.assertIn("requires --evidence", no_evidence.stderr)
 
     def test_full_lifecycle_keeps_armed_basis_in_history(self):
         self.fill_rescue()
@@ -327,7 +327,7 @@ class SafeChangeGateTests(unittest.TestCase):
         ]
         self.assertEqual(lines[0]["restore_only"], "config-file")
         self.assertNotIn("restore_only", lines[-1])
-        self.assertIn("state: retained", (self.package / "status.yaml").read_text(encoding="utf-8")
+        self.assertIn("state: retained", (self.package / "status.yaml").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
