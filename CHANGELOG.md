@@ -2,6 +2,11 @@
 
 All notable changes to the clean ENA product line are recorded here.
 
+## Unreleased
+
+### Documentation
+- Corrected adopter-facing documentation after an independent post-release run on the published v2.0.0 artifact (#80): the scaffold's unresolved marker is `null` for `automatic_rollback` / `automatic_rollback_reference` rather than `UNKNOWN`; the `automatic_rollback` field description now matches measured gate and transition behaviour (including `rollback_mode: not_declared` when a configured `rollback.py` arms without a declaration); `transitions.jsonl` is annotated as created by the first gate transition; `UPGRADING.md` states where a `0.3` package comes from and that the legacy READY-home fragment is abbreviated; `FIRST-USE.md` states who may confirm timezone/language when no human is present; `SURVIVAL.md` records the bare-session-host recovery recipe (archive plus rehearsed restore as the evidence).
+
 ## 2.0.0 — 2026-09-13
 
 ENA v2.0.0 strengthens machine-readable readiness, SAFE-CHANGE recovery declarations, controlled-refusal behavior, and evidence reproducibility. This is a major release because previously accepted persisted state can require explicit operator migration before the v2 gates accept it again.

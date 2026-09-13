@@ -22,7 +22,7 @@ rescue:
   type: human
 ```
 
-but no per-fact verification provenance is intentionally no longer READY. After upgrading, `ena_preflight.py` returns `REFRESH REQUIRED` rather than grandfathering an unverifiable old claim.
+but no per-fact verification provenance is intentionally no longer READY. The fragment above is abbreviated and the fields it names are not all top-level: a real v1.0.0-era home also carried `checked_at` and `valid_until` at the top level, `host_profile` under `runtime:`, an `unknowns` value that is an inline empty list in this shape, and the remaining `runtime` / `communication` / `memory` / `change_surfaces` sections. The migration does not depend on reproducing that whole file - only on re-asserting the two minimum facts with evidence. If you want to rehearse the diagnostic on a real file rather than a fragment, that release's own `ena_init.py --verified-minimum` produces one. After upgrading, `ena_preflight.py` returns `REFRESH REQUIRED` rather than grandfathering an unverifiable old claim.
 
 This does **not** mean the recovery path or rescuer suddenly stopped working. It means the newer contract requires the basis of the READY claim to be recorded explicitly.
 
@@ -64,6 +64,8 @@ Partial or malformed provenance is **not** labeled as a legacy migration case; t
 ## From SAFE-CHANGE `rescue.yaml` 0.3 to 0.4
 
 ENA v2.0.0 strengthens the arm-time recovery contract. A `preparing` package created under the older `rescue.yaml` schema `0.3` is not grandfathered into the v2 gate.
+
+A `0.3` package is one whose `rescue.yaml` was created by v1.0.0-era tooling. The v2 `tools/change_scaffold.py` writes `rescue.yaml` at `0.4` only - it cannot produce the "before" shape for you - while the `status.yaml` of the very same package stays on its own independent `0.3` schema (see above). The before/after example below is deliberately simplified: a real v1.0.0-era `rescue.yaml` also carries `verify_communication`, `restore_only` and `fallback` (all `UNKNOWN` in that release), and the only fields genuinely new in `0.4` are `touches_only_communication_path` and `touches_only_recovery_path`. A v1.0.0 checkout (`git archive v1.0.0` or a clone at that tag) can generate a real `0.3` package if you want to rehearse the migration on a package rather than on a live change.
 
 The migration happens **inside that package's `rescue.yaml`**. Do not create a second package merely to make the version number look current, do not rewrite `transitions.jsonl`, and do not edit `status.yaml` to fake a migration.
 

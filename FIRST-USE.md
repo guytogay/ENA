@@ -18,6 +18,8 @@ Complete these five things before treating ENA as active.
 
 ### 1. Confirm shared settings
 
+When no human is present (unattended bootstrap, or a Host whose owner is not in the session), the tools require an explicit value and never detect or invent one: `ena_init.py` treats `--timezone` and `--language` as required and refuses control-state tokens such as `UNKNOWN`, and `ena_first_use.py` reports `NOT_READY` / `UNINITIALIZED` instead of manufacturing one. A detected value therefore stays a hint: confirm it through an explicit policy or authority that names the value for this Host, or stop honestly at `NOT_READY` and let the owner supply it. Note that this value cannot be parked as a material UNKNOWN the way other facts can - `canonical_timezone` and `canonical_language` have `ENA.yaml` as their single authority and are not duplicated into `SYSTEM.yaml`, so an unconfirmed value leaves the home uninitialized rather than partially recorded.
+
 Detect the Host/local timezone when possible, then ask the user to confirm the IANA timezone ENA should use. Do not impose a product default.
 
 Use the current user interaction as a language hint when useful, then ask the user to confirm the working language tag such as `zh-CN` or `en-US`.

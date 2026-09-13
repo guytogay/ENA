@@ -61,7 +61,7 @@ Before changing live state, create a package such as:
     change.md
     rescue.yaml
     status.yaml
-    transitions.jsonl
+    transitions.jsonl      (created by the first successful gate transition; a blocked attempt does not create it, and the scaffold never does)
     backup/
     rollback.py | Host-native recovery reference
 ```
@@ -137,7 +137,7 @@ Keep it short and executable. The reference control file intentionally uses a sm
 
 The current reference `rescue.yaml` schema is `0.4`. Existing `0.3` packages that must arm under the v2 gate must be reconciled first; `UPGRADING.md` gives the field-by-field migration and before/after example.
 
-The scaffold writes literal `UNKNOWN` for unresolved declarations. The shipped `examples/change/RESCUE.example.yaml` uses `REPLACE_WITH_REAL_*` placeholders for readability; those are explanatory placeholders, not a second unresolved-state vocabulary and not proof that a real fact has been established.
+The scaffold writes literal `UNKNOWN` for unresolved declarations, with one exception: `automatic_rollback` and `automatic_rollback_reference` are written as `null`, because the unresolved form of those two fields is the absence of a declaration rather than an unknown value. The shipped `examples/change/RESCUE.example.yaml` uses `REPLACE_WITH_REAL_*` placeholders for readability; those are explanatory placeholders, not a second unresolved-state vocabulary and not proof that a real fact has been established.
 
 Record these fields explicitly:
 
@@ -149,7 +149,7 @@ recovery_actor                       external recovery actor
 changed                              exact components changed
 known_good                           known-good backup/snapshot/version/commit
 rollback_action                      exact rollback action
-automatic_rollback                   true / false / unresolved when a configured package-local script is used
+automatic_rollback                   true / false / null. `null` means no declaration was made: it is refused while rollback.py is still the placeholder, and arms with a configured rollback.py, which the transition records as rollback_mode: not_declared. Unlike the touches_only_* fields, this value is matched case-insensitively (True / FALSE are accepted).
 automatic_rollback_reference         Host-native rollback mechanism when automatic_rollback is true
 restart_or_new_session               restart/reload/new-session action
 verify_operation                     operation verification
