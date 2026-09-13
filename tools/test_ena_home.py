@@ -29,6 +29,11 @@ RESCUE_FILL = {
     "automatic_rollback: null": "automatic_rollback: false",
     "restart_or_new_session: UNKNOWN": "restart_or_new_session: new-session",
     "verify_operation: UNKNOWN": "verify_operation: probe-check",
+    "verify_communication: UNKNOWN": "verify_communication: NOT_NEEDED",
+    "restore_only: UNKNOWN": "restore_only: config-file",
+    "fallback: UNKNOWN": "fallback: NOT_NEEDED",
+    "touches_only_communication_path: UNKNOWN": "touches_only_communication_path: false",
+    "touches_only_recovery_path: UNKNOWN": "touches_only_recovery_path: false",
 }
 
 
