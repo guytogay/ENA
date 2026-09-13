@@ -61,7 +61,7 @@ Before changing live state, create a package such as:
     change.md
     rescue.yaml
     status.yaml
-    transitions.jsonl      (created by the first gate transition, not by the scaffold)
+    transitions.jsonl      (created by the first successful gate transition; a blocked attempt does not create it, and the scaffold never does)
     backup/
     rollback.py | Host-native recovery reference
 ```
@@ -149,7 +149,7 @@ recovery_actor                       external recovery actor
 changed                              exact components changed
 known_good                           known-good backup/snapshot/version/commit
 rollback_action                      exact rollback action
-automatic_rollback                   true / false / null (unresolved: refused with the placeholder rollback.py; with a configured rollback.py the transition records rollback_mode: not_declared)
+automatic_rollback                   true / false / null. `null` means no declaration was made: it is refused while rollback.py is still the placeholder, and arms with a configured rollback.py, which the transition records as rollback_mode: not_declared. Unlike the touches_only_* fields, this value is matched case-insensitively (True / FALSE are accepted).
 automatic_rollback_reference         Host-native rollback mechanism when automatic_rollback is true
 restart_or_new_session               restart/reload/new-session action
 verify_operation                     operation verification
