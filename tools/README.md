@@ -77,6 +77,14 @@ A real Host was observed filtering its own `DSH_*` namespace before a dispatched
 
 ## Verify the tools
 
+**The acceptance line is the CI workflow, not this list**: `.github/workflows/reference-tools.yml` runs every registered test file on both Linux and Windows, and all of them must pass. Run the same set locally with:
+
+```bash
+python tools/self_test.py
+```
+
+The illustrative subset below covers the contracts most likely to move; the workflow itself is authoritative for what is checked.
+
 ```bash
 python tools/test_control_yaml.py
 python tools/test_timezone_utils.py
@@ -96,7 +104,6 @@ python tools/test_system_unknowns.py
 python tools/test_language_tag.py
 python tools/test_first_use.py
 python tools/test_doc_control_yaml.py
-python tools/self_test.py
 ```
 
 Expected final output from `self_test.py`:
@@ -104,8 +111,6 @@ Expected final output from `self_test.py`:
 ```text
 ENA reference tools: OK
 ```
-
-The repository CI runs the reference checks on Linux and Windows.
 
 ## Initialize and advance First Use
 

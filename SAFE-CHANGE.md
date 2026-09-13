@@ -189,8 +189,6 @@ Use `tools/safe_change_state.py` for the reference transitions. `retained`, `res
 
 A resident runtime with a rollback timer cancels that timer only after the post-change check succeeds. A session Agent without such a timer records `retained` only after the corresponding repository/test/human communication check succeeds.
 
-A running process alone does not prove recovery.
-
 ## Avoid two rescuers corrupting the same state
 
 When more than one recovery actor can act, make rollback idempotent where possible or use an atomic lock/status check so a second recovery attempt detects that restoration has already happened.

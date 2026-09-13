@@ -14,6 +14,19 @@ Before the risky change:
 
 Do not perform destructive cleanup merely to obtain a clean tree.
 
+### Worked example (adapt it to your repository)
+
+This document is Host-neutral, so the commands below are the *shape* rather than a rule; replace them with the ones your repository actually uses, and record those real commands in the package.
+
+```bash
+git status --short                                  # 1. inspect the working tree
+git stash push -m "unrelated work before ENA change"  # 2. preserve unrelated work (or commit it on a side branch)
+git rev-parse HEAD                                  # 3. record the known-good commit
+git worktree add ../ena-change-KNOWN-NAME -b ena/change-KNOWN-NAME   # 4. isolate when isolation is useful
+```
+
+Make the bounded change inside that worktree and run the repository's checks there. When the change is settled, the recovery action recorded in the package is the inverse of exactly this: return to the recorded commit, or drop the temporary branch, without touching unrelated later history.
+
 ## 2. Create the ENA recovery package
 
 Use `tools/change_scaffold.py`, then replace every required `UNKNOWN` in `rescue.yaml` with the real values for this repository. The package directory carries the timezone confirmed in `ENA.yaml`.
