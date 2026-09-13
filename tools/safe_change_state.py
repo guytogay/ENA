@@ -96,9 +96,13 @@ def rollback_state(package: Path) -> str:
 def rollback_declaration(rescue: dict[str, object]) -> tuple[bool | None, str | None, list[str]]:
     """Read the recovery declaration, refusing anything that is not a declaration.
 
-    `automatic_rollback` accepts exactly `true` or `false`, or stays unresolved.
-    Treating every other scalar as "not true, therefore manual" would let a typo
-    such as `flase` arm a package as if manual recovery had been declared.
+    `automatic_rollback` accepts `true` or `false`, compared case-insensitively (`True` and `FALSE`
+    are accepted), or stays unresolved. Treating every other scalar as "not true, therefore manual"
+    would let a typo such as `flase` arm a package as if manual recovery had been declared.
+
+    The case-insensitive comparison is deliberate and is asserted by the tests: this document used to
+    say "exactly `true` or `false`", which was wrong about the behaviour and would have invited a
+    later change that silently started refusing declarations adopters already use.
     """
     problems: list[str] = []
     raw = scalar(rescue, "automatic_rollback")

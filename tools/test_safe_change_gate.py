@@ -253,6 +253,40 @@ class SafeChangeGateTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
         self.assertIn("automatic_rollback_reference is unresolved", result.stderr)
 
+    def test_declaration_case_is_accepted_in_either_case(self):
+        """Pin the case-insensitive comparison so a later change cannot quietly tighten it.
+
+        `tools/README.md` and this module's docstring used to say "exactly `true` or `false`", which
+        was wrong about the behaviour. Aligning the code to that wording would start refusing
+        declarations that already work, so the accepted spellings are asserted here rather than left
+        to a docstring.
+        """
+        for value, expected_mode in (("True", "declared_automatic"),
+                                     ("TRUE", "declared_automatic"),
+                                     ("FALSE", "declared_manual_or_host_triggered"),
+                                     ("False", "declared_manual_or_host_triggered")):
+            with self.subTest(value=value):
+                # A fresh package per spelling: arming is a state transition, not a repeatable call.
+                scaffold = self.run_tool(
+                    TOOLS / "change_scaffold.py",
+                    "--home", self.home,
+                    "--name", f"case-{value.lower()}",
+                    "--profile", "session",
+                )
+                self.assertEqual(scaffold.returncode, 0, scaffold.stdout + scaffold.stderr)
+                self.package = Path(scaffold.stdout.strip())
+
+                if expected_mode == "declared_automatic":
+                    self.fill_rescue(automatic_rollback=value,
+                                     automatic_rollback_reference=HOST_TIMER)
+                    (self.package / "rollback.py").unlink()
+                else:
+                    self.fill_rescue(automatic_rollback=value)
+
+                result = self.arm()
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual(self.transition()["rollback_mode"], expected_mode)
+
     def test_automatic_true_with_reference_arms_without_local_script(self):
         self.fill_rescue(
             automatic_rollback="true",

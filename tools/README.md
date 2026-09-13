@@ -213,7 +213,7 @@ python tools/safe_change_state.py CHANGE_PACKAGE applied
 python tools/safe_change_state.py CHANGE_PACKAGE retained --evidence VALIDATION_EVENT_OR_RESULT_REF
 ```
 
-The gate requires evidence for `retained`, `restored`, and `failed`. `automatic_rollback` accepts exactly `true` or `false`; typos such as `flase`, `maybe`, or `yes` block rather than being interpreted as manual recovery.
+The gate requires evidence for `retained`, `restored`, and `failed`. `automatic_rollback` accepts only `true`, `false`, or an unresolved value, compared **case-insensitively** (`True` and `FALSE` are accepted); typos such as `flase`, `maybe`, `yes`, or `1` block rather than being interpreted as manual recovery.
 
 | `rescue.yaml` | meaning | package-local `rollback.py` |
 | --- | --- | --- |
