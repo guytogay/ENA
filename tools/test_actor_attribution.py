@@ -173,9 +173,11 @@ class ArtifactAttributionTests(unittest.TestCase):
             "schema_version: '0.3'\nhost_profile: session\nstate: preparing\nupdated_at: x\n"
             "previous_state: null\nlast_evidence: null\ntimezone: UTC\n", encoding="utf-8")
         (package / "rescue.yaml").write_text(
-            "schema_version: '0.3'\nhost_profile: session\ntarget: t\nrecovery_actor: human\n"
+            "schema_version: '0.4'\nhost_profile: session\ntarget: t\nrecovery_actor: human\n"
             "where_to_act: w\nchanged: c\nknown_good: k\nrollback_action: r\n"
-            "automatic_rollback: false\nrestart_or_new_session: s\nverify_operation: v\n",
+            "automatic_rollback: false\nrestart_or_new_session: s\nverify_operation: v\n"
+            "verify_communication: NOT_NEEDED\nrestore_only: c\nfallback: NOT_NEEDED\n"
+            "touches_only_communication_path: false\ntouches_only_recovery_path: false\n",
             encoding="utf-8")
         r = run(str(TOOLS / "safe_change_state.py"), str(package), "armed",
                 env={**PEER_ENV, "ENA_ACTOR_EXECUTOR": "lxc-dsh/s1"})

@@ -21,6 +21,7 @@ Use `tools/change_scaffold.py`, then replace every required `UNKNOWN` in `rescue
 For a Git-backed session Agent, the important fields normally describe:
 
 ```yaml
+schema_version: '0.4'
 host_profile: session
 target: REAL_REPOSITORY_OR_AGENT_SESSION
 recovery_actor: REAL_HUMAN_OR_FRESH_AGENT_SESSION
@@ -33,8 +34,12 @@ restart_or_new_session: HOW_TO_OPEN_A_FRESH_SESSION
 verify_operation: REAL_REPOSITORY_TEST_OR_TASK
 verify_communication: REAL_TWO_WAY_CHECK_OR_NOT_NEEDED
 restore_only: EXACT_CHANGE_SCOPE
-fallback: REAL_ESCALATION_PATH
+fallback: REAL_ESCALATION_PATH_OR_NOT_NEEDED
+touches_only_communication_path: false
+touches_only_recovery_path: false
 ```
+
+`verify_communication` and `fallback` may use the exact token `NOT_NEEDED` when the declaration genuinely does not apply. `restore_only` always names the real restore scope. The two `touches_only_*` declarations must be exact lowercase `true` or `false`; if both are `true`, the gate refuses `armed`. Establish another communication or recovery path, or split the change, before proceeding.
 
 `automatic_rollback: false` records that recovery is this repository action rather than a package-local rollback script. The gate requires that declaration while the scaffolded placeholder is still in place, so the package cannot look like prepared automatic recovery when none exists.
 
@@ -51,6 +56,8 @@ python tools/safe_change_state.py CHANGE_PACKAGE armed
 ```
 
 If it exits non-zero, do not apply the live/main change.
+
+A successful `armed` transition preserves the communication-verification declaration, restore scope, fallback declaration, and both single-path booleans in `transitions.jsonl`. That history records what the gate admitted at arm time; it does not prove the declared checks or recovery work in reality.
 
 Only after the repository's own checks and the ENA gate are ready should the bounded change be applied to the live/main branch.
 

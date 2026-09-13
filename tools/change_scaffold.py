@@ -91,7 +91,7 @@ def main() -> int:
         )
         write_text(
             package / "rescue.yaml",
-            "schema_version: '0.3'\n"
+            "schema_version: '0.4'\n"
             f"host_profile: {args.profile}\n"
             "target: UNKNOWN\n"
             "recovery_actor: UNKNOWN\n"
@@ -105,7 +105,9 @@ def main() -> int:
             "verify_operation: UNKNOWN\n"
             "verify_communication: UNKNOWN\n"
             "restore_only: UNKNOWN\n"
-            "fallback: UNKNOWN\n",
+            "fallback: UNKNOWN\n"
+            "touches_only_communication_path: UNKNOWN\n"
+            "touches_only_recovery_path: UNKNOWN\n",
         )
         write_text(
             package / "rollback.py",
