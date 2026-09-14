@@ -11,6 +11,6 @@ Use exit codes as machine contracts, not as a substitute for reading the tool-sp
 
 Argument-parser usage errors also use exit `2`.
 
-`124` and `127` are deliberate semantic result codes of `validate_change.py`. They must not be normalized to the generic controlled-refusal code. Other tools may define their own documented semantic result codes; for example, `freshness_scan.py` uses `3` for stale records and `4` for unparseable records when the corresponding fail options are enabled.
+`124` and `127` are deliberate semantic result codes of `validate_change.py`. They must not be normalized to the generic controlled-refusal code. Other tools may define their own documented semantic result codes; for example, `freshness_scan.py` uses `3` for stale records and `4` for unparseable records when the corresponding fail options are enabled, and `ena_peer_effect.py` uses `3` for observed-with-limitations — a declared scope that is missing or unreadable — where the record is still written and marks itself incomplete, because a false empty record is worse than a partial one.
 
 Unexpected implementation defects are not controlled refusals. Do not catch arbitrary exceptions merely to turn them into exit `2`; expected boundary failures should be handled explicitly and concisely instead.

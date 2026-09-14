@@ -11,6 +11,7 @@ ena_preflight.py            fail fast when First Use is missing/not ready/stale
 system_unknowns.py          validate lifecycle metadata for material SYSTEM UNKNOWNs
 fact_authority.py           report stable/live fact authority in existing schema-0.2 homes
 ena_actor.py                resolve who executed an action and who initiated it
+ena_peer_effect.py          observe what dispatched peer work changed inside a declared scope
 change_scaffold.py          create a timestamped safe-change package skeleton
 safe_change_state.py        gate SAFE-CHANGE state transitions and evidence
 validate_change.py          run one deterministic check and record PASS/FAIL experience
@@ -74,6 +75,32 @@ ENA_PEER_TASK_ID
 ```
 
 A real Host was observed filtering its own `DSH_*` namespace before a dispatched session, so `ENA_PEER_*` is the primary bridge contract. `DSH_PEER_*` is compatibility fallback only. Missing bridge values remain `UNKNOWN`; attribution is not authorization.
+
+## Observe what dispatched work changed
+
+`ena_actor.py` says who initiated the work. It does not say what the work did. `ena_peer_effect.py` observes that separately, over a scope the caller declares, from outside the dispatched session:
+
+```bash
+python tools/ena_peer_effect.py snapshot --scope /path/to/declared/scope --out before.json
+```
+
+After the dispatched process exits:
+
+```bash
+python tools/ena_peer_effect.py record \
+  --before before.json \
+  --correlation-id <the same id used for attribution> \
+  --out record.json \
+  --index records.jsonl
+```
+
+`record` re-observes the declared scopes, derives `added` / `removed` / `modified`, writes the durable record, optionally appends a locator to the index, and prints one receipt line:
+
+```text
+correlation_id, record, added_count, removed_count, modified_count
+```
+
+Three limits are part of the tool, not disclaimers added later: the declared scope is an **observation boundary, not an authorization boundary**, and the tool never refuses work because an effect was unexpected; a record proves what was observed **inside the declared scopes only**, so it is not a claim that the rest of the machine was unchanged; and it is Host-generated evidence only when the observation and the record live **outside** the dispatched session's writable surface. A child session saying `DONE` is evidence of what it reported, never evidence that the intended effect occurred. Exit code `3` means observed-with-limitations and the record marks itself incomplete, because a false empty record is worse than a partial one. Store `before.json` and `record.json` outside the observed scope, or the tool will faithfully report them as effects.
 
 ## Verify the tools
 
