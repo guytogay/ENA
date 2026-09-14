@@ -100,6 +100,28 @@ class DocumentationSurfaceTests(unittest.TestCase):
         missing = [str(path.relative_to(REPO)) for path in ADOPTER_DOCS if not path.is_file()]
         self.assertEqual(missing, [], f"adopter-facing documents are missing: {missing}")
 
+    def test_the_mandatory_reading_path_stays_conditional_for_experimental_surfaces(self):
+        """A capability's own text must not be contradicted by the entry path.
+
+        The product states that A2A is not a universal installation gate and that Sleep/Dream's
+        marginal value is unmeasured. Listing either under "read and apply these in order" tells a new
+        adopter the opposite, and a fresh reader did read it that way before this was cut. One
+        assertion, not a framework: the mandatory list is exactly these four, and both experimental
+        surfaces are named in the conditional list.
+        """
+        readme = (REPO / "README.md").read_text(encoding="utf-8")
+        mandatory_block = readme.split("## Start here", 1)[1].split("**Read when", 1)[0]
+        mandatory = re.findall(r"(?m)^\d+\.\s+`([^`]+)`", mandatory_block)
+        self.assertEqual(
+            mandatory,
+            ["FIRST-USE.md", "SURVIVAL.md", "SAFE-CHANGE.md", "EVOLUTION.md"],
+            "the mandatory reading path changed; confirm this is intended before updating the list",
+        )
+        conditional = readme.split("**Read when", 1)[1]
+        for surface in ("A2A.md", "SLEEP-DREAM-QUICKSTART.md"):
+            self.assertIn(surface, conditional,
+                          f"{surface} is no longer described as conditional reading")
+
     def test_documented_command_examples_are_runnable(self):
         seen = 0
         for path in ADOPTER_DOCS:
