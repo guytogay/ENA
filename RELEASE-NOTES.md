@@ -1,64 +1,73 @@
-# ENA v2.0.0
+# ENA v2.1.0
 
-ENA v2.0.0 is the first major update to the clean ENA product line. It keeps the same goal—preserve viable agency with runtime capabilities the model cannot get from reasoning alone—but tightens the machine contracts around readiness, recovery, attribution, refusal behavior, and evidence reproducibility.
+ENA v2.1.0 is a backward-compatible minor update to the clean ENA product line. It makes adoption lighter, adds a Host-observed way to account for the durable effects of dispatched Agent work, and closes several documentation and operator-diagnostic gaps found after v2.0.0 shipped.
 
-This is a major release because two persisted-state contracts are intentionally not backward compatible: a v1.0.0-era READY home without verification provenance is no longer accepted as READY, and SAFE-CHANGE `rescue.yaml` moves from schema `0.3` to `0.4` for packages that must arm under the v2 gate. Both migrations are explicit in `UPGRADING.md`.
+There is **no required persisted-state migration from v2.0.0 to v2.1.0**. Existing v2.0.0 READY homes and SAFE-CHANGE packages remain valid under the same contracts. If you are upgrading from v1.0.0-era state, the v2 migration rules in `UPGRADING.md` still apply.
 
 ## What changes
 
-- **Evidence-bearing First Use** — recovery and rescuer facts only satisfy minimum readiness when they carry caller-supplied `SELF_ASSERTED` verification provenance (`verification_evidence` plus an offset-aware `verified_at`). Existing scalars are not silently promoted.
-- **Honest cold/incremental adoption** — `ena_first_use.py` can stop at `NOT_READY` without manufacturing authority or pretending an initialized home exists.
-- **Material UNKNOWN lifecycle** — facts that materially affect operation can carry an explicit owner, reason, resolution path, revisit time, and last-attempt time in `SYSTEM.yaml` without creating a second state ledger.
-- **Stronger SAFE-CHANGE arming** — `rescue.yaml` schema `0.4` requires explicit communication verification, restore scope, fallback/escalation, and declarations about whether one operation touches the only communication or recovery path. The arm-time basis is copied into transition history.
-- **Fail-closed initialization** — controlled caller-state refusals use exit `2`; invalid targets are rejected before working directories are created; regular-file `--home` inputs no longer produce tracebacks.
-- **Resolved-home diagnostics** — preflight keeps its existing first-line `OK` / `REFRESH REQUIRED` status and now also names the exact resolved home it checked, without scanning for alternate homes.
-- **Durable actor attribution** — ENA-written change, validation, candidate, and outcome artifacts carry executor / initiator / channel / correlation attribution when supplied by the Host or A2A bridge.
-- **Raw-byte source digests** — Sleep/Dream JSONL `sha256` values now hash the exact source bytes, so `sha256sum`, `Get-FileHash`, and equivalent Host tools reproduce the recorded value. CRLF and UTF-8 BOM differences remain visible in the digest while the parser can still tolerate them.
-- **Cross-platform contract coverage** — Ubuntu and Windows regressions cover the strengthened First Use, SAFE-CHANGE, refusal, upgrade, home-boundary, digest, and documentation contracts.
+- **A2A effect receipts** — `tools/ena_peer_effect.py` can snapshot a declared observation scope before dispatched work, observe the same scope afterwards, and record `added` / `removed` / `modified` effects keyed by the same correlation id used for attribution. The initiating side can retrieve a compact receipt instead of treating a child session's narrative `DONE` as proof of durable effect.
+- **Effect evidence stays separate from attribution and authorization** — `ENA_PEER_CALLER` / `ENA_PEER_TASK_ID` still answer who initiated the work. The new effect record answers what the Host observed inside the declared scope. The scope is an observation boundary, not an authorization boundary, and the helper never rejects work merely because an effect was unexpected.
+- **Incomplete observation fails visibly** — missing or unreadable declared scopes do not produce a false empty result. The tool writes an incomplete record and returns its documented semantic exit code `3` so callers can distinguish a bounded observation with limitations from a complete observation.
+- **Symlink-safe, content-based comparison** — directory symlinks are recorded rather than followed, so they cannot silently widen the observation surface, and regular-file modification is decided from content digests rather than timestamps alone.
+- **Leaner adoption path** — the mandatory reading path is now four documents: `FIRST-USE.md`, `SURVIVAL.md`, `SAFE-CHANGE.md`, and `EVOLUTION.md`. `A2A.md` and `SLEEP-DREAM-QUICKSTART.md` remain available when those capabilities are actually needed instead of being universal adoption steps.
+- **Documentation/interface regression coverage** — CI now checks that documented `tools/*.py` examples refer to shipped tools and valid flags, that the reference-tool inventory matches reality, and that subcommand-based CLIs are checked against the documented subcommand's own help rather than a misleading top-level union.
+- **Corrected operator-facing behavior descriptions** — the documented `automatic_rollback` behavior now matches the existing case-insensitive gate instead of implying only lowercase `true` / `false` are accepted.
+- **Cleaner preflight diagnostics** — an unparsable `SYSTEM.yaml` is reported once rather than twice with a nested duplicate prefix; the refusal code and fail-closed behavior are unchanged.
+- **Post-v2 adopter corrections** — documentation now matches the shipped scaffold markers, SAFE-CHANGE transition behavior, transition-history creation point, legacy migration source, unattended First Use authority, and bare-session recovery evidence found during an independent adoption run.
 
-## Upgrading from v1.0.0
+## A2A effect receipts
 
-Read `UPGRADING.md` before treating a new refusal as a broken environment.
+Use the effect helper when a Host or bridge can observe the target surface from outside the dispatched child/headless session and durable effect matters.
 
-### READY homes
+Before dispatch:
 
-A v1.0.0-era home with `minimum_ready: true` but no recovery/rescuer verification provenance intentionally returns `REFRESH REQUIRED` under v2. Re-check the real recovery path and rescuer, then re-assert both facts through `ena_first_use.py` with durable evidence references. Do not fabricate provenance simply to regain READY.
+```bash
+python tools/ena_peer_effect.py snapshot \
+  --scope /path/to/declared/scope \
+  --out before.json
+```
 
-### SAFE-CHANGE packages
+After the dispatched work exits:
 
-For an existing schema-`0.3` package that must be armed under the v2 gate, reconcile its `rescue.yaml` to `0.4` and explicitly resolve all five new declarations:
+```bash
+python tools/ena_peer_effect.py record \
+  --before before.json \
+  --correlation-id <the same task/correlation id> \
+  --out record.json \
+  --index records.jsonl
+```
 
-- `verify_communication` — concrete two-way check or exact `NOT_NEEDED`;
-- `restore_only` — concrete restore scope, with no generic escape token;
-- `fallback` — concrete fallback/escalation or exact `NOT_NEEDED`;
-- `touches_only_communication_path` — exact `true` or `false`;
-- `touches_only_recovery_path` — exact `true` or `false`.
+The stdout receipt contains only the stable caller-facing minimum: `correlation_id`, `record`, `added_count`, `removed_count`, and `modified_count`. The durable record contains the observed before/after inventory and its own completeness/limitation state.
 
-`status.yaml` remains on its own independent schema `0.3`; do not rewrite it merely to make the two version numbers match. See `UPGRADING.md` for the before/after example and migration steps.
+A child session does not need to cooperate with the recorder. To call the result Host-generated evidence, perform the observation and keep the record outside that child session's writable surface.
 
-### Existing Sleep/Dream bundles
+## Upgrading from v2.0.0
 
-Experimental bundles generated from CRLF or BOM-bearing JSONL under the older text-normalized digest path can contain a digest that does not match the file's raw bytes. Regenerate such bundles when exact byte-level reproducibility matters.
+No migration is required.
+
+- Existing v2.0.0 READY homes remain READY subject to their normal freshness and evidence requirements.
+- Existing SAFE-CHANGE schema-`0.4` rescue packages do not need a v2.1 rewrite.
+- A2A effect receipts are optional; adopting them does not change the existing actor-attribution contract.
+- The shorter mandatory reading path removes universal reading obligations; it does not remove the A2A or Sleep/Dream capabilities from the product.
+
+If the starting point is v1.0.0-era persisted state rather than v2.0.0, follow `UPGRADING.md` for the v2 readiness-provenance and SAFE-CHANGE migration rules before interpreting a refusal as an environment failure.
 
 ## Evidence boundaries
 
-Real Host use has demonstrated the minimum runtime chain: First Use, recovery verification, a non-trivial SAFE-CHANGE, an evidence-backed outcome, and continuation from persisted state in a genuinely new session. Independent adopter runs have also exercised the strengthened SAFE-CHANGE path and the v2 migration/refusal surfaces.
+The new effect recorder deliberately has a bounded claim:
 
-Those results do **not** turn structural declarations into authenticated proof:
+- a scoped receipt proves what the Host observed inside the declared roots; it does **not** prove the rest of the machine was unchanged;
+- the declared scope does not grant permission to modify it and is not an authorization policy;
+- effect evidence does not replace actor attribution;
+- exit `3` means the record exists but the observation had declared limitations; it must not be treated as a complete zero-effect result;
+- Hosts with stronger native filesystem/change-journal mechanisms may use them instead of the reference helper;
+- hashing cost grows with the observed scope, so large trees may be better served by Host-native mechanisms.
 
-- `verification_evidence` is caller-supplied `SELF_ASSERTED` provenance; ENA checks its presence and shape but does not authenticate arbitrary external evidence or prove the referenced mechanism is currently usable.
-- SAFE-CHANGE rescue declarations are self-asserted control facts. Passing the gate proves the required declarations satisfy the machine contract, not that the communication check, restore scope, fallback, or path topology is correct in reality.
-- Actor attribution is not authorization.
-- A configured A2A reference is not proof of current reachability or capability.
-- Reference scripts only enforce what the Host actually routes through them or equivalent Host-native controls.
+Reference scripts still enforce only what the Host routes through them or equivalent Host-native controls.
 
-Sleep/Dream remains **experimental**. Its marginal value over ordinary model reasoning is still **UNMEASURED**. v2.0.0 improves its provenance reproducibility; it does not claim that Dream has been shown to improve outcomes.
+Sleep/Dream remains **experimental**. Its sampling parameters — sizes and weights — remain experimental field parameters, not normative intelligence settings, and passing code and tests are not proof that the mechanism improves decisions. Its marginal value over ordinary model reasoning is still **UNMEASURED**; v2.1.0 does not promote it or claim improved decision quality.
 
-## Known boundaries
-
-- `candidate_outcome.py` records evidence references asserted by the operator; it does not verify arbitrary external references or judge evidence sufficiency.
-- Sleep/Dream sampling parameters remain experimental field parameters, not normative intelligence settings.
-- Multi-process transaction isolation is not claimed for candidate outcome recording.
-- Host-native recovery, supervisor, snapshot, validation-hook, and permission mechanisms remain the preferred stronger implementation when available.
+Measured while this release was being prepared: the sampler draws from pools derived from the material's aggregate shape (`recent` / `old` / `underused` / `salient` slices plus a time-ordered list), so a small material change can reshuffle most of a same-seed sample — removing one record, or moving one timestamp, moved 4 of the 6 selected fragments, while rewording a fragment's text moved none. Determinism for identical input holds. Two Dream cycles over a growing material are therefore not directly comparable at a fixed seed, which is one concrete reason the marginal-value question remains open.
 
 Licensed under Apache License 2.0.
