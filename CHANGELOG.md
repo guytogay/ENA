@@ -2,6 +2,10 @@
 
 All notable changes to the clean ENA product line are recorded here.
 
+## Unreleased
+
+### Documentation
+- Documented what the Dream sampler's two controls actually do, after a field host reported a measured defect (#93) and the maintainer ruling was to clarify rather than change behaviour. `--seed` is a replay/debugging control and should be omitted for recurring live or scheduled runs, where the sampler generates and records a fresh seed; `--count` includes the anchor, so the default `6` leaves at most five slots for six named pools and one pool is omitted, with the omitted pool depending on material and seed; a fixed seed also pins the position drawn inside a pool, which is how new material can be systematically missed when a single pool is its only route. `--count 7` leaves room for the anchor plus all six pools but is a field choice, not a coverage guarantee. Both points are now in the tool's `--help` and in `tools/README.md`, the documented example no longer pins a seed, and `tools/test_dream_sampler_instructions.py` holds the statements and the default in CI.
 ## 2.1.0 — 2026-09-14
 
 ENA v2.1.0 is a backward-compatible minor release that adds Host-observed A2A effect receipts, reduces the universal adoption path, and fixes post-v2 documentation and operator-diagnostic mismatches. No persisted-state migration is required from v2.0.0.

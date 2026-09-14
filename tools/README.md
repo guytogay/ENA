@@ -305,11 +305,18 @@ python tools/combine_dream_material.py \
 
 python tools/dream_sample.py \
   --memory dream-material.jsonl \
-  --output dream-set.json \
-  --seed 42
+  --output dream-set.json
 ```
 
 The sampler records its effective seed and exact input reference/raw-byte SHA-256 digest so the sampling decision can be replayed. Advertised/catalog capabilities remain distinct from installed/verified abilities.
+
+Three facts about the sampling controls, each measured on a real host (issue #93) and easy to get wrong:
+
+- **`--seed` is a replay/debugging control.** Omit it for recurring live or scheduled runs: the sampler then generates a fresh random seed and records it, so the run stays reproducible after the fact without pinning the draw. Passing a fixed seed makes every run reproducible *in advance*, which also makes every run draw from the same places.
+- **`--count` includes the anchor.** The default `6` gives the anchor one slot and leaves at most five slots for six named pools (`recent`, `old`, `underused`, `external_or_unresolved`, `distant`, `salient`), so one pool is omitted — and a fixed seed omits the same one every time. Which pool is omitted depends on the material and the seed. `--count 7` leaves room for the anchor plus all six pools; it is an experimental field choice, not a new default and not a coverage guarantee.
+- **A fixed seed also pins the position drawn inside a pool.** When new material can only enter through one pool, that is how it can be systematically missed across runs, even though the pool exists and is populated.
+
+None of this makes the sampler wrong: same seed and same input still reproduce exactly, which is what it promises. It matters when comparing runs or when the newest material arrives through a single pool.
 
 ## Record a speculative candidate
 

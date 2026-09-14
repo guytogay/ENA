@@ -78,8 +78,21 @@ def main() -> int:
     p.add_argument("--output", required=True)
     p.add_argument("--mode", choices=("free", "problem-guided"), default="free")
     p.add_argument("--anchor-id", help="Required for problem-guided mode")
-    p.add_argument("--seed", type=int)
-    p.add_argument("--count", type=int, default=6, help="Experimental default: 6 source fragments")
+    p.add_argument(
+        "--seed",
+        type=int,
+        help="Replay/debugging control. Omit it for recurring live or scheduled runs: a fresh seed "
+             "is generated and recorded, so the run stays reproducible after the fact. A fixed seed "
+             "also pins which pool is omitted and which position is drawn inside a pool (see #93).",
+    )
+    p.add_argument(
+        "--count",
+        type=int,
+        default=6,
+        help="Experimental default: 6 source fragments, INCLUDING the anchor. Six leaves at most "
+             "five slots for six named pools, so one pool is omitted. --count 7 leaves room for the "
+             "anchor plus all six pools; it is a field choice, not a coverage guarantee.",
+    )
     p.add_argument(
         "--random-jump-probability",
         type=float,
