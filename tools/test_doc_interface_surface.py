@@ -50,6 +50,8 @@ ADOPTER_DOCS = (
 DOCUMENTED_COMMAND = re.compile(r"^(?:python3?\s+(?:-B\s+)?)?tools/([A-Za-z_]\w*\.py)\b(.*)$")
 CONTINUATION = re.compile(r"\\\s*\n\s*")
 FLAG = re.compile(r"(?<!\w)(--[a-z0-9][a-z0-9-]*)")
+# argparse prints `{snapshot,record}` in the top-level help when a CLI has subcommands.
+SUBPARSER_CHOICE = re.compile(r"\{([a-z0-9][a-z0-9_,-]*)\}")
 
 # The reference-tool inventory is the one fenced `text` block that lists tools one per line.
 INVENTORY_BLOCK = re.compile(r"```text\n(.*?)```", re.DOTALL)
@@ -83,17 +85,32 @@ class DocumentationSurfaceTests(unittest.TestCase):
     helps: dict[str, str] = {}
 
     @classmethod
-    def cli_help(cls, tool: str) -> str:
-        """The tool's real ``--help`` output, captured once per tool."""
-        if tool not in cls.helps:
+    def cli_help(cls, tool: str, subcommand: str | None = None) -> str:
+        """The tool's real ``--help`` output, captured once per tool and per subcommand.
+
+        A tool whose CLI has subcommands keeps its flags out of the top-level help. Asking the
+        documented subcommand for its own help is stricter than accepting the union of every
+        subcommand: a flag documented under the wrong subcommand must still fail.
+        """
+        key = tool if subcommand is None else f"{tool} {subcommand}"
+        if key not in cls.helps:
             environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
+            argv = [sys.executable, "-B", str(TOOLS / tool)]
+            if subcommand:
+                argv.append(subcommand)
+            argv.append("--help")
             result = subprocess.run(
-                [sys.executable, "-B", str(TOOLS / tool), "--help"],
-                cwd=str(REPO), env=environment, text=True, capture_output=True,
+                argv, cwd=str(REPO), env=environment, text=True, capture_output=True,
                 encoding="utf-8", errors="replace",
             )
-            cls.helps[tool] = f"{result.stdout}{result.stderr}"
-        return cls.helps[tool]
+            cls.helps[key] = f"{result.stdout}{result.stderr}"
+        return cls.helps[key]
+
+    @classmethod
+    def subcommands(cls, tool: str) -> set[str]:
+        """Subcommand names argparse exposes at the top level, e.g. ``{snapshot,record}``."""
+        match = SUBPARSER_CHOICE.search(cls.cli_help(tool))
+        return set(match.group(1).split(",")) if match else set()
 
     def test_the_documents_under_test_exist(self):
         # A rename must fail loudly here instead of quietly scanning nothing.
@@ -142,6 +159,10 @@ class DocumentationSurfaceTests(unittest.TestCase):
                         f"{path.name} passes {flags} to tools/{tool}, which parses no arguments",
                     )
                     help_text = self.cli_help(tool)
+                    tokens = rest.split()
+                    documented_subcommand = tokens[0] if tokens else ""
+                    if documented_subcommand in self.subcommands(tool):
+                        help_text = self.cli_help(tool, documented_subcommand)
                     for flag in flags:
                         self.assertIn(
                             flag, help_text,
@@ -184,6 +205,28 @@ class DocumentationSurfaceTests(unittest.TestCase):
                         f"{path.name} refers to tools/{module}, which does not exist",
                     )
         self.assertGreater(seen, 0, "no literal tools/ path was found in adopter-facing prose")
+
+    def test_subcommand_help_is_resolved_per_subcommand(self):
+        """A documented subcommand's flags are validated against that subcommand's own help.
+
+        `ena_peer_effect.py` keeps `--scope` and `--before` out of its top-level help, so a scanner
+        that only ever runs `--help` would report documented, working examples as broken. Resolving
+        the documented subcommand is the fix, and this pins that it resolves per subcommand rather
+        than accepting the union: `--index` belongs to `record` and must not be accepted for
+        `snapshot`.
+        """
+        tool = "ena_peer_effect.py"
+        self.assertTrue(
+            (TOOLS / tool).is_file(),
+            "this lock-in test needs ena_peer_effect.py to exist",
+        )
+        self.assertEqual(self.subcommands(tool), {"snapshot", "record"})
+        self.assertNotIn("--scope", self.cli_help(tool),
+                         "the top-level help now lists subcommand flags; this lock-in test is stale")
+        self.assertIn("--scope", self.cli_help(tool, "snapshot"))
+        self.assertIn("--index", self.cli_help(tool, "record"))
+        self.assertNotIn("--index", self.cli_help(tool, "snapshot"),
+                         "a flag from one subcommand must not be accepted for another")
 
     def test_the_scanner_does_not_read_non_tool_names_as_tool_paths(self):
         # Locked in deliberately: `rollback.py` is the package-local placeholder, and

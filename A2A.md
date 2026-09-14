@@ -54,6 +54,26 @@ Do not rely on a Host runtime's private namespace for this contract. A real Linu
 
 If a bridge cannot currently propagate caller/task identity, the A2A path may still be usable for communication. Durable ENA artifacts must then keep the missing attribution as `UNKNOWN`; do not infer a local initiator or treat transport identity as authority.
 
+## Before you dispatch work that may change durable state
+
+When a peer task may create, modify, move, or remove durable state, use the Host/transport's existing request surface to state the **observation scope** and the expected effect before dispatch, and preserve the same task/correlation id used for attribution.
+
+After the task finishes, prefer a **Host-generated effect receipt** over the child session's prose. Compare the observed effect with what was expected before treating the work as complete. A child/headless session saying `DONE` is evidence of what it reported, not evidence that the intended durable effect occurred or that no other effect occurred.
+
+If the Host cannot produce an observable effect receipt, keep the effect claim scoped to what is actually known (`UNKNOWN` / unavailable as appropriate) rather than reconstructing durable state from narration alone.
+
+The declared scope is an **observation boundary, not an authorization boundary**. Use Host-native authorization separately.
+
+## When your Host receives dispatched work
+
+When the bridge/runtime can observe the target surface from outside the dispatched session, it should capture the declared scope immediately before starting the child/headless work and again after that work exits, derive the observed `added` / `removed` / `modified` effect, and retain a durable work record keyed by the same task/correlation id.
+
+Run the observation and store the record **outside the dispatched session's writable surface** when claiming Host-generated evidence. Continue propagating `ENA_PEER_CALLER` / `ENA_PEER_TASK_ID` into the child session so any ENA artifacts written during the work can preserve honest attribution; effect evidence does not replace actor attribution.
+
+Return or expose a receipt that lets the initiating side locate the durable work record and compare observed effect with the requested effect. If the Host also observes effects outside the declared scope, report them; do not turn out-of-scope observation into an automatic refusal by default. A bounded scope record proves only what the Host observed inside that scope; it is not a claim that the whole machine was unchanged elsewhere.
+
+`tools/ena_peer_effect.py` is an optional reference primitive for that observation: it snapshots the declared scopes, re-observes them after the dispatched process exits, and writes a durable record plus a one-line receipt. It is a reference observation helper, not a required wire protocol and not an ENA control-file schema. It never refuses work because an effect was unexpected.
+
 ## Use a rescue peer when A2A is part of recovery
 
 For a risky self-change, an A2A peer can receive the recovery package before live state is modified.
