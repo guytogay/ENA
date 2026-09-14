@@ -1,6 +1,6 @@
 # ENA
 
-Release: v2.1.0 — leaner adoption, Host-observed A2A effect receipts, and tighter documentation/tool consistency. See `CHANGELOG.md` and `RELEASE-NOTES.md`.
+Release: v2.1.1 — corrected Dream sampler control documentation, shipped as a patch so that hosts pinning release tags receive it. See `CHANGELOG.md` and `RELEASE-NOTES.md`.
 
 ENA helps an Agent add runtime capabilities that reasoning alone does not provide: grounded self-inspection, external recovery, reversible self-change, cross-session memory maintenance, idea variation, and evidence-backed evolution.
 

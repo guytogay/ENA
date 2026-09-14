@@ -1,73 +1,33 @@
-# ENA v2.1.0
+# ENA v2.1.1
 
-ENA v2.1.0 is a backward-compatible minor update to the clean ENA product line. It makes adoption lighter, adds a Host-observed way to account for the durable effects of dispatched Agent work, and closes several documentation and operator-diagnostic gaps found after v2.0.0 shipped.
+ENA v2.1.1 is a **patch release**: it carries corrected documentation and CLI help text for the Dream sampler's two controls. **No behaviour changes, no new contract surface, and no persisted-state migration.** The tool, its defaults, and its exit codes are exactly those of v2.1.0.
 
-There is **no required persisted-state migration from v2.0.0 to v2.1.0**. Existing v2.0.0 READY homes and SAFE-CHANGE packages remain valid under the same contracts. If you are upgrading from v1.0.0-era state, the v2 migration rules in `UPGRADING.md` still apply.
+It exists because of how adoption works: the clarification was written after a maintainer ruling on a field report, but it landed on `main` one commit *after* the v2.1.0 tag. A host that pins release tags for reproducibility therefore received the pre-ruling wording — describing `--seed` as a bare parameter with no note that a fixed seed pins the sampling positions. Shipping the same text inside a tag is the point of this release; nothing else changed.
 
 ## What changes
 
-- **A2A effect receipts** — `tools/ena_peer_effect.py` can snapshot a declared observation scope before dispatched work, observe the same scope afterwards, and record `added` / `removed` / `modified` effects keyed by the same correlation id used for attribution. The initiating side can retrieve a compact receipt instead of treating a child session's narrative `DONE` as proof of durable effect.
-- **Effect evidence stays separate from attribution and authorization** — `ENA_PEER_CALLER` / `ENA_PEER_TASK_ID` still answer who initiated the work. The new effect record answers what the Host observed inside the declared scope. The scope is an observation boundary, not an authorization boundary, and the helper never rejects work merely because an effect was unexpected.
-- **Incomplete observation fails visibly** — missing or unreadable declared scopes do not produce a false empty result. The tool writes an incomplete record and returns its documented semantic exit code `3` so callers can distinguish a bounded observation with limitations from a complete observation.
-- **Symlink-safe, content-based comparison** — directory symlinks are recorded rather than followed, so they cannot silently widen the observation surface, and regular-file modification is decided from content digests rather than timestamps alone.
-- **Leaner adoption path** — the mandatory reading path is now four documents: `FIRST-USE.md`, `SURVIVAL.md`, `SAFE-CHANGE.md`, and `EVOLUTION.md`. `A2A.md` and `SLEEP-DREAM-QUICKSTART.md` remain available when those capabilities are actually needed instead of being universal adoption steps.
-- **Documentation/interface regression coverage** — CI now checks that documented `tools/*.py` examples refer to shipped tools and valid flags, that the reference-tool inventory matches reality, and that subcommand-based CLIs are checked against the documented subcommand's own help rather than a misleading top-level union.
-- **Corrected operator-facing behavior descriptions** — the documented `automatic_rollback` behavior now matches the existing case-insensitive gate instead of implying only lowercase `true` / `false` are accepted.
-- **Cleaner preflight diagnostics** — an unparsable `SYSTEM.yaml` is reported once rather than twice with a nested duplicate prefix; the refusal code and fail-closed behavior are unchanged.
-- **Post-v2 adopter corrections** — documentation now matches the shipped scaffold markers, SAFE-CHANGE transition behavior, transition-history creation point, legacy migration source, unattended First Use authority, and bare-session recovery evidence found during an independent adoption run.
+- **`--seed` is a replay/debugging control.** Recurring live or scheduled runs should omit it; the sampler then generates a fresh seed and records it in the run record, so the run stays reproducible after the fact. A **fixed** seed also pins *which* pool is omitted and *which position* is drawn inside a pool, which is how new material can be systematically missed when a single pool is its only route into the sample.
+- **`--count` includes the anchor.** The default `6` therefore leaves at most five slots for six named pools and one pool is omitted; `--count 7` leaves room for the anchor plus all six pools, but that is a field choice rather than a coverage guarantee.
+- **Both statements are now enforced, not just written.** They live in the tool's `--help`, in `tools/README.md`, the documented example no longer pins a seed, and `tools/test_dream_sampler_instructions.py` holds the statements and the default in CI, so the documentation cannot drift away from the tool silently.
 
-## A2A effect receipts
+## Upgrading from v2.1.0
 
-Use the effect helper when a Host or bridge can observe the target surface from outside the dispatched child/headless session and durable effect matters.
+No migration is required, and no action is required beyond reading the corrected text.
 
-Before dispatch:
-
-```bash
-python tools/ena_peer_effect.py snapshot \
-  --scope /path/to/declared/scope \
-  --out before.json
-```
-
-After the dispatched work exits:
-
-```bash
-python tools/ena_peer_effect.py record \
-  --before before.json \
-  --correlation-id <the same task/correlation id> \
-  --out record.json \
-  --index records.jsonl
-```
-
-The stdout receipt contains only the stable caller-facing minimum: `correlation_id`, `record`, `added_count`, `removed_count`, and `modified_count`. The durable record contains the observed before/after inventory and its own completeness/limitation state.
-
-A child session does not need to cooperate with the recorder. To call the result Host-generated evidence, perform the observation and keep the record outside that child session's writable surface.
-
-## Upgrading from v2.0.0
-
-No migration is required.
-
-- Existing v2.0.0 READY homes remain READY subject to their normal freshness and evidence requirements.
-- Existing SAFE-CHANGE schema-`0.4` rescue packages do not need a v2.1 rewrite.
-- A2A effect receipts are optional; adopting them does not change the existing actor-attribution contract.
-- The shorter mandatory reading path removes universal reading obligations; it does not remove the A2A or Sleep/Dream capabilities from the product.
-
-If the starting point is v1.0.0-era persisted state rather than v2.0.0, follow `UPGRADING.md` for the v2 readiness-provenance and SAFE-CHANGE migration rules before interpreting a refusal as an environment failure.
+- Existing READY homes, SAFE-CHANGE packages and A2A effect records are unaffected.
+- If a scheduled or recurring run passes an explicit `--seed`, that is now documented as the wrong usage; omitting it is the documented behaviour. Changing it is optional and reversible.
+- If a run uses `--count 6` while relying on all six pools being sampled, the documentation now says plainly that one pool is omitted each round.
 
 ## Evidence boundaries
 
-The new effect recorder deliberately has a bounded claim:
+The clarification came from a field host's measured report, and the measurement did not decide behaviour:
 
-- a scoped receipt proves what the Host observed inside the declared roots; it does **not** prove the rest of the machine was unchanged;
-- the declared scope does not grant permission to modify it and is not an authorization policy;
-- effect evidence does not replace actor attribution;
-- exit `3` means the record exists but the observation had declared limitations; it must not be treated as a complete zero-effect result;
-- Hosts with stronger native filesystem/change-journal mechanisms may use them instead of the reference helper;
-- hashing cost grows with the observed scope, so large trees may be better served by Host-native mechanisms.
+- the maintainer ruling was to **document rather than change** the sampler, so v2.1.1 contains no behavioural fix;
+- the reported mechanism was reproduced independently before the wording was written, and the wording was corrected where the original report generalised too far (the omitted pool is fixed *by material and seed*, not permanently one named pool);
+- the new CI test asserts the documented statements and the default, not the sampling quality.
 
-Reference scripts still enforce only what the Host routes through them or equivalent Host-native controls.
+Sleep/Dream remains **experimental**. Its sampling parameters — sizes and weights — remain experimental field parameters, not normative intelligence settings, and passing code and tests are not proof that the mechanism improves decisions. Its marginal value over ordinary model reasoning is still **UNMEASURED**; v2.1.1 does not promote it or claim improved decision quality.
 
-Sleep/Dream remains **experimental**. Its sampling parameters — sizes and weights — remain experimental field parameters, not normative intelligence settings, and passing code and tests are not proof that the mechanism improves decisions. Its marginal value over ordinary model reasoning is still **UNMEASURED**; v2.1.0 does not promote it or claim improved decision quality.
-
-Measured while this release was being prepared: the sampler draws from pools derived from the material's aggregate shape (`recent` / `old` / `underused` / `salient` slices plus a time-ordered list), so a small material change can reshuffle most of a same-seed sample — removing one record, or moving one timestamp, moved 4 of the 6 selected fragments, while rewording a fragment's text moved none. Determinism for identical input holds. Two Dream cycles over a growing material are therefore not directly comparable at a fixed seed, which is one concrete reason the marginal-value question remains open.
+Measured while v2.1.0 was being prepared, and still true: the sampler draws from pools derived from the material's aggregate shape (`recent` / `old` / `underused` / `salient` slices plus a time-ordered list), so a small material change can reshuffle most of a same-seed sample — removing one record, or moving one timestamp, moved 4 of the 6 selected fragments, while rewording a fragment's text moved none. Determinism for identical input holds. Two Dream cycles over a growing material are therefore not directly comparable at a fixed seed, which is one concrete reason the marginal-value question remains open.
 
 Licensed under Apache License 2.0.
