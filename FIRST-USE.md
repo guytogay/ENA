@@ -2,6 +2,8 @@
 
 First Use should establish a usable minimum quickly. Unknown facts may remain `UNKNOWN`; do not turn first adoption into a full-system questionnaire.
 
+**Operational self-knowledge is foundational:** an Agent must ground its idea of what it can do in the actual Host—its execution surfaces, tools, memory, communication, evidence access, authority limits and recovery. Its model name or instructions alone do not establish these capabilities. Discover the usable minimum now and refresh relevant facts as work, permissions and the environment change; a claim of complete self-knowledge is not required or credible.
+
 Verify what can be inspected from the Host, runtime, files, tools, APIs or documentation. Do not guess when the environment can be checked.
 
 The executable path is:
@@ -251,6 +253,19 @@ Sleep/Dream scheduling and cost limits may also be supplied by policy. If absent
 ## Expand the map only when a capability needs it
 
 After the minimum is working, inspect additional areas as they become relevant instead of blocking adoption on a complete inventory.
+
+### Discover the Host's actual operating abilities
+
+When the Agent needs to choose a task method, collaborator or evolution direction, inspect the relevant **live** surfaces before assuming what it can do:
+
+- **Act:** available commands/process launch, tools, skills, connectors and their actual interfaces; whether a child Agent/session may be launched.
+- **Think and delegate:** model/provider choices genuinely exposed by the Host, and whether an alternate model or remote peer can actually receive work. The Agent may not be able to inspect its own underlying model identity; record that limit honestly.
+- **Observe and continue:** task traces, execution events/hooks, context/session boundaries, durable memory and handoff paths.
+- **Operate safely:** permissions, authentication/approval boundaries, cost/latency budgets, isolation and recovery mechanisms.
+
+Use Host-provided capability registries/status APIs, current config or tool help for *discovery*; where a decision depends on real availability, make the smallest authorized read-only or reversible test and observe its result. A listed executable is not proof of a working model account; a model in a catalog is not proof that the Host can invoke it. Separate **verified working**, **advertised but unverified**, **denied/unavailable**, and **unknown** in reasoning, without inventing a new mandatory schema. Record only material current facts in the existing system map and refresh them when they might have changed. Do not run exhaustive scans, probes of secrets, or token-consuming model calls without a concrete reason.
+
+This self-discovery can lead to reusing an existing capability, seeking a missing one, changing a plan, or doing nothing. It does not grant authority to install tools, spawn external workers or increase permissions. For a specific review use case, see [outsider-view example](examples/evolution/OUTSIDER-REVIEW.md).
 
 ### Communication / A2A
 
