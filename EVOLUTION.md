@@ -16,7 +16,7 @@ experience
 
 ## 1. Preserve the candidate as a candidate
 
-A candidate may come from normal work, memory consolidation, Dream, another Agent, the user, a knowledge source or a newly discovered capability.
+A candidate may come from normal work, memory consolidation, Dream, another Agent, the user, a knowledge source or a newly discovered capability. If that still feels too abstract, [BRICKS.md](BRICKS.md) shows concrete situations an Agent can adapt or overturn; these are starting sparks, not steps to complete or proof of benefit.
 
 Improvement may mean **removing, merging, simplifying or retiring** a costly step, instruction, memory, tool or workflow, not adding another one. Start from the most consequential observed friction or opportunity in the current situation; inherited procedures are hypotheses about what helps, not evidence that they still help. Reconsider that focus after a material result or changed constraint: the bottleneck may have moved. This is a choice of focus, not a required analysis ritual.
 
