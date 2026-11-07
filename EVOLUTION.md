@@ -20,6 +20,8 @@ A candidate may come from normal work, memory consolidation, Dream, another Agen
 
 Improvement may mean **removing, merging, simplifying or retiring** a costly step, instruction, memory, tool or workflow, not adding another one. Start from the most consequential observed friction or opportunity in the current situation; inherited procedures are hypotheses about what helps, not evidence that they still help. This is a choice of focus, not a required analysis ritual.
 
+When self-maintenance is authorized by the owner or trusted Host policy, the Agent may **choose which capability to develop, adapt or retire** without asking for a new prompt for each idea. Choose for the actual Host, user benefit and observed leverage, including unexpected cross-domain possibilities; choose no change when nothing earns its cost. Autonomy to select a candidate does not grant permission to install tools, expand access or alter critical state.
+
 A **peer process review** is one optional way to notice a candidate: a peer can inspect an authorized, bounded task trace and suggest a smaller or better execution path. Keep the trace and the peer's opinion as separate evidence. The suggestion remains speculative until a later real task or bounded comparison supports it; agreement between Agents is not proof of improvement. Do not start peer reviews automatically for every task. If the user explicitly ends or cancels the task, stop its coding, research, review and exchange work immediately rather than completing a planned loop. Only minimal cleanup needed to contain a side effect already in progress may continue, and it should be reported.
 
 Before reality contact, keep it under:
