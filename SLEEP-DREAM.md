@@ -177,6 +177,7 @@ Freeze the sampled set for a round and deliberately delay convergence. Try sever
 seek remote structural similarities
 combine mechanisms from different memories/knowledge sources
 reverse roles, assumptions or causal direction
+remove, combine or retire a step or assumption that no longer earns its cost
 transfer a mechanism across domains
 combine a problem with an existing or discoverable capability
 change constraints in a counterfactual

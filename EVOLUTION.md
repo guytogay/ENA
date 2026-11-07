@@ -18,7 +18,9 @@ experience
 
 A candidate may come from normal work, memory consolidation, Dream, another Agent, the user, a knowledge source or a newly discovered capability.
 
-A **peer process review** is one optional way to notice a candidate: a peer can inspect an authorized, bounded task trace and suggest a smaller or better execution path. Keep the trace and the peer's opinion as separate evidence. The suggestion remains speculative until a later real task or bounded comparison supports it; agreement between Agents is not proof of improvement. Do not start peer reviews automatically for every task or continue work after the user has ended it.
+Improvement may mean **removing, merging, simplifying or retiring** a costly step, instruction, memory, tool or workflow, not adding another one. Start from the most consequential observed friction or opportunity in the current situation; inherited procedures are hypotheses about what helps, not evidence that they still help. This is a choice of focus, not a required analysis ritual.
+
+A **peer process review** is one optional way to notice a candidate: a peer can inspect an authorized, bounded task trace and suggest a smaller or better execution path. Keep the trace and the peer's opinion as separate evidence. The suggestion remains speculative until a later real task or bounded comparison supports it; agreement between Agents is not proof of improvement. Do not start peer reviews automatically for every task. If the user explicitly ends or cancels the task, stop its coding, research, review and exchange work immediately rather than completing a planned loop. Only minimal cleanup needed to contain a side effect already in progress may continue, and it should be reported.
 
 Before reality contact, keep it under:
 
@@ -102,7 +104,7 @@ Compare the result with the baseline using evidence appropriate to the candidate
 - deterministic validation and repair history;
 - a period of normal operation without the targeted failure.
 
-Record actual evidence, including negative and null results.
+Record actual evidence, including negative and null results. Compare user-visible benefit against **total** extra cost: elapsed time, model/tool usage, review overhead, maintenance and regressions. A cleaner internal process that makes the real task worse is not an improvement.
 
 ## 8. Decide what survives
 
