@@ -162,6 +162,8 @@ Preserve what was tried, where it was tried, whether it reached production, what
 
 Also preserve useful validation/repair trajectories. Repeated evidence that the same structural mistake triggers the same deterministic failure and repair may later become a stronger procedure, retrieval cue or preventive check during Sleep.
 
+When judging an improvement, observe the **whole Host-visible task path**, including foreground interaction, background execution, peer work, session continuity and recovery. Optimizing one layer is not progress if the end-to-end result deteriorates. A Host may use event/hook-driven task progression to release ready work without a timed gap; that general project orchestration belongs in the Host or a separate work tool, not in ENA's candidate records. Failure detection, Agent activation and returning to the same messaging channel require real Host integration; ENA cannot supply them by instruction alone. The trigger/recovery path itself may become a bounded evolution candidate when observed failures justify it; the Agent must still test the change and avoid self-perpetuating retries.
+
 Later Sleep consolidates what reality established. Later Dream runs may reuse rejected ideas when new context supports a different variation.
 
 ## 10. Keep the history simple
