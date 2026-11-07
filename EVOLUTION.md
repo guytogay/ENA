@@ -18,6 +18,8 @@ experience
 
 A candidate may come from normal work, memory consolidation, Dream, another Agent, the user, a knowledge source or a newly discovered capability.
 
+A **peer process review** is one optional way to notice a candidate: a peer can inspect an authorized, bounded task trace and suggest a smaller or better execution path. Keep the trace and the peer's opinion as separate evidence. The suggestion remains speculative until a later real task or bounded comparison supports it; agreement between Agents is not proof of improvement. Do not start peer reviews automatically for every task or continue work after the user has ended it.
+
 Before reality contact, keep it under:
 
 ```text
