@@ -157,7 +157,7 @@ Preferred sources are:
 
 An Agent Card is useful material because it expresses the Agent's advertised skills/capabilities, but advertised capability must still be checked against live reality before use.
 
-Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has.
+Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has. Explore outside familiar domains when useful, but treat popularity lists, catalogs and other Agents' choices as inspiration rather than a required search route or proof of fit. The best candidate depends on this Host's actual constraints, not how novel or widely used a tool appears.
 
 Stale or unknown-freshness material may still participate in Dream as historical/speculative input when useful, but its current validity must remain explicit. Reality contact must refresh/verify it before selection depends on it.
 
@@ -222,7 +222,7 @@ Do not create a separate selection system for Dream output.
 
 ## 7. Scheduling and limits
 
-Sleep and Dream do not need human biological timing. Use user-confirmed or trusted-policy cadence/cost limits and the Host's existing scheduler when possible.
+Sleep and Dream do not need human biological timing. Use user-confirmed or trusted-policy cadence/cost limits and the Host's existing scheduler when possible. Where the Host has an authorized idle/event/cadence hook, it may invoke bounded exploration **without a fresh human reminder every time**. The trigger must actually be wired and verified on that Host; reading this document does not schedule anything.
 
 Respect explicit per-run limits for source material, generated candidates, wall-clock time and model/tool cost. Do not replay an unlimited backlog after missed runs.
 
