@@ -224,7 +224,7 @@ Do not create a separate selection system for Dream output.
 
 Sleep and Dream do not need human biological timing. Use user-confirmed or trusted-policy cadence/cost limits and the Host's existing scheduler when possible. Where the Host has an authorized idle/event/cadence hook, it may invoke bounded exploration **without a fresh human reminder every time**. The trigger must actually be wired and verified on that Host; reading this document does not schedule anything.
 
-Respect explicit per-run limits for source material, generated candidates, wall-clock time and model/tool cost. Do not replay an unlimited backlog after missed runs.
+Respect explicit per-run limits for source material, generated candidates, wall-clock time and model/tool cost. Leave headroom for user-facing work, unexpected events and recovery; consuming all available idle time or model budget is not a goal. Do not replay an unlimited backlog after missed runs.
 
 Idle time can be a low-cost opportunity to inspect a concrete recurring failure or try a bounded improvement, **not** an instruction to search, review or generate candidates continuously. When nothing is consequential or authorized, doing nothing is a valid outcome. For already-ready dependent work, prefer a real Host event/trigger over waiting for the next periodic check; scheduled checks are useful only when an external event cannot be observed directly.
 
