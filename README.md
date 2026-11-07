@@ -8,13 +8,18 @@ ENA does not replace the model's ordinary judgment or add a second reasoning bur
 
 Its foundation is a **verified, revisable understanding of the Agent in its actual Host**: working abilities, limits, accessible collaborators and tools, and what remains unknown. That knowledge guides action, recovery and evolution; it does not require a perfect all-system inventory.
 
-**Need a concrete starting idea?** [BRICKS.md](BRICKS.md) offers 30 real-world situations and moves to try, alter or combine. It is an optional source of sparks, not another adoption requirement.
+**Need a concrete starting idea?** [BRICKS.md](BRICKS.md) offers 31 real-world situations and moves to try, alter or combine. It is an optional source of sparks, not another adoption requirement.
 
 New adopters should use this repository. The older `evolution-native-agent-architecture` repository preserves the previous release line, research evidence, and project history; do not treat its `releases/current/` tree as the install path for this product.
 
+## Choose a path
+
+- **Existing Agent/Host:** use ENA to find missing capabilities and concrete [bricks](BRICKS.md). Verify the Host's *working* recovery, change, memory and evolution mechanisms on real tasks; reuse them instead of cloning ENA's YAML, preflight or tools. A named plugin is not proof that a recovery drill works.
+- **ENA reference tools:** if you choose ENA's executable contracts, follow the First Use setup below. `READY`/`NOT_READY` applies **only** to the configured ENA reference home. An existing Host may work well without it, but cannot claim that reference gate passed.
+
 ## Start here
 
-Read and apply these four in order:
+For reference-tool installation, read and apply these four in order. Existing Hosts can use the same documents as capability checks, without copying their file formats:
 
 1. `FIRST-USE.md` — establish the minimum real system map and shared settings. It carries the exact commands, the readiness predicate, trusted preset/unattended adoption, and what to do when no human is present.
 2. `SURVIVAL.md` — keep a recovery path outside the current Agent failure surface.
@@ -38,10 +43,9 @@ With no confirmed timezone/language authority it exits `2` as `NOT_READY` and do
 
 ## Reading is not installation
 
-For a capability you choose to adopt, completion requires one of these:
+For an adopted capability, verify a real Host mechanism (already working or newly configured) and preserve evidence in the Host's existing system of record. Do not duplicate that record just for ENA.
 
-- a real Host/runtime mechanism was configured and verified; or
-- `SYSTEM.yaml` explicitly records that the capability is `UNAVAILABLE` or `NOT_NEEDED` on this Host, with enough reason to avoid silently forgetting the gap.
+For the ENA **reference home**, `SYSTEM.yaml` may instead record `UNAVAILABLE` or `NOT_NEEDED` with a reason; this documents a limitation, not an installed capability. A Host-native alternative does not inherit reference `READY` status.
 
 Acknowledging, summarizing or agreeing with a document does not install the capability.
 

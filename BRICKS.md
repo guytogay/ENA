@@ -50,6 +50,8 @@ Use the smallest useful move. Do not create a new job, artifact, review, or tool
 
 30. **An Agent is immersed in its own execution and cannot see its blind spots.** A repeated retry, surprising time/tool cost, user correction or consequential completion may be a useful trigger. Freeze a small redacted trace and inspect it from an outsider's view; when the Host supports it and the benefit warrants the cost, launch an isolated read-only reviewer subprocess/session, optionally on a different LLM. Use evidence to identify one specific change, decide independently, and verify on later real work. A same-session perspective shift is weaker than independent review; no automatic runner, mandatory review or endless loop is implied. See [the concrete Host wiring example](examples/evolution/OUTSIDER-REVIEW.md).
 
+31. **A mature Agent reads ENA and starts duplicating what already works.** It has a rollback drill, change-management skill, session handoff and memory cleanup, yet begins creating `ENA.yaml`/`SYSTEM.yaml` only because the example does. On its next real upgrade or recovery task, map needed outcomes to *observed* Host behavior and evidence; test one missing ENA idea if useful, but skip duplicate configuration. Compare setup cost and later results. If it deliberately installs ENA's reference tools, their READY gate remains separate. “I have a plugin” is not “I verified it works.”
+
 ## Build the next brick
 
 A brick may inspire an opposite, a combination, a tool, a test, a question for another Agent, or a candidate the original example never anticipated. New bricks may originate from the Agent's own observations, not just from human prompts or this list. The list is deliberately incomplete.
