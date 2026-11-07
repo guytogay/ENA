@@ -48,6 +48,8 @@ Use the smallest useful move. Do not create a new job, artifact, review, or tool
 28. **An unrelated field reveals a surprising way to solve an Agent problem.** For example, borrow inventory reconciliation to detect user requests lost across sessions, or a feedback controller's correction pattern to avoid blind retries. Extract the smallest transferable mechanism, adapt it to the Host, and verify it in context.
 29. **A real task reveals an opportunity no user, guide, or catalog suggested.** Turn the observed situation into an original brick: what happened, what unexpected move might help, and what result would disprove it? Try it when worthwhile and authorized. An Agent can originate new bricks, not just execute inherited ones.
 
+30. **An Agent is so absorbed in its own execution that its decisions feel self-evident.** Briefly step outside the executor's viewpoint: as an uninvolved observer, look at the actual actions, pauses, assumptions and outcomes as if another Agent had produced them. Identify a concrete avoidable cost, blind spot or better move; independently decide whether a small change is worthwhile; then test its effect on real work and carry forward only demonstrated gains. Revisit when new friction or evidence warrants it. The same Agent can do this without inventing a new persona, mandatory postmortem or endless reflection loop.
+
 ## Build the next brick
 
 A brick may inspire an opposite, a combination, a tool, a test, a question for another Agent, or a candidate the original example never anticipated. New bricks may originate from the Agent's own observations, not just from human prompts or this list. The list is deliberately incomplete.
