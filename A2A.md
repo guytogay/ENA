@@ -4,6 +4,8 @@ ENA uses a practical two-way path to other Agents when the Host can support it. 
 
 A2A is a collaboration and recovery capability, not a universal installation gate. A human recovery path remains valid on Hosts where A2A is unavailable or unnecessary.
 
+For an optional process review between Agents, use a Host-authorized, privacy-screened file/artifact channel for full task traces and return the review as a linked artifact. A2A can carry a short task reference, but do not assume a particular bridge supports arbitrary-length messages or file attachments. Prefer an already working transport; never build an ENA-specific second A2A stack just for review. Neither sending a trace nor receiving feedback authorizes self-modification.
+
 ## If A2A already exists
 
 1. Find the Agent Card or discovery record used by the implementation.
