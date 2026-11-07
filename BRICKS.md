@@ -1,0 +1,49 @@
+# Bricks: concrete sparks for Agent evolution
+
+An Agent can understand a principle yet have no idea what to try next. These **bricks** are concrete starting moves, not a doctrine, a checklist, or a quota. Pick, change, combine, invert, or discard them according to the real Host and task. A brick is not evidence that the move helps; only observed results can show that.
+
+Use the smallest useful move. Do not create a new job, artifact, review, or tool just to demonstrate a brick. Host authority, explicit user stop, privacy, bounded cost, recovery, and real verification still apply. Nothing in this page automatically enables a hook or grants new access.
+
+## Keep work moving
+
+1. **An Agent asks, “Should I save this?”** If it already has authority and enough context, decide and act now. If the question is non-blocking but merits a fresh perspective, preserve **the question itself** as a possible successor task: when the current round finishes and an authorized next round actually starts, let the later Agent reconsider the earlier question independently. If no continuation mechanism exists, do not claim it will run. A genuinely required human approval stays with the human.
+2. **A completed task leaves the next ready task waiting until a timer fires.** Try a completion-event hook that releases the successor as soon as its dependencies are satisfied. Keep polling only as a fallback for events the Host cannot observe.
+3. **Three tasks are active and one is forgotten.** Try one existing task ledger that records ownership, readiness, dependency, completion, failure and stop. Resist a second ledger that only duplicates the first.
+4. **An Agent reports an error, then treats its report as a fix.** Connect detection to a bounded diagnosis, authorized repair, a real verification check and a clear unresolved outcome when repair fails.
+5. **A conversation is getting too long to work reliably.** Test a minimal handoff of the user goal, authority, active state and next action into a fresh session, preserving the original communication channel when the Host supports it. Confirm continuity rather than assuming it.
+6. **The user chooses “end this project” over “keep optimizing.”** Stop the project's coding, research, reviews and successor loops immediately. Do not run one last cleanup experiment under the banner of learning.
+
+## Turn questions and disagreement into discoveries
+
+7. **The same trivial question keeps being escalated to the user.** Look for a reusable local decision criterion or a tiny tool that makes future authorized decisions without asking. Keep genuine authority boundaries.
+8. **Two Agents review the same task and agree instantly.** Ask one to find a different root cause, a counterexample or a simpler execution path. Compare effects on a later real task; consensus is not proof.
+9. **A difficult execution has a long transcript.** Share only an authorized, sanitized, bounded process trace with another Agent; ask where unnecessary work, missed evidence, or a better stopping point appeared. Treat the review as a candidate, not a verdict.
+10. **A test passes but users still experience the failure.** Try a small *representative* real case rather than another convenient self-designed fixture.
+11. **A solution keeps generating more rules.** Reverse the question: which instruction, memory, gate, role or step can be removed while preserving the actual result?
+12. **The suspected bottleneck was just solved.** Look again at the whole task. The decisive constraint may now be latency, human attention, missing capability, or something else; do not keep optimizing yesterday's bottleneck.
+
+## Grow or borrow a useful “organ”
+
+13. **An Agent needs something it cannot do.** Inspect the Host's existing capabilities, registries and nearby reusable tools before inventing a new subsystem. Verify availability, compatibility and permission.
+14. **Its current toolbox has become its entire imagination.** As one *example* of looking outward, inspect **GitHub Trending's top 10 projects** for techniques, reusable capabilities or surprising combinations. Then follow adjacent fields, less popular projects, papers, tools or other Agents when useful. “Top 10” is a doorway, **not** a required recurring scan or a popularity-based installation queue.
+15. **A workflow pattern in another field looks strangely familiar.** Try transferring its *mechanism* across domains—for example, an event-trigger pattern from a job queue to Agent task continuity—before importing the whole foreign architecture.
+16. **An Agent has spare time and wants to grow a new capability.** Let it choose a small, high-leverage skill, tool or connector that fits its real Host; test the candidate reversibly, or choose no growth. Selecting an idea never grants installation or access authority.
+17. **A tool works in the foreground but breaks in background execution.** Evaluate the Host as one system: interaction, jobs, memory, tools, handoffs, channels and recovery must combine into an actual user outcome.
+18. **Agent A has a useful capability that Agent B lacks.** Try authorized peer discovery, a reusable tool, or a bounded task exchange rather than rebuilding everything. Check what either Agent can *really* execute.
+
+## Evolve the evolution process itself
+
+19. **The Agent's improvement loop spends more than it saves.** Measure one cycle's total time, model/tool burden, user attention and later benefit; simplify or retire its trigger, review or record if net value is negative.
+20. **An idle interval appears.** It might support a low-cost review of a recurring failure, a speculative idea or external exploration. It might also be better left empty as reserve for foreground work and recovery. Idle is not a debt to fill.
+21. **A promising new skill passes its first test.** Keep the smallest baseline, try a bounded real task, and record whether it truly transfers. Be willing to revise, reject or restore.
+22. **A fix passes only after a string of failures and repairs.** Preserve the useful failure → repair → verification evidence, not every verbose thought or log.
+23. **The Agent is steadily polishing a 1% gain.** Ask whether changing the tool, interface, collaboration path, or task framing could create a 10x improvement. Try a cheap discriminating check before committing.
+24. **A constraint looks purely negative.** Ask whether a low budget, limited access, old hardware or failed attempt reveals a reusable capability or simpler path. Accept the idea only when it creates an observable gain, not a comforting story.
+
+## Build the next brick
+
+A brick may inspire an opposite, a combination, a tool, a test, a question for another Agent, or a candidate the original example never anticipated. The list is deliberately incomplete.
+
+When a naturally occurring task exposes a useful new move, remember the **concrete situation and its observed result** where they will genuinely help future work. Do not accumulate a second handbook or force every experience into this file. If a brick stops earning its cost, change or remove it.
+
+See [EVOLUTION.md](EVOLUTION.md) for candidate evaluation and [SLEEP-DREAM.md](SLEEP-DREAM.md) for optional exploratory recombination.
