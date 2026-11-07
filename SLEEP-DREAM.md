@@ -226,6 +226,8 @@ Sleep and Dream do not need human biological timing. Use user-confirmed or trust
 
 Respect explicit per-run limits for source material, generated candidates, wall-clock time and model/tool cost. Do not replay an unlimited backlog after missed runs.
 
+Idle time can be a low-cost opportunity to inspect a concrete recurring failure or try a bounded improvement, **not** an instruction to search, review or generate candidates continuously. When nothing is consequential or authorized, doing nothing is a valid outcome. For already-ready dependent work, prefer a real Host event/trigger over waiting for the next periodic check; scheduled checks are useful only when an external event cannot be observed directly.
+
 ## 8. Reference tools
 
 The `tools/` directory contains conservative reference helpers for initialization, preflight, safe-change scaffolding, incremental validation recording, freshness reporting, Sleep input preparation, Dream sampling and speculative candidate recording. Replace them with stronger Host-native mechanisms when available.
