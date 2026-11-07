@@ -6,7 +6,7 @@ First Use should establish a usable minimum quickly. Unknown facts may remain `U
 
 Verify what can be inspected from the Host, runtime, files, tools, APIs or documentation. Do not guess when the environment can be checked.
 
-The executable path is:
+For the **ENA reference-home path**, the executable entry point is:
 
 ```text
 python tools/ena_first_use.py --home ~/.ena
@@ -16,7 +16,7 @@ With no confirmed settings it returns `NOT_READY` and does not manufacture an in
 
 ## Minimum First Use
 
-Complete these five things before treating ENA as active.
+Complete these five things before treating the **ENA reference home** as READY. An Agent with verified Host-native equivalents may use ENA's methods without installing these control files; it must not claim reference READY unless the reference preflight passes. See [README.md](README.md).
 
 ### 1. Confirm shared settings
 
