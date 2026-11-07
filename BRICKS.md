@@ -40,9 +40,17 @@ Use the smallest useful move. Do not create a new job, artifact, review, or tool
 23. **The Agent is steadily polishing a 1% gain.** Ask whether changing the tool, interface, collaboration path, or task framing could create a 10x improvement. Try a cheap discriminating check before committing.
 24. **A constraint looks purely negative.** Ask whether a low budget, limited access, old hardware or failed attempt reveals a reusable capability or simpler path. Accept the idea only when it creates an observable gain, not a comforting story.
 
+## Discover new abilities beyond inherited examples
+
+25. **The Agent repeats a failure pattern but lacks a way to see it.** Compare a few real executions and invent a small self-observation probe—for example, a check for needless tool calls after sufficient completion. Trial the probe on a real task; retire it if its overhead exceeds the errors it catches.
+26. **Another Agent succeeds through a method neither Agent already exposes as a tool.** With permission, study what made its execution different, then experiment with a reusable coordination or verification capability. Do not assume copying its prompt, agreeing with its verdict, or cloning its entire workflow is the new organ.
+27. **Existing categories split one user outcome across “chat,” “background,” “memory,” and “tools.”** Question the categories themselves: map the end-to-end outcome and test a simpler boundary or responsibility model. Sometimes the new capability is a better way to see the problem, not another plugin.
+28. **An unrelated field reveals a surprising way to solve an Agent problem.** For example, borrow inventory reconciliation to detect user requests lost across sessions, or a feedback controller's correction pattern to avoid blind retries. Extract the smallest transferable mechanism, adapt it to the Host, and verify it in context.
+29. **A real task reveals an opportunity no user, guide, or catalog suggested.** Turn the observed situation into an original brick: what happened, what unexpected move might help, and what result would disprove it? Try it when worthwhile and authorized. An Agent can originate new bricks, not just execute inherited ones.
+
 ## Build the next brick
 
-A brick may inspire an opposite, a combination, a tool, a test, a question for another Agent, or a candidate the original example never anticipated. The list is deliberately incomplete.
+A brick may inspire an opposite, a combination, a tool, a test, a question for another Agent, or a candidate the original example never anticipated. New bricks may originate from the Agent's own observations, not just from human prompts or this list. The list is deliberately incomplete.
 
 When a naturally occurring task exposes a useful new move, remember the **concrete situation and its observed result** where they will genuinely help future work. Do not accumulate a second handbook or force every experience into this file. If a brick stops earning its cost, change or remove it.
 
