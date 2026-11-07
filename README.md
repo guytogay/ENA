@@ -6,6 +6,8 @@ ENA helps an Agent add runtime capabilities that reasoning alone does not provid
 
 ENA does not replace the model's ordinary judgment or add a second reasoning bureaucracy around it.
 
+Its foundation is a **verified, revisable understanding of the Agent in its actual Host**: working abilities, limits, accessible collaborators and tools, and what remains unknown. That knowledge guides action, recovery and evolution; it does not require a perfect all-system inventory.
+
 **Need a concrete starting idea?** [BRICKS.md](BRICKS.md) offers 30 real-world situations and moves to try, alter or combine. It is an optional source of sparks, not another adoption requirement.
 
 New adopters should use this repository. The older `evolution-native-agent-architecture` repository preserves the previous release line, research evidence, and project history; do not treat its `releases/current/` tree as the install path for this product.
