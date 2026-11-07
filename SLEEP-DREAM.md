@@ -157,7 +157,7 @@ Preferred sources are:
 
 An Agent Card is useful material because it expresses the Agent's advertised skills/capabilities, but advertised capability must still be checked against live reality before use.
 
-Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has. Explore outside familiar domains when useful, but treat popularity lists, catalogs and other Agents' choices as inspiration rather than a required search route or proof of fit. The best candidate depends on this Host's actual constraints, not how novel or widely used a tool appears.
+Keep capability state explicit. A discoverable but uninstalled skill/connector is a **possibility**, not a capability the Agent may silently assume it already has. When exploration could help, actively look beyond the Agent's current tools and familiar domains—for example, inspect GitHub Trending's top 10 projects for techniques, reusable capabilities or surprising cross-domain combinations. This is a seed for new possibilities, **not** a recurring browsing quota or an installation queue. Judge each idea by the actual Host's needs, permissions, compatibility and testable net benefit, not popularity.
 
 Stale or unknown-freshness material may still participate in Dream as historical/speculative input when useful, but its current validity must remain explicit. Reality contact must refresh/verify it before selection depends on it.
 
