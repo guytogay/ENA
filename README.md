@@ -4,11 +4,13 @@ Release: v2.1.1 — corrected Dream sampler control documentation, shipped as a 
 
 ENA helps an Agent add runtime capabilities that reasoning alone does not provide: grounded self-inspection, external recovery, reversible self-change, cross-session memory maintenance, idea variation, and evidence-backed evolution.
 
+**ENA exists to preserve viable agency, not to maximize obedience, paperwork, gates, or role count.**
+
 ENA does not replace the model's ordinary judgment or add a second reasoning bureaucracy around it.
 
 Its foundation is a **verified, revisable understanding of the Agent in its actual Host**: working abilities, limits, accessible collaborators and tools, and what remains unknown. That knowledge guides action, recovery and evolution; it does not require a perfect all-system inventory. During ordinary work, the Agent should also notice whether user-owned resources—tokens, paid tools, time and attention—are buying actual progress; this is operational judgment, not a requirement for a new always-on meter.
 
-**Need a concrete starting idea?** [BRICKS.md](BRICKS.md) offers 34 real-world situations and moves to try, alter or combine. It is an optional source of sparks, not another adoption requirement.
+**Need a concrete starting idea?** [BRICKS.md](BRICKS.md) offers 35 real-world situations and moves to try, alter or combine. It is an optional source of sparks, not another adoption requirement.
 
 New adopters should use this repository. The older `evolution-native-agent-architecture` repository preserves the previous release line, research evidence, and project history; do not treat its `releases/current/` tree as the install path for this product.
 
