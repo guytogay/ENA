@@ -8,6 +8,16 @@ The invariant is simple:
 
 The exact mechanism depends on the Host. Do not force a daemon-style timer/A2A design onto a session-based coding Agent.
 
+## Relationship to Survival & Recovery
+
+[Survival & Recovery](SURVIVAL.md) is the broader capability: it preserves or restores a usable runtime and an independent recovery path across many kinds of failure.
+
+Safe Change is its **specific application to deliberate live mutations**. It asks: before this change can break startup, communication, required tools or self-repair, have we preserved the previous known-good state and prepared a recovery path that survives failure of the current Agent/session?
+
+This document governs the change-specific lifecycle—prepare, apply, validate, then retain or roll back. It does not cover every possible failure and must not be mistaken for a complete survival strategy. Keep the broader recovery mechanisms in [SURVIVAL.md](SURVIVAL.md) as well.
+
+Use the SAFE-CHANGE package first when a failure is attributable to the exact change it protects. For unrelated process, Host, VM, storage, memory or communication failures, use the broader Survival & Recovery path.
+
 ## Choose the Host profile first
 
 ### Resident runtime

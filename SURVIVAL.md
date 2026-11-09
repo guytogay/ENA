@@ -2,6 +2,21 @@
 
 Keep at least one recovery path outside the failure surface of the current Agent/session.
 
+## Relationship to SAFE-CHANGE
+
+Survival & Recovery is the **broader failure-recovery capability**. It covers loss of the Agent process/runtime, Host or VM failure, damaged or missing durable state, broken communication, and other failures—not only failures caused by the Agent changing itself.
+
+[SAFE-CHANGE.md](SAFE-CHANGE.md) is a **change-scoped application** of this foundation. It protects a deliberate live mutation by preserving the previous known-good state and preparing an independent recovery path before the mutation. Its lifecycle is specific to a change: prepare → apply → validate → retain or roll back.
+
+Therefore:
+
+- Safe Change establishes or verifies a recovery path for the particular mutation as one part of overall survivability; it does not establish recovery for unrelated failure modes.
+- Survival & Recovery must still cover failures unrelated to a recent self-change.
+- A prepared Safe Change rollback package is the preferred first recovery path when the failure is attributable to that exact change; otherwise use the broader recovery mechanisms below.
+- Having a general backup or restart mechanism does not mean a particular risky change has a tested, change-scoped rollback.
+
+Do not treat these documents as duplicate recovery procedures: one defines the wider ability to survive and recover; the other protects the act of changing live state.
+
 ## What survivability protects
 
 Here, survival means preserving or restoring the Agent's **executable body**: a runtime that can start, communicate, use the tools needed for work, and reach a recovery path. It does not require preserving one particular model, prompt context, memory store, or persona. Losing context or memory is an amnesia/continuity problem, not runtime death if a usable carrier can still communicate, use tools, and recover durable state. Conversely, preserved memories do not make an unusable, non-recoverable runtime operationally alive. This is a boundary for recovery engineering, not a claim about personhood or identity.

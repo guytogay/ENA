@@ -14,6 +14,14 @@ Its foundation is a **verified, revisable understanding of the Agent in its actu
 
 New adopters should use this repository. The older `evolution-native-agent-architecture` repository preserves the previous release line, research evidence, and project history; do not treat its `releases/current/` tree as the install path for this product.
 
+## How Survival and Safe Change relate
+
+**Survival & Recovery is the broader foundation:** preserve or restore a usable Agent runtime and at least one recovery path across failures, whether they come from self-change, process/Host failure, damaged state, lost communication, or another cause.
+
+**Safe Change is one specific application of that foundation:** before an Agent deliberately changes live state that could impair its startup, communication, required tools, or self-repair, preserve the previous known-good state and prepare a change-scoped recovery path. It governs the change lifecycle—prepare, apply, validate, retain or roll back.
+
+Safe Change does **not** replace Survival & Recovery: it protects against failures introduced by a known change, while Survival & Recovery covers the wider failure space. Safe Change prepares the recovery path for that particular mutation; it does not create every recovery capability the Agent needs for unrelated failures. Conversely, general survivability does not make every change safe automatically; the change-specific safeguards still need to be prepared and exercised.
+
 ## Choose a path
 
 - **Existing Agent/Host:** use ENA to find missing capabilities and concrete [bricks](BRICKS.md). Verify the Host's *working* recovery, change, memory and evolution mechanisms on real tasks; reuse them instead of cloning ENA's YAML, preflight or tools. A named plugin is not proof that a recovery drill works.
