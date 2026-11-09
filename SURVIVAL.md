@@ -10,7 +10,7 @@ Survival & Recovery is the **broader failure-recovery capability**. It covers lo
 
 Therefore:
 
-- Safe Change relies on a working Survival & Recovery path, but does not provide complete survivability.
+- Safe Change establishes or verifies a recovery path for the particular mutation as one part of overall survivability; it does not establish recovery for unrelated failure modes.
 - Survival & Recovery must still cover failures unrelated to a recent self-change.
 - A prepared Safe Change rollback package is the preferred first recovery path when the failure is attributable to that exact change; otherwise use the broader recovery mechanisms below.
 - Having a general backup or restart mechanism does not mean a particular risky change has a tested, change-scoped rollback.
