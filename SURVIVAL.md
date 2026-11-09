@@ -2,6 +2,10 @@
 
 Keep at least one recovery path outside the failure surface of the current Agent/session.
 
+## What survivability protects
+
+Here, survival means preserving or restoring the Agent's **executable body**: a runtime that can start, communicate, use the tools needed for work, and reach a recovery path. It does not require preserving one particular model, prompt context, memory store, or persona. Losing context or memory is an amnesia/continuity problem, not runtime death if a usable carrier can still communicate, use tools, and recover durable state. Conversely, preserved memories do not make an unusable, non-recoverable runtime operationally alive. This is a boundary for recovery engineering, not a claim about personhood or identity.
+
 ## Choose the Host profile
 
 ### Resident runtime
