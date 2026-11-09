@@ -14,15 +14,16 @@ The exact mechanism depends on the Host. Do not force a daemon-style timer/A2A d
 
 Examples: systemd service, long-running container, VM Agent, daemon or always-on worker.
 
-Prefer:
+For a resident runtime, make an independent timed rollback the default for any self-change that could prevent startup, communication, required-tool use, or recovery:
 
-- Host supervisor/restart outside the Agent process;
-- snapshot/version/file backup;
-- independent timed rollback when practical;
-- a human or A2A Agent able to use the recovery package;
-- external communication verification after the change.
+- preserve the known-good state outside the changed component;
+- arm a Host-owned 5–10 minute timer **before the first live write**, and verify that it is active before proceeding;
+- keep the timer and rollback executor outside the Agent process, so they continue if that process crashes or cannot answer;
+- after restart, cancel the timer only after a human or reachable peer Agent has completed a normal two-way exchange with the changed Agent through an unaffected path;
+- if no independent confirmation arrives before expiry, restore only this change, restart the Agent, verify the recovery result, and record it—without calling an LLM or waiting for a human;
+- serialize apply, confirmation and rollback, and make rollback idempotent so a late timer cannot undo a later retained change.
 
-For a consequential live mutation, a 5–10 minute independent rollback window is a useful starting mechanism when the Host supports it reliably.
+The two-way exchange is a liveness check, not proof that every capability is perfect: if the Agent can receive and answer, a human or peer can still direct a bounded repair. A small deterministic check of the changed function should be recorded separately when available. If the Host cannot reliably arm an external timer, state that limitation and use another independently executable recovery path; do not label a declaration as an armed timer. See [the resident-runtime wiring example](examples/change/RESIDENT-TIMED-ROLLBACK.md).
 
 ### Session / coding Agent
 
@@ -70,7 +71,7 @@ Before changing live state, create a package such as:
 
 Use the timezone confirmed in `ENA.yaml`. Store the package somewhere that survives failure of the changed component/current session.
 
-`tools/change_scaffold.py` creates a conservative skeleton. Its generated `rollback.py` is intentionally an unconfigured placeholder that exits rather than pretending recovery exists. Replace it or record a verified Host-native rollback action before arming the change. The reference gate enforces that choice: with no configured package-local script, `rescue.yaml` must declare either `automatic_rollback: false` (manual / Host-triggered recovery) or `automatic_rollback: true` together with `automatic_rollback_reference` naming the Host-native timer, scheduler or supervisor that performs the rollback. The recorded transition separates `rollback_mode` (what was declared) from `rollback_artifact` (what the package can show), and neither one is proof that recovery has actually been exercised.
+`tools/change_scaffold.py` creates a conservative skeleton. Its generated `rollback.py` is intentionally an unconfigured placeholder that exits rather than pretending recovery exists. Replace it or record a verified Host-native rollback action before arming the change. The reference gate enforces that choice: with no configured package-local script, `rescue.yaml` must declare either `automatic_rollback: false` (manual / Host-triggered recovery) or `automatic_rollback: true` together with `automatic_rollback_reference` naming the Host-native timer, scheduler or supervisor that performs the rollback. The recorded transition separates `rollback_mode` (what was declared) from `rollback_artifact` (what the package can show), and neither one is proof that recovery has actually been exercised. The reference tools record the declaration and state; they do not create, start, cancel, or supervise a Host timer. The Host integration must perform those actions and preserve the evidence.
 
 The package's machine-readable files have independent schemas. In v2 the scaffold intentionally emits `rescue.yaml` schema `0.4` and `status.yaml` schema `0.3`; the latter is the state-record schema and is not an old `rescue.yaml` version. Do not rewrite `status.yaml` merely to make the two numbers match.
 
@@ -97,11 +98,11 @@ The reference gate has force only when the Agent/Host actually routes state tran
 3. **Prepare rollback.** Record the exact command/script/action that restores only this change. Verify the restore point exists.
 4. **Prepare `rescue.yaml`.** Give the external recovery actor enough information to restore the target without reconstructing the incident from conversation history.
 5. **Prepare the profile-specific external recovery path.**
-   - resident runtime: normally arm an independent rollback timer/scheduler when available;
+   - resident runtime: arm the independent timer and verify it is active before any live write; if the Host cannot do this reliably, record the actual alternative rather than claiming automatic rollback;
    - session/coding Agent: ensure the durable restore point and recovery instructions survive the session, and identify the human/new-session recovery path.
-6. **Confirm the external recovery actor/path is usable.** Obtain human/Agent acknowledgement when that actor is expected to intervene interactively.
-7. Move `preparing -> armed` through `tools/safe_change_state.py`. Do not apply the live change if the gate rejects the package.
-8. Apply the bounded live change, then move `armed -> applied` through the same gate.
+6. **Confirm the recovery path is usable.** Verify the timer/Host executor can reach the package and target; obtain human/peer acknowledgement only when that actor is expected to intervene interactively.
+7. Move `preparing -> armed` through `tools/safe_change_state.py`. Do not apply the live change if the gate rejects the package or the required timer is no longer active.
+8. Immediately before the first live write, move `armed -> applied` through the same gate; this means the change may now be in flight and must be treated as rollback-required. Then apply the bounded change. The Host adapter must serialize this boundary against timer expiry so either the apply is admitted or rollback wins—never both concurrently.
 
 ## Validate close to the change
 
@@ -177,8 +178,8 @@ Keep one machine-readable current state in `status.yaml`:
 ```text
 preparing   recovery package is incomplete; live state is unchanged
 armed       restore point + recovery path are ready for this Host profile
-applied     live change is active; recovery remains available
-retained    post-change usefulness/communication check passed; new state is kept
+applied     the live mutation has begun or is active; recovery remains available
+retained    an independent post-change liveness exchange succeeded and the new state is kept; any operation defect remains separately recorded
 restoring   recovery is running
 restored    previous working state is back and useful operation/communication works
 failed      prepared recovery did not restore usability
@@ -187,7 +188,7 @@ cancelled   change was abandoned before live mutation
 
 Use `tools/safe_change_state.py` for the reference transitions. `retained`, `restored`, and `failed` require an evidence reference. Transition history lives in `transitions.jsonl` so `status.yaml` remains a small enforceable control file.
 
-A resident runtime with a rollback timer cancels that timer only after the post-change check succeeds. A session Agent without such a timer records `retained` only after the corresponding repository/test/human communication check succeeds.
+A resident runtime's external confirmation path cancels the timer only after the normal two-way exchange succeeds. The changed Agent cannot cancel its own only rescue by reporting its own health. On expiry, the Host executor handles `armed` as an unapplied/aborted change and `applied` as potentially partially changed: it must win the per-change lock, stop any still-running writer, restore only the declared scope, restart, and record `restored` or `failed`. A session Agent without such a timer records `retained` only after the corresponding repository/test/human communication check succeeds.
 
 ## Avoid two rescuers corrupting the same state
 

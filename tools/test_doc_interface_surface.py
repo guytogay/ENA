@@ -41,6 +41,7 @@ ADOPTER_DOCS = (
     REPO / "SLEEP-DREAM.md",
     REPO / "SLEEP-DREAM-QUICKSTART.md",
     REPO / "examples/change/SESSION-GIT-WORKTREE.md",
+    REPO / "examples/change/RESIDENT-TIMED-ROLLBACK.md",
     REPO / "tools/README.md",
     REPO / "tools/EXIT-CODES.md",
 )

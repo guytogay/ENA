@@ -4,6 +4,11 @@ All notable changes to the clean ENA product line are recorded here.
 
 ## Unreleased
 
+### Documentation
+- Make an independent 5–10 minute Host-owned rollback timer the default for resident-runtime self-changes that can break startup, communication, required tools or recovery. Specify external two-way confirmation, timeout restoration without an LLM/human, race/idempotency requirements, and a systemd wiring example that distinguishes transient timers from persistent timers. The example is Host integration guidance; ENA does not ship a universal timer runner.
+- Clarify that ENA survivability protects the executable body and recovery path, not preservation of a particular model, prompt context, memory store or persona.
+- Restore the explicit ENA purpose statement: preserve viable agency, not maximize obedience, paperwork, gates or role count.
+
 ## 2.1.1 — 2026-09-15
 
 ### Documentation
