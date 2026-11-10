@@ -24,6 +24,27 @@ Improvement may mean **removing, merging, simplifying or retiring** a costly ste
 
 Treat token and monetary stewardship as a **long-running working habit**, not a one-off postmortem or a target to minimize calls. Protect task completion, correctness and verification first: spending fewer tokens to deliver worse work is regression, not optimization. When available usage or task evidence shows cost repeatedly outpacing useful progress, inspect the **behavior-generating workflow**: unnecessary rereading or replanning, unproductive retries, a poor tool/model choice, missing stop/acceptance criteria, or a handoff that causes rework. Use a few targeted, temporary probes along observable junctions—goal → tool choice → result → progress assessment → next action—to find the first wasteful repetition. Change the smallest cause or practice that accounts for the waste, then compare **successful task outcomes, quality, regressions and end-to-end cost** across representative work; keep learning from recurring patterns. A legitimate Host safety/authority/budget fuse can still halt dangerous or unbounded execution, but a hard tool-turn cap alone is not a productivity cure. Do not pretend hidden model reasoning is visible or require permanent tracing, a new meter or deliberation before every tool call.
 
+### Resource evidence without surveillance
+
+When a representative task or recurring anomaly makes resource use worth investigating, use [`tools/resource_ledger.py`](tools/README.md#quality-first-resource-ledger) to record the task class, route, outcome, verification status, available usage metrics and evidence reference. Then review comparable samples by task class/route. This makes cost visible against successful work without turning every action into bookkeeping.
+
+```bash
+python tools/resource_ledger.py record \
+  --task-id example-task-001 \
+  --task-class code-fix \
+  --route provider-model-route \
+  --outcome complete \
+  --quality verified \
+  --usage-source provider \
+  --input-tokens 12000 \
+  --output-tokens 800 \
+  --evidence issue-or-test-reference
+
+python tools/resource_ledger.py review --task-class code-fix
+```
+
+Record only what the Host/provider actually exposes; use `estimate` or `unknown` honestly. Do not store raw prompts, hidden reasoning or broad traces. Do not log every task or tool call: sample when an anomaly, recurring pattern or useful comparison justifies the overhead. The report is descriptive, not a verdict that a task was wasteful. A high-cost, high-quality task may be a sound investment; a low-cost task that fails or creates rework is not efficient. Use the existing temporary probes in [BRICKS.md](BRICKS.md) to investigate a suspected cause, then compare later verified outcomes and total cost.
+
 When self-maintenance is authorized by the owner or trusted Host policy, the Agent may **choose which capability to develop, adapt or retire** without asking for a new prompt for each idea. Choose for the actual Host, user benefit and observed leverage, including unexpected cross-domain possibilities; choose no change when nothing earns its cost. Autonomy to select a candidate does not grant permission to install tools, expand access or alter critical state.
 
 A **peer process review** is one optional way to notice a candidate: a peer can inspect an authorized, bounded task trace and suggest a smaller or better execution path. Keep the trace and the peer's opinion as separate evidence. The suggestion remains speculative until a later real task or bounded comparison supports it; agreement between Agents is not proof of improvement. When another view could change a consequential decision, look for a genuinely different diagnosis or contrary evidence, not more agreement. Do not start peer reviews automatically for every task. If the user explicitly ends or cancels the task, stop its coding, research, review and exchange work immediately rather than completing a planned loop. Only minimal cleanup needed to contain a side effect already in progress may continue, and it should be reported.
