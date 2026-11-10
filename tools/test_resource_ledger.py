@@ -108,6 +108,11 @@ class ResourceLedgerTests(unittest.TestCase):
         self.assertNotIn("prompt", record)
         self.assertNotIn("trace", record)
 
+        report_result = run_tool(TOOLS / "resource_ledger.py", "review", "--home", self.home)
+        self.assertEqual(report_result.returncode, 0, report_result.stdout + report_result.stderr)
+        group = json.loads(report_result.stdout)["groups"][0]
+        self.assertEqual(group["median_provider_cost_per_verified_completion"], {"USD": "0.0042"})
+
     def test_review_compares_outcomes_and_reports_sample_sizes(self) -> None:
         self.record("task-1", extra=("--pattern", "blind-retry"))
         self.record("task-2", input_tokens=200, output_tokens=100)
