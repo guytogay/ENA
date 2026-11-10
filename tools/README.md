@@ -21,6 +21,7 @@ combine_dream_material.py   combine memory + knowledge + capability material
 dream_sample.py             sample a Dream set with biased randomness / distance
 candidate_record.py         write new candidates only into the speculative path
 candidate_outcome.py        persist an already-made reality-contact outcome
+resource_ledger.py          record/review sampled task resource use against verified outcomes
 self_test.py                verify the reference tools against included sample data
 ```
 
@@ -102,6 +103,35 @@ correlation_id, record, added_count, removed_count, modified_count
 
 Three limits are part of the tool, not disclaimers added later: the declared scope is an **observation boundary, not an authorization boundary**, and the tool never refuses work because an effect was unexpected; a record proves what was observed **inside the declared scopes only**, so it is not a claim that the rest of the machine was unchanged; and it is Host-generated evidence only when the observation and the record live **outside** the dispatched session's writable surface. A child session saying `DONE` is evidence of what it reported, never evidence that the intended effect occurred. Exit code `3` means observed-with-limitations and the record marks itself incomplete, because a false empty record is worse than a partial one. Store `before.json` and `record.json` outside the observed scope, or the tool will faithfully report them as effects.
 
+## Quality-first resource ledger
+
+Use `resource_ledger.py` only for a representative task sample or a recurring cost/progress anomaly—not for every task, every turn or every tool call. It records task class, optional model/tool route, outcome, verification status, available usage metrics and evidence references. It can record provider/Host values, estimates or explicit unknowns.
+
+```bash
+python tools/resource_ledger.py record \
+  --home ~/.ena \
+  --task-id example-task-001 \
+  --task-class code-fix \
+  --route provider-model-route \
+  --outcome complete \
+  --quality verified \
+  --usage-source provider \
+  --input-tokens 12000 \
+  --output-tokens 800 \
+  --tool-calls 6 \
+  --retries 1 \
+  --evidence issue-or-test-reference \
+  --pattern blind-retry
+
+python tools/resource_ledger.py review --home ~/.ena --task-class code-fix
+```
+
+Supported outcomes are `complete`, `partial`, `failed` and `cancelled`; quality is `verified`, `not_verified` or `unknown`. Usage source is `host`, `provider`, `estimate`, `mixed` or `unknown`. Add `--total-tokens` when only a total is available; otherwise supply input and output counts when both are known. Provider cost is optional and requires `--currency` (for example `--cost-amount 0.004 --currency USD`). Missing metrics remain unknown; the tool does not infer a bill.
+
+The review groups samples by task class and route, reports outcome counts, sample sizes and medians for verified completions, and lists suspected workflow-pattern labels. Those labels are hypotheses, not root-cause findings. Compare genuinely similar work; a difficult task may properly cost more. The report deliberately has no efficiency score, per-Agent ranking, quota, automatic limit or recommendation to reduce calls.
+
+Records contain task metadata, supplied metrics, actor attribution and evidence references—not prompts, private reasoning or raw tool traces. Keep evidence references durable and non-sensitive. The ledger is an optional diagnostic aid; it does not monitor the Host continuously or enforce spending limits.
+
 ## Verify the tools
 
 **The acceptance line is the CI workflow, not this list**: `.github/workflows/reference-tools.yml` runs every registered test file on both Linux and Windows, and all of them must pass. Run the same set locally with:
@@ -119,6 +149,7 @@ python tools/test_jsonl_source.py
 python tools/test_input_boundaries.py
 python tools/test_candidate_record.py
 python tools/test_candidate_outcome.py
+python tools/test_resource_ledger.py
 python tools/test_fact_authority.py
 python tools/test_ena_home.py
 python tools/test_path_authority.py
