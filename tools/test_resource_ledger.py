@@ -153,6 +153,7 @@ class ResourceLedgerTests(unittest.TestCase):
         record = json.loads(target.read_text(encoding="utf-8"))
         self.assertEqual(record["usage"]["input_tokens"], None)
         self.assertEqual(record["usage"]["output_tokens"], None)
+        self.assertEqual(record["usage_source"], "unknown")
 
         result = run_tool(TOOLS / "resource_ledger.py", "review", "--home", self.home)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
