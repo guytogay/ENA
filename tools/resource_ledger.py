@@ -123,13 +123,13 @@ def record(args: argparse.Namespace) -> int:
         return 2
 
     task_id = args.task_id.strip()
-    if not task_id or len(task_id) > 128:
+    if not task_id or len(task_id) > 128 or any(ord(char) < 32 for char in task_id):
         print("ENA resource ledger: ERROR: task-id must contain 1–128 characters", file=sys.stderr)
         return 2
 
     evidence = [item.strip() for item in args.evidence if item and item.strip()]
-    if not evidence:
-        print("ENA resource ledger: ERROR: at least one evidence reference is required", file=sys.stderr)
+    if not evidence or any(len(item) > 512 or any(ord(char) < 32 for char in item) for item in evidence):
+        print("ENA resource ledger: ERROR: evidence references must be non-empty, at most 512 characters, and contain no control characters", file=sys.stderr)
         return 2
 
     currency = args.currency.upper() if args.currency else None
@@ -212,9 +212,11 @@ def load_records(records_dir: Path) -> list[dict[str, object]]:
             raise ValueError(f"resource record is missing task/usage objects: {path}")
         if task.get("outcome") not in OUTCOMES or task.get("quality") not in QUALITY:
             raise ValueError(f"resource record has invalid task outcome/quality: {path}")
+        if not isinstance(task.get("class"), str) or not isinstance(task.get("route"), str):
+            raise ValueError(f"resource record has invalid task class/route: {path}")
         try:
-            validate_label(str(task.get("class", "")), "task-class")
-            validate_label(str(task.get("route", "")), "route")
+            validate_label(task["class"], "task-class")
+            validate_label(task["route"], "route")
         except ValueError as exc:
             raise ValueError(f"resource record has invalid task class/route: {path}: {exc}") from exc
         if value.get("usage_source") not in USAGE_SOURCES:
@@ -240,8 +242,11 @@ def load_records(records_dir: Path) -> list[dict[str, object]]:
                 if not number.is_finite() or number < 0:
                     raise ValueError(f"resource record has invalid {field}: {path}")
         currency = usage.get("currency")
+        provider_cost = usage.get("provider_cost")
         if currency is not None and (not isinstance(currency, str) or not CURRENCY.fullmatch(currency)):
             raise ValueError(f"resource record has invalid currency: {path}")
+        if (currency is None) != (provider_cost is None):
+            raise ValueError(f"resource record must pair provider_cost with currency: {path}")
         records.append(value)
     return records
 
