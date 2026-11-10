@@ -178,9 +178,9 @@ def record(args: argparse.Namespace) -> int:
         "actor": actor_block(resolve_actor()),
     }
 
-    records_dir.mkdir(parents=True, exist_ok=True)
     target = records_dir / f"{now.strftime('%Y%m%dT%H%M%S%f%z')}__{record_id}.json"
     try:
+        records_dir.mkdir(parents=True, exist_ok=True)
         with target.open("x", encoding="utf-8") as stream:
             json.dump(artifact, stream, ensure_ascii=False, indent=2)
             stream.write("\n")
