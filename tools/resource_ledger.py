@@ -158,6 +158,7 @@ def record(args: argparse.Namespace) -> int:
 
     now = datetime.now(timezone)
     record_id = f"resource-{uuid.uuid4().hex[:12]}"
+    has_usage = any(value is not None for key, value in usage.items() if key != "currency")
     artifact = {
         "schema_version": "0.1",
         "id": record_id,
@@ -170,7 +171,7 @@ def record(args: argparse.Namespace) -> int:
             "outcome": args.outcome,
             "quality": args.quality,
         },
-        "usage_source": args.usage_source,
+        "usage_source": args.usage_source if has_usage else "unknown",
         "usage": usage,
         "suspected_patterns": sorted(set(args.pattern)),
         "evidence_refs": evidence,
@@ -211,10 +212,36 @@ def load_records(records_dir: Path) -> list[dict[str, object]]:
             raise ValueError(f"resource record is missing task/usage objects: {path}")
         if task.get("outcome") not in OUTCOMES or task.get("quality") not in QUALITY:
             raise ValueError(f"resource record has invalid task outcome/quality: {path}")
-        if not isinstance(task.get("class"), str) or not isinstance(task.get("route"), str):
-            raise ValueError(f"resource record has invalid task class/route: {path}")
-        if not isinstance(value.get("evidence_refs"), list) or not value["evidence_refs"]:
-            raise ValueError(f"resource record has no evidence references: {path}")
+        try:
+            validate_label(str(task.get("class", "")), "task-class")
+            validate_label(str(task.get("route", "")), "route")
+        except ValueError as exc:
+            raise ValueError(f"resource record has invalid task class/route: {path}: {exc}") from exc
+        if value.get("usage_source") not in USAGE_SOURCES:
+            raise ValueError(f"resource record has invalid usage source: {path}")
+        if not isinstance(value.get("evidence_refs"), list) or not value["evidence_refs"] or not all(
+            isinstance(ref, str) and ref.strip() for ref in value["evidence_refs"]
+        ):
+            raise ValueError(f"resource record has no valid evidence references: {path}")
+        patterns = value.get("suspected_patterns", [])
+        if not isinstance(patterns, list) or any(pattern not in PATTERNS for pattern in patterns):
+            raise ValueError(f"resource record has invalid suspected patterns: {path}")
+        for field in ("input_tokens", "output_tokens", "total_tokens", "tool_calls", "retries"):
+            number = usage.get(field)
+            if number is not None and (not isinstance(number, int) or isinstance(number, bool) or number < 0):
+                raise ValueError(f"resource record has invalid {field}: {path}")
+        for field in ("elapsed_seconds", "provider_cost"):
+            raw = usage.get(field)
+            if raw is not None:
+                try:
+                    number = Decimal(raw)
+                except (InvalidOperation, TypeError) as exc:
+                    raise ValueError(f"resource record has invalid {field}: {path}") from exc
+                if not number.is_finite() or number < 0:
+                    raise ValueError(f"resource record has invalid {field}: {path}")
+        currency = usage.get("currency")
+        if currency is not None and (not isinstance(currency, str) or not CURRENCY.fullmatch(currency)):
+            raise ValueError(f"resource record has invalid currency: {path}")
         records.append(value)
     return records
 
