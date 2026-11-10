@@ -6,6 +6,7 @@ All notable changes to the clean ENA product line are recorded here.
 
 ### Documentation
 - Clarify that quality-first resource stewardship is continuous operational practice, and add an optional sampled task resource ledger that compares usage with verified outcomes. It is not an always-on monitor, quota, efficiency score or execution limit.
+- Expand Brick #3 to require one durable, discoverable task/project register for human-assigned, Loop Engineering/self-review-generated, and Agent-initiated exploratory work, while keeping the Host/Workbench implementation boundary explicit.
 - Make an independent 5–10 minute Host-owned rollback timer the default for resident-runtime self-changes that can break startup, communication, required tools or recovery. Specify external two-way confirmation, timeout restoration without an LLM/human, race/idempotency requirements, and a systemd wiring example that distinguishes transient timers from persistent timers. The example is Host integration guidance; ENA does not ship a universal timer runner.
 - Clarify that ENA survivability protects the executable body and recovery path, not preservation of a particular model, prompt context, memory store or persona.
 - Restore the explicit ENA purpose statement: preserve viable agency, not maximize obedience, paperwork, gates or role count.
