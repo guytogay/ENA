@@ -149,6 +149,7 @@ python tools/test_jsonl_source.py
 python tools/test_input_boundaries.py
 python tools/test_candidate_record.py
 python tools/test_candidate_outcome.py
+python tools/test_resource_ledger.py
 python tools/test_fact_authority.py
 python tools/test_ena_home.py
 python tools/test_path_authority.py
